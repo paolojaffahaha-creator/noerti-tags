@@ -96,6 +96,14 @@
       <button id="copy">Liste kopieren (CSV)</button>
       <button id="dl">CSV herunterladen</button>
     </div>
+    <p style="margin-top:16px"><b>Datenbank</b> – Figuren werden mit der Admin-PIN eingetragen. Die PIN bleibt nur auf diesem Handy.</p>
+    <div class="row">
+      <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Admin-PIN" aria-label="Admin-PIN"
+             style="font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-width:0">
+      <button id="pinSave">PIN prüfen &amp; merken</button>
+    </div>
+    <div class="row"><button id="regAll">Offene Figuren eintragen</button></div>
+    <p id="dbStatus" style="min-height:1.4em"></p>
     <div class="row"><button id="reset">Liste auf diesem Handy löschen</button></div>
     <div class="row" id="resetConfirm" hidden>
       <button id="resetYes">Ja, löschen</button>
@@ -113,7 +121,9 @@
   const dec = new TextDecoder();
   const SIM = !('NDEFReader' in window);
 
-  let cfg = { baseUrl: '' }, types = [], log = [];
+  const PIN_STORE = 'noerti-tagwriter-pin';
+  let cfg = { baseUrl: '' }, db = null, types = [], log = [];
+  let pin = ''; try { pin = localStorage.getItem(PIN_STORE) || ''; } catch {}
   let cur = 0, mode = 'write', reader = null, active = false, busy = false;
   let lastWrite = null, overwriteArmed = null, wakeLock = null;
   const simTags = {}; let simLast = null;
@@ -124,6 +134,33 @@
   const live = () => log.filter((e) => !e.replaced);
   const countOf = (t) => live().filter((e) => e.t === t).length;
   const bySerial = (s) => log.find((e) => e.s === s && !e.replaced);
+
+  // ---------- Datenbank (Supabase) ----------
+  async function rpc(fn, body) {
+    if (!db) throw new Error('config.json fehlt');
+    const r = await fetch(`${db.supabaseUrl}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: { apikey: db.supabaseKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json().catch(() => null);
+    if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
+    return data;
+  }
+  const pending = () => live().filter((e) => !e.registered && !e.sim);
+  function dbSay(text, kind) { const p = $('#dbStatus'); p.textContent = text; p.style.color = kind === 'err' ? 'var(--err)' : kind === 'ok' ? 'var(--ok)' : ''; }
+  async function registerPending(quiet) {
+    const items = pending();
+    if (!items.length) { if (!quiet) dbSay('Alle Figuren sind eingetragen.', 'ok'); return; }
+    if (!pin) { dbSay(`${items.length} Figur(en) noch nicht in der Datenbank – PIN eingeben.`); return; }
+    try {
+      await rpc('register_figures', { p_items: items.map((e) => ({ s: e.s, t: e.t })), p_pin: pin });
+      items.forEach((e) => { e.registered = true; }); save(); render();
+      dbSay(`${items.length} Figur(en) in der Datenbank eingetragen ✓`, 'ok');
+    } catch (e) {
+      dbSay('Eintragen fehlgeschlagen: ' + e.message + (navigator.onLine ? '' : ' (offline – später nochmal)'), 'err');
+    }
+  }
 
   // ---------- Seriennummer ----------
   function newSerial() {
@@ -206,7 +243,7 @@
     // Tag hat schon eine Seriennummer
     if (found.s) {
       if (found.t === f.id) {
-        if (!bySerial(found.s)) { log.push({ s: found.s, t: found.t, uid, time: new Date().toISOString(), verified: true, imported: true }); save(); }
+        if (!bySerial(found.s)) { log.push({ s: found.s, t: found.t, uid, time: new Date().toISOString(), verified: true, imported: true, sim: SIM || undefined }); save(); if (!SIM) registerPending(true); }
         lastWrite = { uid, s: found.s, t: found.t };
         cur = nextOpen(cur + 1); render();
         say('ok', `Ist schon ${label(found.t)} (${found.s}) – nichts geändert.`);
@@ -227,8 +264,9 @@
       if (SIM) { simTags[uid] = message(f.id, s); await new Promise((r) => setTimeout(r, 250)); }
       else await reader.write(message(f.id, s), { overwrite: true });
       for (const e of log) if ((e.uid === uid || (found.s && e.s === found.s)) && !e.replaced) e.replaced = true;
-      log.push({ s, t: f.id, uid, time: new Date().toISOString(), verified: false });
+      log.push({ s, t: f.id, uid, time: new Date().toISOString(), verified: false, sim: SIM || undefined });
       save();
+      if (!SIM) registerPending(true);
       lastWrite = { uid, s, t: f.id }; overwriteArmed = null;
       cur = nextOpen(cur + 1);
       render();
@@ -302,7 +340,7 @@
       li.children[0].textContent = e.t;
       li.children[1].textContent = e.s + (e.replaced ? ' (überschrieben)' : '');
       li.children[1].style.fontFamily = 'ui-monospace, monospace';
-      li.children[2].textContent = e.replaced ? '' : e.verified ? '✓✓ geprüft' : '✓';
+      li.children[2].textContent = e.replaced ? '' : (e.verified ? '✓✓ geprüft' : '✓') + (e.sim ? ' · Simulation' : e.registered ? ' · DB' : ' · nicht in DB');
       if (!e.replaced) li.children[2].classList.add('ok');
       wl.appendChild(li);
     });
@@ -310,8 +348,8 @@
 
   // ---------- Export ----------
   function csv() {
-    const rows = [['seriennummer', 'typ', 'name', 'tag_uid', 'zeit', 'geprueft']];
-    for (const e of live()) rows.push([e.s, e.t, typeById(e.t)?.name || '', e.uid, e.time, e.verified ? 'ja' : '']);
+    const rows = [['seriennummer', 'typ', 'name', 'tag_uid', 'zeit', 'geprueft', 'in_db']];
+    for (const e of live()) if (!e.sim) rows.push([e.s, e.t, typeById(e.t)?.name || '', e.uid, e.time, e.verified ? 'ja' : '', e.registered ? 'ja' : '']);
     return rows.map((r) => r.map((c) => /[;"\n]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c).join(';')).join('\n');
   }
 
@@ -327,6 +365,18 @@
     a.href = URL.createObjectURL(new Blob([csv()], { type: 'text/csv' }));
     a.download = 'noerti-seriennummern.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
+  $('#pin').value = pin;
+  $('#pinSave').onclick = async () => {
+    const v = $('#pin').value.trim();
+    if (!v) { dbSay('Bitte PIN eingeben.', 'err'); return; }
+    try {
+      await rpc('register_figures', { p_items: [], p_pin: v });
+      pin = v; try { localStorage.setItem(PIN_STORE, v); } catch {}
+      dbSay('PIN stimmt ✓ – neue Figuren werden ab jetzt automatisch eingetragen.', 'ok');
+      registerPending(true);
+    } catch (e) { dbSay('PIN abgelehnt: ' + e.message, 'err'); }
+  };
+  $('#regAll').onclick = () => { if (SIM) { dbSay('In der Simulation wird nichts eingetragen.'); return; } registerPending(false); };
   $('#reset').onclick = () => { $('#resetConfirm').hidden = false; };
   $('#resetNo').onclick = () => { $('#resetConfirm').hidden = true; };
   $('#resetYes').onclick = () => { log = []; save(); cur = 0; lastWrite = null; $('#resetConfirm').hidden = true; render(); say('', 'Liste gelöscht. Die Tags selbst bleiben beschrieben.'); };
@@ -340,6 +390,10 @@
     b.textContent = 'Web NFC gibt es hier nicht (nur Chrome auf Android, über HTTPS). Diese Ansicht läuft als Simulation zum Ausprobieren.';
   }
   load();
+  fetch('config.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
+    db = d;
+    if (!SIM && pending().length) dbSay(`${pending().length} Figur(en) noch nicht in der Datenbank.`);
+  }).catch(() => dbSay('config.json fehlt – Datenbank nicht verbunden.', 'err'));
   fetch('figuren.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
     cfg = d; types = d.figuren || [];
     cur = nextOpen(0); render();
