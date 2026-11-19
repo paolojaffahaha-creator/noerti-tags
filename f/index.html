@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nörti</title>
+<style>
+  :root { --bg: #f6f5f2; --card: #fff; --ink: #1d1c1a; --muted: #6b6862; --line: #e3e0da; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #151514; --card: #1f1f1d; --ink: #f1efea; --muted: #a29e96; --line: #33322f; } }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .card { width: min(360px, calc(100vw - 32px)); background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px 20px; text-align: center; }
+  .kicker { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+  .id { font-size: 56px; font-weight: 800; margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+  .name { font-size: 24px; font-weight: 600; }
+  .note { color: var(--muted); font-size: 14px; margin-top: 18px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="kicker">Nörti Figur</div>
+    <div class="id" id="id">…</div>
+    <div class="name" id="name"></div>
+    <div class="note" id="note">Stats &amp; Kämpfe folgen später.</div>
+  </div>
+<script>
+  const id = new URLSearchParams(location.search).get('id');
+  document.getElementById('id').textContent = id || '?';
+  fetch('../figuren.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
+    const f = (d.figuren || []).find(x => x.id === id);
+    document.getElementById('name').textContent = f ? f.name : 'Unbekannte Figur';
+    if (f) document.title = 'Nörti ' + f.id + ' – ' + f.name;
+  }).catch(() => { document.getElementById('name').textContent = ''; });
+</script>
+</body>
+</html>
