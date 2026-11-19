@@ -1,18 +1,18 @@
 {
-  "version": 1,
+  "version": 2,
   "baseUrl": "https://paolojaffahaha-creator.github.io/noerti-tags/f/",
   "figuren": [
-    { "id": "001", "name": "Blume" },
-    { "id": "002", "name": "Skater" },
-    { "id": "003", "name": "Mit Haustier" },
-    { "id": "004", "name": "Basis / Original" },
-    { "id": "005", "name": "Ghettoblaster" },
-    { "id": "006", "name": "Figur 006" },
-    { "id": "007", "name": "Figur 007" },
-    { "id": "008", "name": "Figur 008" },
-    { "id": "009", "name": "Figur 009" },
-    { "id": "010", "name": "Figur 010" },
-    { "id": "011", "name": "Figur 011" },
-    { "id": "012", "name": "Figur 012" }
+    { "id": "001", "name": "Blume", "klasse": "natur" },
+    { "id": "002", "name": "Skater", "klasse": "street" },
+    { "id": "003", "name": "Mit Haustier", "klasse": "natur" },
+    { "id": "004", "name": "Basis / Original", "klasse": "original" },
+    { "id": "005", "name": "Ghettoblaster", "klasse": "sound" },
+    { "id": "006", "name": "Figur 006", "klasse": null },
+    { "id": "007", "name": "Figur 007", "klasse": null },
+    { "id": "008", "name": "Figur 008", "klasse": null },
+    { "id": "009", "name": "Figur 009", "klasse": null },
+    { "id": "010", "name": "Figur 010", "klasse": null },
+    { "id": "011", "name": "Figur 011", "klasse": null },
+    { "id": "012", "name": "Figur 012", "klasse": null }
   ]
 }

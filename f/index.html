@@ -2,37 +2,230 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nörti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nörti Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../app/style.css">
 <style>
-  :root { --bg: #f6f5f2; --card: #fff; --ink: #1d1c1a; --muted: #6b6862; --line: #e3e0da; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #151514; --card: #1f1f1d; --ink: #f1efea; --muted: #a29e96; --line: #33322f; } }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink);
-    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .card { width: min(360px, calc(100vw - 32px)); background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px 20px; text-align: center; }
-  .kicker { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
-  .id { font-size: 56px; font-weight: 800; margin: 6px 0 0; font-variant-numeric: tabular-nums; }
-  .name { font-size: 24px; font-weight: 600; }
-  .note { color: var(--muted); font-size: 14px; margin-top: 18px; }
+  .photo { background: var(--white); border-radius: 18px; padding: 10px; transform: rotate(-1.5deg); }
+  .photo .img { height: 260px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; overflow: hidden; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .dots { display: flex; justify-content: center; gap: 6px; padding-top: 8px; }
+  .dots button { width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .dots button span { width: 6px; height: 6px; border-radius: 3px; background: #B9BCC4; display: block; }
+  .dots button[aria-current="true"] span { width: 18px; background: var(--ink); }
+  .meta { display: flex; align-items: center; gap: 8px; }
+  .meta .lv { margin-left: auto; }
+  h1 { margin: 0; font-size: 40px; line-height: 1; overflow-wrap: anywhere; }
+  .bio { margin: 0; font-size: 16px; white-space: pre-line; overflow-wrap: anywhere; }
+  .stats { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--muted); }
+  .stats b { color: var(--ink); }
+  .slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .slot { display: flex; flex-direction: column; gap: 6px; }
+  .slot .pic { aspect-ratio: 1; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .slot .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .slot .btn { min-height: 40px; padding: 8px; font-size: 14px; }
+  .facts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .facts span { font-size: 13px; font-weight: 500; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 8px; padding: 4px 10px; }
 </style>
 </head>
 <body>
-  <div class="card">
-    <div class="kicker">Nörti Figur</div>
-    <div class="id" id="id">…</div>
-    <div class="name" id="name"></div>
-    <div class="note" id="note">Bald in der Nörti Arena: Sammlung, Kämpfe und Level.</div>
-  </div>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="../sammlung/">NÖRTI ARENA</a>
+    <a class="pill" href="../sammlung/">Meine Sammlung</a>
+  </header>
+  <main id="app" class="actions" style="gap:16px"><div class="spinner" aria-label="Lädt"></div></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../app/common.js"></script>
 <script>
-  // Neues Format: ?t=<Typ>&s=<Seriennummer>; altes Format: ?id=<Typ>
+(async () => {
+  const { api, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage } = Noerti;
   const q = new URLSearchParams(location.search);
-  const id = q.get('t') || q.get('id');
-  document.getElementById('id').textContent = id || '?';
-  fetch('../figuren.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
-    const f = (d.figuren || []).find(x => x.id === id);
-    document.getElementById('name').textContent = f ? f.name : 'Unbekannte Figur';
-    if (f) document.title = 'Nörti ' + f.id + ' – ' + f.name;
-  }).catch(() => { document.getElementById('name').textContent = ''; });
+  const typeId = q.get('t') || q.get('id');
+  const serial = (q.get('s') || '').toUpperCase();
+  const app = document.getElementById('app');
+  const FILES = ['1.webp', '2.webp'];
+  let fig = null, type = null, slide = 0, urls = {};
+
+  const allTypes = await types().catch(() => []);
+  type = allTypes.find((x) => x.id === typeId) || null;
+
+  async function load() {
+    if (!serial) return renderSimple();
+    try { fig = await api.getFigure(serial); }
+    catch (e) { app.innerHTML = `<div class="card">Die Figur konnte nicht geladen werden: ${esc(errMsg(e))}<br><span class="small muted">Ist das Internet an? Sonst später nochmal antippen.</span></div>`; return; }
+    if (!fig) return renderUnregistered();
+    if (fig.type_id && fig.type_id !== typeId) type = allTypes.find((x) => x.id === fig.type_id) || type;
+    urls = {};
+    for (const f of fig.images || []) urls[f] = await api.imageUrl(fig.public_id, f, fig.updated_at);
+    slide = Math.min(slide, Math.max(0, (fig.images || []).length - 1));
+    render();
+  }
+
+  function renderSimple() {
+    document.title = 'Nörti ' + (type ? type.name : '');
+    app.innerHTML = `
+      <div class="card" style="text-align:center;padding:28px 18px">
+        <div class="small muted">NÖRTI FIGUR</div>
+        <div class="disp" style="font-size:52px">${esc(typeId || '?')}</div>
+        <div style="font-size:22px;font-weight:600">${esc(type ? type.name : 'Unbekannte Figur')}</div>
+        <p class="small muted" style="margin:14px 0 0">Dieser Tag hat noch das alte Format. Mit dem Tag-Writer neu beschreiben, dann kann die Figur in die Sammlung.</p>
+      </div>`;
+  }
+  function renderUnregistered() {
+    document.title = 'Nörti ' + (type ? type.name : '');
+    app.innerHTML = `
+      <div class="card" style="display:flex;flex-direction:column;gap:8px">
+        <div class="meta">${klasseChip(type && type.klasse)}<span class="small muted">${esc(type ? type.name : 'Typ ' + typeId)}</span></div>
+        <div class="disp" style="font-size:28px">Noch nicht registriert</div>
+        <p style="margin:0">Diese Figur steht noch nicht in der Datenbank. Der Tag-Writer trägt sie mit der Admin-PIN ein.</p>
+      </div>`;
+  }
+
+  function render() {
+    const name = fig.nickname || (type ? type.name : 'Nörti');
+    document.title = 'Nörti · ' + name;
+    const imgs = (fig.images || []).slice().sort();
+    const li = levelInfo(fig.xp, fig.level);
+    const color = { natur: 'var(--natur)', street: 'var(--street)', sound: 'var(--sound)' }[type && type.klasse] || 'var(--ink)';
+    const owner = fig.is_mine ? `Gehört <b>dir</b>${fig.owner_since ? ' · in deiner Sammlung seit ' + esc(fmtDate(fig.owner_since)) : ''}`
+      : fig.owner_name ? `Gehört <b>${esc(fig.owner_name)}</b>` : 'Gehört noch niemandem';
+    const main = fig.is_mine
+      ? `<button class="btn-main" id="edit">TEXT &amp; BILDER BEARBEITEN</button>`
+      : `<button class="btn-main" id="collect">${fig.owner_name ? 'ÜBERNEHMEN' : 'ZU MEINER SAMMLUNG'}</button>`;
+    app.innerHTML = `
+      <div class="photo ink">
+        <div class="img hatch">${imgs.length && urls[imgs[slide]]
+          ? `<img src="${esc(urls[imgs[slide]])}" alt="Foto von ${esc(name)}">`
+          : `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span class="small">${fig.is_mine ? 'Noch kein Foto – über „Bearbeiten“ hinzufügen' : 'Noch kein Foto'}</span>`}</div>
+        ${imgs.length > 1 ? `<div class="dots">${imgs.map((_, i) => `<button data-i="${i}" aria-label="Foto ${i + 1}" aria-current="${i === slide}"><span></span></button>`).join('')}</div>` : ''}
+      </div>
+      <section style="display:flex;flex-direction:column;gap:6px">
+        <div class="meta">${klasseChip(type && type.klasse)}<span class="small muted">${esc(type ? type.name : 'Typ ' + fig.type_id)}</span><span class="lv">LV ${fig.level}</span></div>
+        <h1 class="disp">${esc(name)}</h1>
+        <span class="small muted">${owner}</span>
+        <div class="bar" style="margin-top:6px"><div style="width:${li.pct}%;background:${color}"></div></div>
+        <span class="small muted">${esc(li.text)}</span>
+      </section>
+      ${fig.bio ? `<p class="bio">${esc(fig.bio)}</p>` : ''}
+      <div class="stats"><span><b>${fig.wins}</b> Siege · <b>${fig.losses}</b> Niederlagen</span><span><b>${fig.opponents}</b> Gegner getroffen</span></div>
+      <div class="actions" style="margin-top:8px">
+        ${main}
+        <button class="btn" disabled>In die Arena – kommt bald</button>
+      </div>`;
+    app.querySelectorAll('.dots button').forEach((b) => b.onclick = () => { slide = +b.dataset.i; render(); });
+    const c = app.querySelector('#collect'); if (c) c.onclick = collect;
+    const e = app.querySelector('#edit'); if (e) e.onclick = openEdit;
+  }
+
+  // ---------- Einsammeln / Tauschen ----------
+  function collect() {
+    if (fig.owner_name && !fig.is_mine) {
+      const name = fig.nickname || type?.name || 'Die Figur';
+      sheet(`
+        <h2>${esc(name)} übernehmen?</h2>
+        <p>${esc(name)} gehört gerade <b>${esc(fig.owner_name)}</b>. Übernimm die Figur nur, wenn ihr getauscht habt. Danach liegt sie in deiner Sammlung, und ${esc(fig.owner_name)} sieht sie unter „Getauscht“.</p>
+        <div class="facts"><span>Level ${fig.level} kommt mit</span><span>${fig.wins} Siege · ${fig.losses} Niederlagen</span></div>
+        <button class="btn-main" id="yes">IN MEINE SAMMLUNG</button>
+        <button class="btn-text" id="no">Abbrechen</button>`, (el) => {
+        el.querySelector('#no').onclick = closeSheet;
+        el.querySelector('#yes').onclick = () => { closeSheet(); claimFlow(); };
+      });
+    } else claimFlow();
+  }
+  async function claimFlow() {
+    try {
+      await api.ensureUser();
+      const me = await api.me();
+      if (!me || !me.name) return askName(claimFlow);
+      fig = await api.claim(serial);
+      toast('In deiner Sammlung ✓');
+      await load();
+    } catch (e) { toast(errMsg(e), 'err'); }
+  }
+  function askName(then) {
+    sheet(`
+      <h2>Wie heißt du?</h2>
+      <p>Dein Spielername steht bei deinen Figuren als Besitzer. Du kannst ihn später in der Sammlung ändern.</p>
+      <form id="f" class="actions">
+        <label class="field">Spielername<input id="n" maxlength="24" autocomplete="nickname" required></label>
+        <button class="btn-main" type="submit">WEITER</button>
+      </form>`, (el) => {
+      el.querySelector('#f').onsubmit = async (ev) => {
+        ev.preventDefault();
+        const v = el.querySelector('#n').value.trim(); if (!v) return;
+        try { await api.setName(v); closeSheet(); then(); } catch (e) { toast(errMsg(e), 'err'); }
+      };
+    });
+  }
+
+  // ---------- Bearbeiten ----------
+  function openEdit() {
+    const st = { imgs: (fig.images || []).slice(), removed: new Set(), preview: { ...urls }, busy: false };
+    const el = sheet(`
+      <h2>Bearbeiten</h2>
+      <form id="f" class="actions">
+        <label class="field">Spitzname<input id="nick" maxlength="24" value="${esc(fig.nickname || '')}" placeholder="${esc(type ? type.name : '')}"></label>
+        <label class="field">Text<textarea id="bio" maxlength="280" placeholder="Was macht diese Figur aus?">${esc(fig.bio || '')}</textarea></label>
+        <span class="counter" id="cnt"></span>
+        <div class="field" style="font-size:14px;font-weight:500">Fotos (max. 2)</div>
+        <div class="slots" id="slots"></div>
+        <button class="btn-main" type="submit" id="save">SPEICHERN</button>
+        <button class="btn-text" type="button" id="cancel">Abbrechen</button>
+      </form>`);
+    const bio = el.querySelector('#bio'), cnt = el.querySelector('#cnt');
+    const upd = () => { cnt.textContent = `${bio.value.length} / 280`; }; bio.oninput = upd; upd();
+    el.querySelector('#cancel').onclick = closeSheet;
+
+    function drawSlots() {
+      const box = el.querySelector('#slots');
+      box.innerHTML = FILES.map((f) => {
+        const has = st.imgs.includes(f) && st.preview[f];
+        return `<div class="slot">
+          <div class="pic hatch">${has ? `<img src="${esc(st.preview[f])}" alt="Foto ${f[0]}">` : `Foto ${f[0]}`}</div>
+          <input type="file" accept="image/*" id="file-${f[0]}" hidden>
+          <button type="button" class="btn" data-pick="${f}">${has ? 'Ersetzen' : 'Foto wählen'}</button>
+          ${has ? `<button type="button" class="btn-text" data-del="${f}">Entfernen</button>` : ''}
+        </div>`;
+      }).join('');
+      box.querySelectorAll('[data-pick]').forEach((b) => b.onclick = () => el.querySelector('#file-' + b.dataset.pick[0]).click());
+      box.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => {
+        st.imgs = st.imgs.filter((x) => x !== b.dataset.del); st.removed.add(b.dataset.del); drawSlots();
+      });
+      FILES.forEach((f) => {
+        el.querySelector('#file-' + f[0]).onchange = async (ev) => {
+          const file = ev.target.files && ev.target.files[0]; if (!file) return;
+          const btn = box.querySelector(`[data-pick="${f}"]`); btn.disabled = true; btn.textContent = 'Lädt hoch …';
+          try {
+            const blob = await shrinkImage(file);
+            await api.upload(fig.public_id, f, blob);
+            st.preview[f] = URL.createObjectURL(blob);
+            if (!st.imgs.includes(f)) st.imgs.push(f);
+            st.removed.delete(f);
+          } catch (e) { toast('Foto: ' + errMsg(e), 'err'); }
+          drawSlots();
+        };
+      });
+    }
+    drawSlots();
+
+    el.querySelector('#f').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const save = el.querySelector('#save'); save.disabled = true;
+      try {
+        fig = await api.updateFigure(serial, el.querySelector('#nick').value, bio.value, st.imgs.slice().sort());
+        for (const f of st.removed) if (!st.imgs.includes(f)) await api.removeImage(fig.public_id, f).catch(() => {});
+        closeSheet(); toast('Gespeichert ✓'); await load();
+      } catch (e) { save.disabled = false; toast(errMsg(e), 'err'); }
+    };
+  }
+
+  load();
+})();
 </script>
 </body>
 </html>

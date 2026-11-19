@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meine Sammlung · Nörti Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../app/style.css">
+<style>
+  h1 { margin: 0; font-size: 34px; line-height: 1; }
+  .who { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--ink); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--marker); border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .sort { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sort button { font: 500 14px var(--body); color: var(--ink); background: var(--white); border: 2px solid var(--ink); border-radius: 99px; padding: 6px 14px; min-height: 40px; cursor: pointer; }
+  .sort button[aria-pressed="true"] { background: var(--ink); color: var(--white); font-weight: 700; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+  .fc { position: relative; display: flex; flex-direction: column; gap: 6px; background: var(--white); border: 2.5px solid var(--ink); border-radius: 14px; padding: 8px;
+        box-shadow: 4px 4px 0 var(--ink); text-decoration: none; color: var(--ink); min-width: 0; }
+  .fc:nth-child(odd) { transform: rotate(-1deg); } .fc:nth-child(even) { transform: rotate(1deg); }
+  .fc .pic { aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .fc .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .fc .row { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
+  .fc .nm { font-family: var(--disp); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fc .lv { font-size: 12px; padding: 0 5px; }
+  .fc .chip { font-size: 10px; padding: 0 7px; }
+  .fc .tp { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sticker { position: absolute; top: -8px; right: -6px; font-size: 10px; font-weight: 700; background: var(--ink); color: var(--white); border-radius: 6px; padding: 2px 6px; transform: rotate(6deg); }
+  .ghost { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 2.5px dashed #8A8D96; border-radius: 14px; padding: 8px; color: var(--muted); min-height: 150px; text-align: center; }
+  .ghost .q { font-family: var(--disp); font-size: 40px; color: #8A8D96; line-height: 1; }
+  .away li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1.5px solid var(--line); font-size: 14px; }
+  .away ul { list-style: none; margin: 0; padding: 0; } .away li:first-child { border-top: 0; }
+  .acct { display: flex; flex-direction: column; gap: 10px; }
+  .acct form { display: flex; gap: 8px; }
+  .acct input { flex: 1; min-width: 0; font: 16px var(--body); border: 2px solid var(--ink); border-radius: 10px; padding: 10px 12px; }
+  .acct .btn { width: auto; flex: none; background: var(--marker); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="logo">NÖRTI ARENA</span>
+    <span id="who"></span>
+  </header>
+  <main id="app" class="actions" style="gap:16px"><div class="spinner" aria-label="Lädt"></div></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../app/common.js"></script>
+<script>
+(async () => {
+  const { api, types, esc, klasseChip, toast, sheet, closeSheet, errMsg, ROOT } = Noerti;
+  const app = document.getElementById('app');
+  const SORT_KEY = 'noerti-sort';
+  let sort = 'level'; try { sort = localStorage.getItem(SORT_KEY) || 'level'; } catch {}
+  let me = null, list = [], away = [], allTypes = [];
+
+  async function load() {
+    allTypes = await types().catch(() => []);
+    try { me = await api.me(); } catch (e) { me = null; }
+    if (!me) return renderNoAccount();
+    try { [list, away] = await Promise.all([api.myCollection(), api.myTradedAway()]); }
+    catch (e) { app.innerHTML = `<div class="card">Sammlung konnte nicht geladen werden: ${esc(errMsg(e))}</div>`; return; }
+    for (const f of list) {
+      f._img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
+    }
+    render();
+  }
+
+  function renderWho() {
+    const w = document.getElementById('who');
+    if (!me) { w.innerHTML = ''; return; }
+    w.innerHTML = `<button class="who" id="rename" aria-label="Spielernamen ändern"><span class="avatar">${esc((me.name || '?')[0].toUpperCase())}</span>${esc(me.name || 'Name wählen')}</button>`;
+    w.querySelector('#rename').onclick = rename;
+  }
+
+  function renderNoAccount() {
+    renderWho();
+    app.innerHTML = `
+      <h1 class="disp">Meine Sammlung</h1>
+      <div class="card" style="display:flex;flex-direction:column;gap:10px">
+        <div class="disp" style="font-size:22px">Noch leer</div>
+        <p style="margin:0">Halte eine Nörti-Figur ans Handy und tippe auf <b>Zu meiner Sammlung</b>. Dabei legst du automatisch ein Konto an, ohne Passwort.</p>
+      </div>
+      ${signInBlock()}`;
+    bindSignIn();
+  }
+
+  function signInBlock() {
+    return `<div class="card acct">
+      <b>Schon eine Sammlung auf einem anderen Handy?</b>
+      <span class="small muted">Wenn du sie mit deiner E-Mail gesichert hast, bekommst du einen Anmelde-Link.</span>
+      <form id="signin"><input id="sie" type="email" autocomplete="email" placeholder="deine@email.de" aria-label="E-Mail" required><button class="btn">Link senden</button></form>
+    </div>`;
+  }
+  function bindSignIn() {
+    const f = app.querySelector('#signin'); if (!f) return;
+    f.onsubmit = async (ev) => {
+      ev.preventDefault();
+      try { await api.signInEmail(f.querySelector('#sie').value.trim()); toast('Link ist unterwegs – schau in dein Postfach.'); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+  }
+
+  function sorted() {
+    const k = (f) => allTypes.find((t) => t.id === f.type_id)?.klasse || 'zz';
+    const l = list.slice();
+    if (sort === 'klasse') l.sort((a, b) => k(a).localeCompare(k(b)) || b.level - a.level);
+    else if (sort === 'neu') l.sort((a, b) => String(b.owner_since).localeCompare(String(a.owner_since)));
+    else l.sort((a, b) => b.level - a.level || b.xp - a.xp);
+    return l;
+  }
+
+  function render() {
+    renderWho();
+    const owned = new Set(list.map((f) => f.type_id));
+    const known = allTypes.length || 12;
+    const missing = allTypes.filter((t) => !owned.has(t.id)).length;
+    const cards = sorted().map((f) => {
+      const t = allTypes.find((x) => x.id === f.type_id);
+      const href = `../f/?t=${encodeURIComponent(f.type_id)}&s=${encodeURIComponent(f.serial)}`;
+      return `<a class="fc" href="${esc(href)}">
+        ${f.traded_in ? '<span class="sticker">GETAUSCHT</span>' : ''}
+        <div class="pic hatch">${f._img ? `<img src="${esc(f._img)}" alt="">` : 'Foto'}</div>
+        <div class="row"><span class="nm">${esc(f.nickname || (t ? t.name : 'Nörti'))}</span><span class="lv">${f.level}</span></div>
+        <div class="row" style="justify-content:flex-start">${klasseChip(t && t.klasse)}<span class="tp">${esc(t ? t.name : f.type_id)}</span></div>
+      </a>`;
+    }).join('');
+    const ghosts = missing ? `<div class="ghost"><span class="q">?</span><span class="small">Noch nicht entdeckt</span></div>`
+      + (missing > 1 ? `<div class="ghost"><span class="q">?</span><span class="small">+ ${missing - 1} weitere Typen</span></div>` : '') : '';
+    app.innerHTML = `
+      <section style="display:flex;flex-direction:column;gap:4px">
+        <h1 class="disp">Meine Sammlung</h1>
+        <span class="muted"><b style="color:var(--ink)">${list.length}</b> ${list.length === 1 ? 'Figur' : 'Figuren'} · <b style="color:var(--ink)">${owned.size} von ${known}</b> Typen entdeckt</span>
+      </section>
+      ${list.length ? `<div class="sort" role="group" aria-label="Sortieren">
+        <button data-s="level" aria-pressed="${sort === 'level'}">Level</button>
+        <button data-s="klasse" aria-pressed="${sort === 'klasse'}">Klasse</button>
+        <button data-s="neu" aria-pressed="${sort === 'neu'}">Neu</button></div>` : ''}
+      ${list.length ? '' : `<div class="card">Noch keine Figuren. Halte eine Figur ans Handy und tippe auf <b>Zu meiner Sammlung</b>.</div>`}
+      <div class="grid">${cards}${ghosts}</div>
+      ${away.length ? `<section class="card away"><b>Getauscht</b><ul>${away.map((a) => {
+        const t = allTypes.find((x) => x.id === a.type_id);
+        return `<li><span>${esc(a.nickname || (t ? t.name : a.type_id))} · Lv ${a.level}</span><span class="muted">jetzt bei ${esc(a.new_owner || '?')}</span></li>`;
+      }).join('')}</ul></section>` : ''}
+      ${accountBlock()}`;
+    app.querySelectorAll('.sort button').forEach((b) => b.onclick = () => { sort = b.dataset.s; try { localStorage.setItem(SORT_KEY, sort); } catch {} render(); });
+    bindAccount();
+  }
+
+  function accountBlock() {
+    if (me.anonymous && me.pendingEmail) return `<div class="card acct"><b>Fast geschafft</b><span class="small">Bestätige den Link, den wir an ${esc(me.pendingEmail)} geschickt haben.</span></div>`;
+    if (me.anonymous) return `<div class="card acct">
+      <b>Sammlung sichern</b>
+      <span class="small">Verknüpfe eine E-Mail, damit deine Sammlung auch auf dem nächsten Handy da ist. Du bekommst einen Bestätigungs-Link, kein Passwort.</span>
+      <form id="link"><input id="le" type="email" autocomplete="email" placeholder="deine@email.de" aria-label="E-Mail" required><button class="btn">Sichern</button></form>
+    </div>`;
+    return `<div class="card acct"><span class="small">Gesichert mit <b>${esc(me.email || '')}</b></span>
+      <button class="btn-text" id="out" style="align-self:flex-start;padding-left:0">Auf diesem Handy abmelden</button></div>`;
+  }
+  function bindAccount() {
+    const l = app.querySelector('#link');
+    if (l) l.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const email = l.querySelector('#le').value.trim();
+      try { await api.linkEmail(email); me.pendingEmail = email; render(); toast('Bestätigungs-Link verschickt.'); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+    const o = app.querySelector('#out');
+    if (o) o.onclick = () => sheet(`
+      <h2>Abmelden?</h2>
+      <p>Deine Sammlung bleibt gespeichert. Du kommst mit einem E-Mail-Link an ${esc(me.email || 'deine Adresse')} wieder hinein.</p>
+      <button class="btn-main" id="yes">ABMELDEN</button><button class="btn-text" id="no">Abbrechen</button>`, (el) => {
+        el.querySelector('#no').onclick = closeSheet;
+        el.querySelector('#yes').onclick = async () => { await api.signOut(); closeSheet(); load(); };
+      });
+  }
+
+  function rename() {
+    sheet(`
+      <h2>Spielername</h2>
+      <form id="f" class="actions">
+        <label class="field">Name<input id="n" maxlength="24" value="${esc(me.name || '')}" autocomplete="nickname" required></label>
+        <button class="btn-main" type="submit">SPEICHERN</button>
+      </form>`, (el) => {
+      el.querySelector('#f').onsubmit = async (ev) => {
+        ev.preventDefault();
+        const v = el.querySelector('#n').value.trim(); if (!v) return;
+        try { await api.setName(v); me.name = v; closeSheet(); render(); toast('Gespeichert ✓'); } catch (e) { toast(errMsg(e), 'err'); }
+      };
+    });
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
