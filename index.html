@@ -18,6 +18,7 @@
     font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   main { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
   h1 { font-size: 20px; margin: 4px 0 12px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: var(--muted); font-weight: 600; }
   .banner { border: 1px solid var(--warn); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; }
   .modes { display: flex; gap: 6px; margin-bottom: 12px; }
   .modes button { flex: 1; }
@@ -26,24 +27,28 @@
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
   button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
   button:disabled { opacity: .5; }
-  .now { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 18px; text-align: center; transition: border-color .2s, background .2s; }
+  .now { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 18px; text-align: center; transition: border-color .2s; }
   .now.ok { border-color: var(--ok); } .now.warn { border-color: var(--warn); } .now.err { border-color: var(--err); }
   .now .label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
   .now .id { font-size: 44px; font-weight: 800; letter-spacing: .02em; margin: 4px 0 0; font-variant-numeric: tabular-nums; }
-  .now .name { font-size: 20px; margin-bottom: 10px; }
+  .now .name { font-size: 20px; margin-bottom: 4px; }
+  .now .sub { font-size: 13px; color: var(--muted); margin-bottom: 10px; font-family: ui-monospace, monospace; min-height: 1.2em; }
   .status { min-height: 2.8em; font-size: 15px; }
   .status.ok { color: var(--ok); } .status.warn { color: var(--warn); } .status.err { color: var(--err); }
   .row { display: flex; gap: 8px; margin-top: 12px; }
   .row > * { flex: 1; }
   .progress { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; margin: 18px 0 6px; }
   ul { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
-  li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer; }
+  li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
   li:first-child { border-top: 0; }
+  #list li { cursor: pointer; }
   li.cur { background: color-mix(in srgb, var(--accent) 12%, transparent); }
   li .fid { font-weight: 700; font-variant-numeric: tabular-nums; width: 2.6em; }
   li .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   li .chip { font-size: 12px; color: var(--muted); text-align: right; font-family: ui-monospace, monospace; }
   li .chip.ok { color: var(--ok); }
+  li.old { opacity: .55; }
+  .empty { color: var(--muted); font-size: 14px; padding: 12px; }
   details { margin-top: 18px; color: var(--muted); font-size: 14px; }
   details .row button { font-size: 14px; }
   code { font-size: 12px; word-break: break-all; }
@@ -64,6 +69,7 @@
     <div class="label" id="nowLabel">Als Nächstes</div>
     <div class="id" id="nowId">–</div>
     <div class="name" id="nowName"></div>
+    <div class="sub" id="nowSub"></div>
     <div class="status" id="status">Tippe auf „Start“ und halte dann die Figur ans Handy.</div>
     <button id="start" class="primary" style="width:100%">Start</button>
     <div class="row">
@@ -79,63 +85,82 @@
   <div class="progress"><span id="prog"></span><span id="active"></span></div>
   <ul id="list"></ul>
 
+  <h2>Beschriebene Figuren</h2>
+  <ul id="written"></ul>
+
   <details>
     <summary>Export &amp; Einstellungen</summary>
-    <p>Tag-Inhalt: URL <code id="urlEx"></code> + Datensatz <code>application/vnd.noerti+json</code>.</p>
+    <p>Tag-Inhalt: <code id="urlEx"></code><br>Jede Figur bekommt beim Schreiben eine neue, zufällige Seriennummer.
+       Die Liste unbedingt exportieren und im Vault sichern: Sie wird später in die Datenbank übernommen.</p>
     <div class="row">
-      <button id="copy">UIDs kopieren (CSV)</button>
+      <button id="copy">Liste kopieren (CSV)</button>
       <button id="dl">CSV herunterladen</button>
     </div>
-    <div class="row"><button id="reset">Fortschritt zurücksetzen</button></div>
+    <div class="row"><button id="reset">Liste auf diesem Handy löschen</button></div>
+    <div class="row" id="resetConfirm" hidden>
+      <button id="resetYes">Ja, löschen</button>
+      <button id="resetNo">Abbrechen</button>
+    </div>
   </details>
 </main>
 
 <script>
 (() => {
-  const MIME = 'application/vnd.noerti+json';
-  const STORE = 'noerti-tagwriter-v1';
+  const STORE = 'noerti-tagwriter-v2';
+  const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ'; // 31 Zeichen, ohne 0/1/I/L/O
+  const SERIAL_LEN = 8;
   const $ = (s) => document.querySelector(s);
-  const enc = new TextEncoder(), dec = new TextDecoder();
+  const dec = new TextDecoder();
   const SIM = !('NDEFReader' in window);
 
-  let cfg = { baseUrl: '' }, figs = [], log = {};
+  let cfg = { baseUrl: '' }, types = [], log = [];
   let cur = 0, mode = 'write', reader = null, active = false, busy = false;
   let lastWrite = null, overwriteArmed = null, wakeLock = null;
   const simTags = {}; let simLast = null;
 
   // ---------- Speicher ----------
-  const load = () => { try { log = JSON.parse(localStorage.getItem(STORE)) || {}; } catch { log = {}; } };
+  const load = () => { try { log = JSON.parse(localStorage.getItem(STORE)) || []; } catch { log = []; } };
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(log)); } catch {} };
+  const live = () => log.filter((e) => !e.replaced);
+  const countOf = (t) => live().filter((e) => e.t === t).length;
+  const bySerial = (s) => log.find((e) => e.s === s && !e.replaced);
+
+  // ---------- Seriennummer ----------
+  function newSerial() {
+    for (;;) {
+      let out = '';
+      while (out.length < SERIAL_LEN) {
+        const buf = new Uint8Array(16); crypto.getRandomValues(buf);
+        for (const b of buf) { if (b < 248 && out.length < SERIAL_LEN) out += ALPHABET[b % 31]; } // 248 = 8*31, kein Bias
+      }
+      if (!log.some((e) => e.s === out)) return out;
+    }
+  }
 
   // ---------- Tag-Inhalt ----------
-  function figUrl(id) {
+  function figUrl(t, s) {
     const base = cfg.baseUrl || new URL('f/', location.href).href;
-    return base.replace(/\/?$/, '/') + '?id=' + encodeURIComponent(id);
+    return base.replace(/\/?$/, '/') + '?t=' + encodeURIComponent(t) + '&s=' + encodeURIComponent(s);
   }
-  function message(f) {
-    return { records: [
-      { recordType: 'url', data: figUrl(f.id) },
-      { recordType: 'mime', mediaType: MIME, data: enc.encode(JSON.stringify({ id: f.id, v: 1 })) }
-    ] };
-  }
+  const message = (t, s) => ({ records: [{ recordType: 'url', data: figUrl(t, s) }] });
   function parse(msg) {
-    const out = { id: null, url: null, empty: true };
-    if (!msg || !msg.records) return out;
+    const out = { t: null, s: null, legacy: null, foreign: false, empty: true };
+    if (!msg || !msg.records || !msg.records.length) return out;
+    out.empty = false;
     for (const r of msg.records) {
-      out.empty = false;
+      if (r.recordType !== 'url' && r.recordType !== 'absolute-url') continue;
       try {
-        if (r.recordType === 'mime' && r.mediaType === MIME) out.id = JSON.parse(dec.decode(r.data)).id || out.id;
-        if (r.recordType === 'url' || r.recordType === 'absolute-url') {
-          out.url = dec.decode(r.data);
-          if (!out.id) { const m = out.url.match(/[?&]id=([^&#]+)/); if (m) out.id = decodeURIComponent(m[1]); }
-        }
+        const u = new URL(typeof r.data === 'string' ? r.data : dec.decode(r.data)); // String nur in der Simulation
+        if (!/\/f\/?$/.test(u.pathname)) continue;
+        out.t = u.searchParams.get('t'); out.s = u.searchParams.get('s');
+        out.legacy = u.searchParams.get('id');
       } catch {}
     }
+    out.foreign = !out.s && !out.legacy;
     return out;
   }
-  const figById = (id) => figs.find((f) => f.id === id);
-  const label = (id) => { const f = figById(id); return f ? `${f.id} ${f.name}` : id; };
-  const ownerOf = (serial) => Object.keys(log).find((id) => log[id].serial === serial);
+  const typeById = (id) => types.find((f) => f.id === id);
+  const label = (id) => { const f = typeById(id); return f ? `${f.id} ${f.name}` : id; };
 
   // ---------- Feedback ----------
   function say(kind, text) {
@@ -144,60 +169,71 @@
     if (navigator.vibrate) navigator.vibrate(kind === 'ok' ? 80 : kind === 'err' ? [200, 80, 200] : kind === 'warn' ? [60, 60, 60] : 0);
   }
   function nextOpen(from) {
-    for (let i = from; i < figs.length; i++) if (!log[figs[i].id]) return i;
-    for (let i = 0; i < from; i++) if (!log[figs[i].id]) return i;
-    return figs.length;
+    for (let i = from; i < types.length; i++) if (!countOf(types[i].id)) return i;
+    for (let i = 0; i < from; i++) if (!countOf(types[i].id)) return i;
+    return types.length;
   }
 
   // ---------- Kern: ein Tag wurde erkannt ----------
-  async function onTag(serial, msg) {
+  async function onTag(uid, msg) {
     if (busy) return;
     const found = parse(msg);
 
     if (mode === 'check') {
-      const own = ownerOf(serial);
-      if (found.id) say('ok', `Das ist ${label(found.id)}.` + (own && own !== found.id ? ` (Achtung: Protokoll sagt ${label(own)})` : ''));
-      else say('warn', found.empty ? 'Leerer Tag – noch nicht beschrieben.' : 'Tag hat fremden Inhalt (kein Nörti).');
-      $('#nowId').textContent = found.id || '?';
-      $('#nowName').textContent = found.id ? (figById(found.id)?.name || '') : 'UID ' + serial;
-      return;
-    }
-
-    const f = figs[cur];
-    if (!f) { say('ok', 'Alle Figuren sind beschrieben. 🎉'); return; }
-
-    // Gleicher Tag direkt nach dem Schreiben → als Kontrolle werten
-    if (lastWrite && lastWrite.serial === serial) {
-      if (found.id === lastWrite.id && log[lastWrite.id]) {
-        log[lastWrite.id].verified = true; save(); render();
-        say('ok', `${label(lastWrite.id)} geprüft ✓ – jetzt die nächste Figur (${f.id}) ranhalten.`);
+      if (found.s) {
+        const known = bySerial(found.s);
+        say('ok', `Figur ${label(found.t)} · Seriennummer ${found.s}` + (known ? '' : ' (nicht in der Liste auf diesem Handy)'));
+        $('#nowId').textContent = found.t || '?'; $('#nowName').textContent = typeById(found.t)?.name || ''; $('#nowSub').textContent = found.s;
       } else {
-        say('warn', `Das ist noch der Tag von ${label(lastWrite.id)}. Nächste Figur (${f.id}) ranhalten.`);
+        say('warn', found.empty ? 'Leerer Tag – noch nicht beschrieben.' : found.legacy ? `Altes Format (${label(found.legacy)}), noch ohne Seriennummer.` : 'Tag hat fremden Inhalt (kein Nörti).');
+        $('#nowId').textContent = '?'; $('#nowName').textContent = ''; $('#nowSub').textContent = 'UID ' + uid;
       }
       return;
     }
 
-    // Schutz: Tag gehört schon einer anderen Figur
-    const conflict = (found.id && found.id !== f.id) ? found.id : (ownerOf(serial) && ownerOf(serial) !== f.id ? ownerOf(serial) : null);
-    if (conflict && overwriteArmed !== serial) {
-      overwriteArmed = serial;
-      say('warn', `Dieser Tag ist schon ${label(conflict)}. Nochmal ranhalten, um ihn mit ${f.id} zu überschreiben.`);
+    const f = types[cur];
+    if (!f) { say('ok', 'Alle Typen haben eine Figur. Für weitere: Typ in der Liste antippen.'); return; }
+
+    // Gleicher Tag direkt nach dem Schreiben → Kontrolle
+    if (lastWrite && lastWrite.uid === uid) {
+      if (found.s === lastWrite.s) {
+        const e = bySerial(lastWrite.s); if (e) { e.verified = true; save(); render(); }
+        say('ok', `${label(lastWrite.t)} geprüft ✓ – jetzt die nächste Figur ranhalten.`);
+      } else say('warn', `Das ist noch der Tag von ${label(lastWrite.t)}. Nächste Figur ranhalten.`);
       return;
     }
 
+    // Tag hat schon eine Seriennummer
+    if (found.s) {
+      if (found.t === f.id) {
+        if (!bySerial(found.s)) { log.push({ s: found.s, t: found.t, uid, time: new Date().toISOString(), verified: true, imported: true }); save(); }
+        lastWrite = { uid, s: found.s, t: found.t };
+        cur = nextOpen(cur + 1); render();
+        say('ok', `Ist schon ${label(found.t)} (${found.s}) – nichts geändert.`);
+        return;
+      }
+      if (overwriteArmed !== uid) {
+        overwriteArmed = uid;
+        say('warn', `Dieser Tag ist schon ${label(found.t)} (${found.s}). Nochmal ranhalten, um ihn als ${f.id} mit neuer Seriennummer zu beschreiben.`);
+        return;
+      }
+    }
+
+    // Schreiben
     busy = true;
-    say('', `Schreibe ${f.id} …`);
+    const s = newSerial();
+    say('', `Schreibe ${f.id} · ${s} …`);
     try {
-      if (SIM) { simTags[serial] = message(f); await new Promise((r) => setTimeout(r, 250)); }
-      else await reader.write(message(f), { overwrite: true });
-      for (const id of Object.keys(log)) if (log[id].serial === serial) delete log[id];
-      log[f.id] = { serial, time: new Date().toISOString(), verified: false };
+      if (SIM) { simTags[uid] = message(f.id, s); await new Promise((r) => setTimeout(r, 250)); }
+      else await reader.write(message(f.id, s), { overwrite: true });
+      for (const e of log) if ((e.uid === uid || (found.s && e.s === found.s)) && !e.replaced) e.replaced = true;
+      log.push({ s, t: f.id, uid, time: new Date().toISOString(), verified: false });
       save();
-      lastWrite = { serial, id: f.id }; overwriteArmed = null;
+      lastWrite = { uid, s, t: f.id }; overwriteArmed = null;
       cur = nextOpen(cur + 1);
       render();
-      const n = figs[cur];
-      say('ok', `${label(f.id)} geschrieben ✓` + (n ? ` – weiter mit ${n.id}.` : ' – alle fertig! 🎉'));
+      const n = types[cur];
+      say('ok', `${label(f.id)} geschrieben ✓ (${s})` + (n ? ` – weiter mit ${n.id}.` : ' – alle Typen erledigt! 🎉'));
     } catch (e) {
       say('err', 'Schreiben fehlgeschlagen: ' + (e && e.message ? e.message : e) + ' – Figur ruhig halten und nochmal.');
     } finally { busy = false; }
@@ -213,7 +249,7 @@
       reader.onreading = (e) => onTag(e.serialNumber, e.message);
       reader.onreadingerror = () => say('err', 'Tag nicht lesbar – Figur etwas verschieben und nochmal.');
       active = true; render();
-      say('', mode === 'write' ? `Bereit. Halte ${figs[cur] ? figs[cur].id : 'die Figur'} ans Handy.` : 'Bereit. Halte eine Figur ans Handy.');
+      say('', mode === 'write' ? `Bereit. Halte eine Figur vom Typ ${types[cur] ? types[cur].id : '?'} ans Handy.` : 'Bereit. Halte eine Figur ans Handy.');
       try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
     } catch (e) {
       const m = e && e.name === 'NotAllowedError' ? 'NFC-Berechtigung verweigert. In den Seiteneinstellungen erlauben.'
@@ -228,60 +264,74 @@
 
   // ---------- Darstellung ----------
   function render() {
-    const f = figs[cur];
+    const f = types[cur];
     if (mode === 'write') {
-      $('#nowLabel').textContent = f ? 'Als Nächstes' : 'Fertig';
+      $('#nowLabel').textContent = f ? 'Als Nächstes · Typ' : 'Fertig';
       $('#nowId').textContent = f ? f.id : '✓';
-      $('#nowName').textContent = f ? f.name : 'Alle Figuren beschrieben';
-    } else {
-      $('#nowLabel').textContent = 'Prüfen';
-    }
+      $('#nowName').textContent = f ? f.name : 'Jeder Typ hat eine Figur';
+      $('#nowSub').textContent = f ? (countOf(f.id) ? `schon ${countOf(f.id)} Figur(en) – das wird eine weitere` : 'neue Seriennummer beim Schreiben') : '';
+    } else $('#nowLabel').textContent = 'Prüfen';
     $('#start').textContent = active ? 'NFC aktiv' : 'Start';
     $('#start').disabled = active;
     $('#prev').disabled = $('#skip').disabled = mode !== 'write';
     $('#mWrite').classList.toggle('on', mode === 'write');
     $('#mCheck').classList.toggle('on', mode === 'check');
-    const done = figs.filter((x) => log[x.id]).length;
-    $('#prog').textContent = `${done} / ${figs.length} beschrieben`;
+    const doneTypes = types.filter((x) => countOf(x.id)).length;
+    $('#prog').textContent = `${doneTypes} / ${types.length} Typen · ${live().length} Figuren`;
     $('#active').textContent = active ? (SIM ? '● Simulation' : '● NFC an') : '○ NFC aus';
-    $('#urlEx').textContent = figUrl(f ? f.id : (figs[0] ? figs[0].id : '001'));
+    $('#urlEx').textContent = figUrl(f ? f.id : (types[0] ? types[0].id : '001'), 'XXXXXXXX');
+
     const ul = $('#list'); ul.innerHTML = '';
-    figs.forEach((x, i) => {
+    types.forEach((x, i) => {
       const li = document.createElement('li');
       if (i === cur && mode === 'write') li.className = 'cur';
-      const e = log[x.id];
-      li.innerHTML = `<span class="fid"></span><span class="fname"></span><span class="chip"></span>`;
+      li.innerHTML = '<span class="fid"></span><span class="fname"></span><span class="chip"></span>';
       li.children[0].textContent = x.id; li.children[1].textContent = x.name;
-      const chip = li.children[2];
-      if (e) { chip.textContent = (e.verified ? '✓✓ ' : '✓ ') + e.serial.slice(-8); chip.classList.add('ok'); }
-      else chip.textContent = 'offen';
-      li.onclick = () => { mode = 'write'; cur = i; lastWrite = null; overwriteArmed = null; render(); say('', `Halte ${x.id} ans Handy.`); };
+      const n = countOf(x.id), chip = li.children[2];
+      if (n) { chip.textContent = `✓ ${n} Figur${n > 1 ? 'en' : ''}`; chip.classList.add('ok'); } else chip.textContent = 'offen';
+      li.onclick = () => { mode = 'write'; cur = i; lastWrite = null; overwriteArmed = null; render(); say('', `Halte eine Figur vom Typ ${x.id} ans Handy.`); };
       ul.appendChild(li);
+    });
+
+    const wl = $('#written'); wl.innerHTML = '';
+    const rows = log.slice().reverse();
+    if (!rows.length) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = 'Noch keine Figur beschrieben.'; wl.appendChild(li); }
+    rows.forEach((e) => {
+      const li = document.createElement('li'); if (e.replaced) li.className = 'old';
+      li.innerHTML = '<span class="fid"></span><span class="fname"></span><span class="chip"></span>';
+      li.children[0].textContent = e.t;
+      li.children[1].textContent = e.s + (e.replaced ? ' (überschrieben)' : '');
+      li.children[1].style.fontFamily = 'ui-monospace, monospace';
+      li.children[2].textContent = e.replaced ? '' : e.verified ? '✓✓ geprüft' : '✓';
+      if (!e.replaced) li.children[2].classList.add('ok');
+      wl.appendChild(li);
     });
   }
 
   // ---------- Export ----------
   function csv() {
-    const rows = [['id', 'name', 'uid', 'zeit', 'geprueft']];
-    for (const f of figs) { const e = log[f.id]; rows.push([f.id, f.name, e ? e.serial : '', e ? e.time : '', e && e.verified ? 'ja' : '']); }
+    const rows = [['seriennummer', 'typ', 'name', 'tag_uid', 'zeit', 'geprueft']];
+    for (const e of live()) rows.push([e.s, e.t, typeById(e.t)?.name || '', e.uid, e.time, e.verified ? 'ja' : '']);
     return rows.map((r) => r.map((c) => /[;"\n]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c).join(';')).join('\n');
   }
 
   // ---------- Buttons ----------
   $('#start').onclick = start;
-  $('#mWrite').onclick = () => { mode = 'write'; render(); say('', figs[cur] ? `Halte ${figs[cur].id} ans Handy.` : 'Alle Figuren sind beschrieben.'); };
-  $('#mCheck').onclick = () => { mode = 'check'; render(); $('#nowId').textContent = '?'; $('#nowName').textContent = ''; say('', active ? 'Halte eine Figur ans Handy.' : 'Erst „Start“ tippen.'); };
-  $('#prev').onclick = () => { cur = Math.max(0, cur - 1); lastWrite = null; overwriteArmed = null; render(); say('', `Halte ${figs[cur].id} ans Handy.`); };
-  $('#skip').onclick = () => { cur = Math.min(figs.length, cur + 1); lastWrite = null; overwriteArmed = null; render(); say('', figs[cur] ? `Halte ${figs[cur].id} ans Handy.` : 'Ende der Liste.'); };
-  $('#copy').onclick = async () => { try { await navigator.clipboard.writeText(csv()); say('ok', 'CSV kopiert.'); } catch { say('err', 'Kopieren nicht erlaubt – nimm „herunterladen“.'); } };
+  $('#mWrite').onclick = () => { mode = 'write'; render(); say('', types[cur] ? `Halte eine Figur vom Typ ${types[cur].id} ans Handy.` : 'Jeder Typ hat eine Figur.'); };
+  $('#mCheck').onclick = () => { mode = 'check'; render(); $('#nowId').textContent = '?'; $('#nowName').textContent = ''; $('#nowSub').textContent = ''; say('', active ? 'Halte eine Figur ans Handy.' : 'Erst „Start“ tippen.'); };
+  $('#prev').onclick = () => { cur = Math.max(0, cur - 1); lastWrite = null; overwriteArmed = null; render(); say('', `Halte eine Figur vom Typ ${types[cur].id} ans Handy.`); };
+  $('#skip').onclick = () => { cur = Math.min(types.length, cur + 1); lastWrite = null; overwriteArmed = null; render(); say('', types[cur] ? `Halte eine Figur vom Typ ${types[cur].id} ans Handy.` : 'Ende der Liste.'); };
+  $('#copy').onclick = async () => { try { await navigator.clipboard.writeText(csv()); say('ok', 'Liste kopiert.'); } catch { say('err', 'Kopieren nicht erlaubt – nimm „herunterladen“.'); } };
   $('#dl').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv()], { type: 'text/csv' }));
-    a.download = 'noerti-tags.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    a.download = 'noerti-seriennummern.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
-  $('#reset').onclick = () => { if (confirm('Fortschritt (nur auf diesem Gerät) löschen? Die Tags selbst bleiben beschrieben.')) { log = {}; save(); cur = 0; lastWrite = null; render(); say('', 'Zurückgesetzt.'); } };
-  const randSerial = () => Array.from({ length: 7 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join(':');
-  $('#simNew').onclick = () => { simLast = randSerial(); onTag(simLast, simTags[simLast]); };
+  $('#reset').onclick = () => { $('#resetConfirm').hidden = false; };
+  $('#resetNo').onclick = () => { $('#resetConfirm').hidden = true; };
+  $('#resetYes').onclick = () => { log = []; save(); cur = 0; lastWrite = null; $('#resetConfirm').hidden = true; render(); say('', 'Liste gelöscht. Die Tags selbst bleiben beschrieben.'); };
+  const randUid = () => Array.from({ length: 7 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join(':');
+  $('#simNew').onclick = () => { simLast = randUid(); onTag(simLast, simTags[simLast]); };
   $('#simAgain').onclick = () => { if (simLast) onTag(simLast, simTags[simLast]); };
 
   // ---------- Init ----------
@@ -291,7 +341,7 @@
   }
   load();
   fetch('figuren.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
-    cfg = d; figs = d.figuren || [];
+    cfg = d; types = d.figuren || [];
     cur = nextOpen(0); render();
   }).catch(() => say('err', 'figuren.json konnte nicht geladen werden.'));
 })();

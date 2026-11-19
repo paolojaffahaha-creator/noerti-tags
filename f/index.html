@@ -21,10 +21,12 @@
     <div class="kicker">Nörti Figur</div>
     <div class="id" id="id">…</div>
     <div class="name" id="name"></div>
-    <div class="note" id="note">Stats &amp; Kämpfe folgen später.</div>
+    <div class="note" id="note">Bald in der Nörti Arena: Sammlung, Kämpfe und Level.</div>
   </div>
 <script>
-  const id = new URLSearchParams(location.search).get('id');
+  // Neues Format: ?t=<Typ>&s=<Seriennummer>; altes Format: ?id=<Typ>
+  const q = new URLSearchParams(location.search);
+  const id = q.get('t') || q.get('id');
   document.getElementById('id').textContent = id || '?';
   fetch('../figuren.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
     const f = (d.figuren || []).find(x => x.id === id);
