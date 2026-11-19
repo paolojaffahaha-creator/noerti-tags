@@ -127,7 +127,9 @@
       figures: {
         AAAAAAAA: { serial: 'AAAAAAAA', public_id: 'p-a', type_id: '005', owner: 'me', nickname: 'DJ Feige', bio: 'Dreht immer auf Lautstärke 11.', images: [], xp: 600, level: 4, wins: 9, losses: 4, opponents: 7, owner_since: '2026-11-12T10:00:00Z' },
         BBBBBBBB: { serial: 'BBBBBBBB', public_id: 'p-b', type_id: '002', owner: 'mo', nickname: 'Kicki', bio: '', images: [], xp: 170, level: 3, wins: 5, losses: 2, opponents: 3, owner_since: '2026-10-29T10:00:00Z' },
-        CCCCCCCC: { serial: 'CCCCCCCC', public_id: 'p-c', type_id: '001', owner: null, nickname: null, bio: null, images: [], xp: 0, level: 1, wins: 0, losses: 0, opponents: 0, owner_since: null }
+        CCCCCCCC: { serial: 'CCCCCCCC', public_id: 'p-c', type_id: '001', owner: null, nickname: null, bio: null, images: [], xp: 0, level: 1, wins: 0, losses: 0, opponents: 0, owner_since: null },
+        DDDDDDDD: { serial: 'DDDDDDDD', public_id: 'p-d', type_id: '003', owner: 'me', nickname: 'Schnecki', bio: '', images: [], xp: 1100, level: 6, wins: 12, losses: 3, opponents: 5, owner_since: '2026-11-01T10:00:00Z' },
+        EEEEEEEE: { serial: 'EEEEEEEE', public_id: 'p-e', type_id: '004', owner: 'mo', nickname: null, bio: '', images: [], xp: 40, level: 2, wins: 1, losses: 1, opponents: 1, owner_since: '2026-11-10T10:00:00Z' }
       }, blobs: {}
     });
     const load = () => { try { return JSON.parse(sessionStorage.getItem(KEY)) || seed(); } catch { return seed(); } };
@@ -197,5 +199,27 @@
     document.body.prepend(b);
   });
 
-  window.Noerti = { ROOT, MOCK, api, config, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage, gameData };
+  // Arena-Aufstellung: liegt nur in diesem Browser, verfällt nach 30 min ohne Änderung.
+  // Die Seriennummer bleibt hier lokal (sie wird später zum Melden des Ergebnisses gebraucht), angezeigt wird sie nie.
+  const LOBBY = 'noerti-arena-lobby', LOBBY_TTL = 30 * 60 * 1000;
+  const lobby = {
+    load() {
+      let l = null; try { l = JSON.parse(localStorage.getItem(LOBBY)); } catch {}
+      if (!l || Date.now() - l.at > LOBBY_TTL) l = { at: Date.now(), size: 1, want: null, names: { A: '', B: '' }, A: [], B: [] };
+      return l;
+    },
+    save(l) { l.at = Date.now(); try { localStorage.setItem(LOBBY, JSON.stringify(l)); } catch {} },
+    clear() { try { localStorage.removeItem(LOBBY); } catch {} },
+    // Figur in die Aufstellung: gewünschtes Team, sonst das erste mit freiem Platz. Gibt das Team zurück oder null (voll).
+    add(entry) {
+      const l = lobby.load();
+      for (const side of ['A', 'B']) if (l[side].some((e) => e.serial === entry.serial)) return side;
+      const order = l.want ? [l.want, l.want === 'A' ? 'B' : 'A'] : ['A', 'B'];
+      const side = order.find((x) => l[x].length < l.size);
+      if (!side) return null;
+      l[side].push(entry); l.want = null; lobby.save(l); return side;
+    }
+  };
+
+  window.Noerti = { ROOT, MOCK, api, config, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage, gameData, lobby };
 })();

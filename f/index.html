@@ -115,11 +115,21 @@
       <div class="stats"><span><b>${fig.wins}</b> Siege · <b>${fig.losses}</b> Niederlagen</span><span><b>${fig.opponents}</b> Gegner getroffen</span></div>
       <div class="actions" style="margin-top:8px">
         ${main}
-        <button class="btn" disabled>In die Arena – kommt bald</button>
+        <button class="btn" id="arena">In die Arena</button>
       </div>`;
+    app.querySelector('#arena').onclick = toArena;
     app.querySelectorAll('.dots button').forEach((b) => b.onclick = () => { slide = +b.dataset.i; render(); });
     const c = app.querySelector('#collect'); if (c) c.onclick = collect;
     const e = app.querySelector('#edit'); if (e) e.onclick = openEdit;
+  }
+
+  // ---------- Arena ----------
+  async function toArena() {
+    const img = (fig.images || []).length ? urls[(fig.images || []).slice().sort()[0]] || '' : '';
+    const side = Noerti.lobby.add({ serial, public_id: fig.public_id, type_id: fig.type_id, level: fig.level,
+      name: fig.nickname || (type ? type.name : 'Nörti'), owner_name: fig.owner_name, img });
+    if (!side) { toast('Beide Arena-Teams sind schon voll.', 'err'); return; }
+    location.href = '../arena/';
   }
 
   // ---------- Einsammeln / Tauschen ----------

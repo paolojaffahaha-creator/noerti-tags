@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nörti Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../app/style.css">
+<style>
+  :root { --beer: #F2A516; --beer-d: #C97F06; --foam: #FFFDF5; --lp: #2E9E58; --lp-mid: #E8B321; --lp-low: #D9442B; }
+  h1, h2 { margin: 0; font-family: var(--disp); font-weight: 400; line-height: 1.05; }
+  h1 { font-size: 32px; } h2 { font-size: 22px; }
+  .sizes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sizes button { font: 500 15px var(--body); border: 2px solid var(--ink); border-radius: 12px; background: var(--white); color: var(--ink); min-height: 46px; cursor: pointer; }
+  .sizes button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
+  .team { display: flex; flex-direction: column; gap: 10px; }
+  .team-name { font: 400 20px var(--disp); border: 0; border-bottom: 2px dashed var(--dot); background: transparent; color: var(--ink); padding: 2px 0; width: 100%; }
+  .team-name:focus { outline: none; border-bottom-color: var(--ink); }
+  .slot { display: flex; align-items: center; gap: 10px; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 8px; min-height: 64px; }
+  .slot.empty { border-style: dashed; justify-content: center; color: var(--muted); cursor: pointer; font: 500 15px var(--body); background: transparent; width: 100%; }
+  .thumb { width: 48px; height: 48px; border-radius: 10px; border: 2px solid var(--ink); overflow: hidden; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font: 400 14px var(--disp); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .slot .who { flex: 1; min-width: 0; }
+  .slot .who b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .x { border: 0; background: none; font-size: 22px; width: 44px; height: 44px; cursor: pointer; color: var(--ink); }
+  .warn { color: var(--err); font-size: 13px; }
+  .vs { text-align: center; font: 400 20px var(--disp); }
+  .pick-list { display: flex; flex-direction: column; gap: 8px; }
+  .pick-list button { display: flex; align-items: center; gap: 10px; text-align: left; font: 15px var(--body); border: 2px solid var(--ink); border-radius: 12px; background: var(--white); padding: 8px; cursor: pointer; color: var(--ink); min-height: 56px; }
+
+  /* Kampf */
+  .fighter { background: var(--white); border: 2px solid var(--ink); border-radius: 14px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+  .fighter.big { border-width: 3px; box-shadow: 5px 5px 0 var(--ink); }
+  .fighter .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .fighter .nm { display: flex; gap: 6px; align-items: baseline; }
+  .fighter .nm b { font: 400 18px var(--disp); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fighter.big .nm b { font-size: 22px; }
+  .fighter .team-l { font-size: 12px; color: var(--muted); }
+  .fighter.ko { opacity: .55; }
+  .lpbar { height: 12px; border: 2px solid var(--ink); border-radius: 7px; background: var(--white); overflow: hidden; }
+  .lpbar > div { height: 100%; transition: width .5s ease, background-color .5s; }
+  .lptext { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bench { display: flex; gap: 4px; }
+  .bench span { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink); background: var(--lp); }
+  .bench span.ko { background: var(--white); }
+  .mug { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; font: 400 13px var(--disp); }
+  .mug svg { display: block; }
+  .mug .liq { transition: y .5s ease, height .5s ease; }
+  .badges { display: flex; flex-wrap: wrap; gap: 4px; }
+  .badges span { font-size: 11px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 99px; padding: 0 8px; background: var(--marker); }
+  .badges span.bad { background: #FBD4CC; }
+  .actlist { display: flex; flex-direction: column; gap: 8px; }
+  .act { font: 15px var(--body); color: var(--ink); text-align: left; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; min-height: 52px; }
+  .act b { font: 400 17px var(--disp); }
+  .act .d { font-size: 13px; color: var(--muted); }
+  .act[aria-pressed="true"] { background: var(--marker); box-shadow: 4px 4px 0 var(--ink); }
+  .act:disabled { opacity: .45; cursor: default; }
+  .act-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .round { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .round .disp { font-size: 15px; }
+  .peek { font-size: 13px; background: var(--ink); color: var(--white); border-radius: 10px; padding: 6px 10px; text-align: center; }
+  .hand { text-align: center; padding: 40px 10px; display: flex; flex-direction: column; gap: 18px; align-items: center; }
+  .hand .big { font-size: 64px; line-height: 1; }
+  .reveal { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; }
+  .choice { background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 2px; animation: flip .45s ease both; }
+  .choice b { font: 400 16px var(--disp); }
+  .choice .d { font-size: 12px; color: var(--muted); }
+  .choice:nth-child(3) { animation-delay: .2s; }
+  @keyframes flip { from { transform: rotateY(90deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .log { display: flex; flex-direction: column; gap: 6px; min-height: 60px; }
+  .log p { margin: 0; font-size: 15px; padding: 6px 10px; background: var(--white); border-left: 4px solid var(--ink); border-radius: 4px; animation: pop .25s ease both; }
+  .log p.A { border-left-color: var(--sound); } .log p.B { border-left-color: var(--street); }
+  .log p.good { font-weight: 700; } .log p.end { background: var(--marker); font-weight: 700; }
+  @keyframes pop { from { transform: translateY(4px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .dice-wrap { display: flex; align-items: center; gap: 14px; justify-content: center; padding: 6px; min-height: 104px; }
+  .d20 { width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; font: 400 34px var(--disp); color: var(--ink); position: relative; }
+  .d20::before { content: ""; position: absolute; inset: 0; background: var(--ink); clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); }
+  .d20::after { content: ""; position: absolute; inset: 4px; background: var(--white); clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); }
+  .d20 span { position: relative; z-index: 1; }
+  .d20.ok::after { background: #BDEBCB; } .d20.fail::after { background: #FBD4CC; }
+  .d20.spin { animation: wob .12s linear infinite; }
+  @keyframes wob { 0% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } 100% { transform: rotate(-8deg); } }
+  .dice-txt { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+  .dice-txt b { font: 400 18px var(--disp); }
+  .sticky { position: sticky; bottom: 0; padding: 10px 0 calc(6px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--paper) 30%); }
+  .win { text-align: center; padding: 18px 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .win .crown { font-size: 56px; line-height: 1; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .choice, .log p { animation: none; } .d20.spin { animation: none; } .lpbar > div, .mug .liq { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="./">NÖRTI ARENA</a>
+    <a class="pill" href="../sammlung/">Meine Sammlung</a>
+  </header>
+  <main id="app" class="actions" style="gap:14px"><div class="spinner" aria-label="Lädt"></div></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../app/common.js"></script>
+<script src="../app/kampf.js"></script>
+<script>
+(async () => {
+  const { api, esc, toast, sheet, closeSheet, errMsg, lobby } = Noerti;
+  const K = window.NoertiKampf;
+  const app = document.getElementById('app');
+  const FIGHT = 'noerti-arena-kampf';
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? Math.min(ms, 150) : ms));
+  let types = [], game = null, F = null;   // F = laufender Kampf {s, phase, side, pending, setup, last}
+  const typeName = (id) => (types.find((t) => t.id === id) || {}).name || 'Typ ' + id;
+
+  const saveF = () => { try { F ? localStorage.setItem(FIGHT, JSON.stringify(F)) : localStorage.removeItem(FIGHT); } catch {} };
+  const loadF = () => { try { return JSON.parse(localStorage.getItem(FIGHT)); } catch { return null; } };
+
+  // ---------- Bausteine ----------
+  function mug(v, max, size = 34) {
+    const h = 30, fill = Math.max(0, Math.min(1, v / max)) * h, y = 8 + h - fill;
+    return `<div class="mug" title="${v} Nörten"><svg width="${size}" height="${size * 1.2}" viewBox="0 0 36 44" aria-hidden="true">
+      <rect class="liq" x="5" y="${y}" width="22" height="${fill}" fill="var(--beer)"/>
+      ${fill > 1 ? `<path d="M5 ${y + 1} q3 -5 6 -1 q3 -5 6 0 q3 -5 6 0 q2 -4 4 0 v2 H5z" fill="var(--foam)" stroke="var(--ink)" stroke-width="1.5"/>` : ''}
+      <path d="M5 6 h22 v32 a3 3 0 0 1 -3 3 h-16 a3 3 0 0 1 -3 -3z" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+      <path d="M27 14 h4 a3 3 0 0 1 3 3 v10 a3 3 0 0 1 -3 3 h-4" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+      <path d="M11 14 v20 M17 14 v20" stroke="var(--beer-d)" stroke-width="1.2" opacity=".5"/>
+    </svg><span>${v}</span></div>`;
+  }
+  const lpColor = (p) => (p > 0.5 ? 'var(--lp)' : p > 0.2 ? 'var(--lp-mid)' : 'var(--lp-low)');
+  function badges(f) {
+    const m = f.mods, b = [];
+    if (m.konter) b.push(`<span>Konter +${m.konter} %</span>`);
+    if (m.boost) b.push(`<span>+${m.boost} % Schaden</span>`);
+    if (m.dodgeNext) b.push(`<span>Ausweichen +${m.dodgeNext} %</span>`);
+    if (m.chanceMalus) b.push(`<span class="bad">unsicher −${m.chanceMalus} %</span>`);
+    if (m.dotNext) b.push(`<span class="bad">Nachschaden ${m.dotNext}</span>`);
+    return b.length ? `<div class="badges">${b.join('')}</div>` : '';
+  }
+  function fighter(s, side, big) {
+    const t = s.teams[side], f = t.figs[t.active], p = f.lp / f.lpMax;
+    return `<div class="fighter ${big ? 'big' : ''} ${f.ko ? 'ko' : ''}" data-side="${side}">
+      <div class="thumb hatch">${f.img ? `<img src="${esc(f.img)}" alt="">` : esc(f.type_id)}</div>
+      <div class="info">
+        <span class="team-l">${esc(t.name)}${t.figs.length > 1 ? ` · <span class="bench">${t.figs.map((x) => `<span class="${x.ko ? 'ko' : ''}"></span>`).join('')}</span>` : ''}</span>
+        <div class="nm"><b>${esc(f.name)}</b><span class="lv">LV ${f.level}</span></div>
+        <div class="lpbar"><div style="width:${Math.round(p * 100)}%;background:${lpColor(p)}"></div></div>
+        <span class="lptext">${f.lp} / ${f.lpMax} LP${f.ko ? ' · k.o.' : ''}</span>
+        ${badges(f)}
+      </div>
+      ${mug(f.noerten, s.regeln.noerten_start, big ? 40 : 30)}
+    </div>`;
+  }
+  const effText = (e) => !e ? '' : ({ gegner_chance: `Gegner −${e.wert} % Treffer`, nachschaden: `+${e.wert} Nachschaden`, ausweichen: `Ausweichen +${e.wert} %`, heilen: `heilt ${e.wert} LP`, verstaerken: `nächste Attacke +${e.wert} %` })[e.art] || '';
+  function actLabel(s, side, a) {
+    const f = K.aktiv(s, side);
+    if (a.typ === 'angriff') { const x = f.attacken[a.i]; return { t: x.name, d: x.schaden > 0 ? `${x.treffer > 1 ? x.treffer + ' × ' : ''}${Math.round(x.schaden * f.schadenFaktor)} Schaden` : effText(x.effekt) }; }
+    if (a.typ === 'wechseln') return { t: '🔄 Wechsel', d: 'zu ' + s.teams[side].figs[a.i].name };
+    return { verteidigen: { t: '🛡️ Verteidigen', d: 'halber Schaden, Konter' }, ausweichen: { t: '💨 Ausweichen', d: 'alles oder nichts' }, auftanken: { t: '🍺 Auftanken', d: 'Nörten nachfüllen' } }[a.typ];
+  }
+
+  // ---------- Aufstellung ----------
+  async function renderLobby() {
+    F = null; saveF();
+    const l = lobby.load(); lobby.save(l);
+    const missing = (e) => !game.data.typen[e.type_id];
+    const team = (side) => {
+      const list = l[side], ph = (list[0] && list[0].owner_name) || `Team ${side}`;
+      let slots = list.map((e, i) => `<div class="slot">
+          <div class="thumb hatch">${e.img ? `<img src="${esc(e.img)}" alt="">` : esc(e.type_id)}</div>
+          <div class="who"><b>${esc(e.name)}</b><span class="small muted">LV ${e.level} · ${esc(typeName(e.type_id))}${e.owner_name ? ' · ' + esc(e.owner_name) : ''}</span>
+            ${missing(e) ? '<div class="warn">Noch keine Kampfwerte – im Editor anlegen</div>' : ''}</div>
+          <button class="x" data-del="${side}${i}" aria-label="${esc(e.name)} entfernen">×</button></div>`).join('');
+      for (let i = list.length; i < l.size; i++) slots += `<button class="slot empty" data-add="${side}">+ Figur hinzufügen</button>`;
+      return `<section class="team card"><input class="team-name" data-name="${side}" value="${esc(l.names[side] || '')}" placeholder="${esc(ph)}" maxlength="20" aria-label="Name Team ${side}">${slots}</section>`;
+    };
+    const ready = l.A.length === l.size && l.B.length === l.size && ![...l.A, ...l.B].some(missing);
+    app.innerHTML = `
+      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf – dann wird abwechselnd verdeckt gewählt.</p></div>
+      <div class="sizes" role="group" aria-label="Teamgröße">${[1, 2, 3].map((n) => `<button data-size="${n}" aria-pressed="${l.size === n}">${n} gegen ${n}</button>`).join('')}</div>
+      ${team('A')}<div class="vs">VS</div>${team('B')}
+      <div class="sticky actions"><button class="btn-main" id="go" ${ready ? '' : 'disabled'}>KAMPF STARTEN</button>
+      ${l.A.length + l.B.length ? '<button class="btn-text" id="clear">Aufstellung leeren</button>' : ''}</div>`;
+    app.querySelectorAll('[data-size]').forEach((b) => b.onclick = () => {
+      const n = +b.dataset.size; l.size = n; l.A = l.A.slice(0, n); l.B = l.B.slice(0, n); lobby.save(l); renderLobby();
+    });
+    app.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => { l[b.dataset.del[0]].splice(+b.dataset.del.slice(1), 1); lobby.save(l); renderLobby(); });
+    app.querySelectorAll('[data-add]').forEach((b) => b.onclick = () => addSheet(b.dataset.add));
+    app.querySelectorAll('[data-name]').forEach((i) => i.oninput = () => { l.names[i.dataset.name] = i.value.trim(); lobby.save(l); });
+    const c = app.querySelector('#clear'); if (c) c.onclick = () => { lobby.clear(); renderLobby(); };
+    app.querySelector('#go').onclick = () => startFight(l);
+  }
+
+  async function entryFor(serial) {
+    const f = await api.getFigure(serial);
+    if (!f) throw new Error('Diese Figur ist nicht registriert.');
+    const img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
+    return { serial, public_id: f.public_id, type_id: f.type_id, level: f.level, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name, img };
+  }
+  function addTo(side, entry) {
+    const l = lobby.load(); l.want = side; lobby.save(l);
+    const got = lobby.add(entry);
+    if (!got) toast('Beide Teams sind voll.', 'err'); else if (got !== side) toast(`${entry.name} ist schon in Team ${got}.`);
+    closeSheet(); renderLobby();
+  }
+  async function addSheet(side) {
+    const l = lobby.load(); l.want = side; lobby.save(l);
+    const nfc = 'NDEFReader' in window;
+    const el = sheet(`<h2>Figur für ${esc(l.names[side] || 'Team ' + side)}</h2>
+      ${nfc ? `<button class="btn-main" id="scan">FIGUR SCANNEN</button><p class="small muted" id="scanHint">Tippen, dann die Figur an die Rückseite des Handys halten.</p>`
+            : `<p>Halte die Figur an die Rückseite des Handys. Auf der Figurenseite dann <b>„In die Arena“</b> tippen – sie landet in diesem Team.</p>`}
+      <b>Aus meiner Sammlung</b><div class="pick-list" id="mine"><div class="spinner"></div></div>
+      <button class="btn-text" id="close">Schließen</button>`);
+    el.querySelector('#close').onclick = closeSheet;
+    if (nfc) el.querySelector('#scan').onclick = async () => {
+      const hint = el.querySelector('#scanHint');
+      try {
+        const r = new NDEFReader(); const ctl = new AbortController();
+        await r.scan({ signal: ctl.signal }); hint.textContent = 'Bereit – Figur jetzt ranhalten …';
+        r.onreading = async (ev) => {
+          for (const rec of ev.message.records) {
+            if (rec.recordType !== 'url') continue;
+            const u = new URL(new TextDecoder().decode(rec.data)), s = (u.searchParams.get('s') || '').toUpperCase();
+            if (!s) continue;
+            ctl.abort();
+            try { addTo(side, await entryFor(s)); } catch (e) { hint.textContent = errMsg(e); }
+            return;
+          }
+          hint.textContent = 'Das ist kein Nörti-Tag im neuen Format.';
+        };
+      } catch (e) { hint.textContent = 'Scannen geht nicht: ' + errMsg(e); }
+    };
+    const box = el.querySelector('#mine');
+    let me = null; try { me = await api.me(); } catch {}
+    if (!me) { box.innerHTML = '<p class="small muted" style="margin:0">Auf diesem Handy ist niemand angemeldet.</p>'; return; }
+    try {
+      const used = new Set([...l.A, ...l.B].map((e) => e.serial));
+      const list = (await api.myCollection()).filter((f) => !used.has(f.serial));
+      if (!list.length) { box.innerHTML = '<p class="small muted" style="margin:0">Keine weiteren Figuren in deiner Sammlung.</p>'; return; }
+      for (const f of list) f._img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
+      box.innerHTML = list.map((f, i) => `<button data-i="${i}"><span class="thumb hatch">${f._img ? `<img src="${esc(f._img)}" alt="">` : esc(f.type_id)}</span>
+        <span><b>${esc(f.nickname || typeName(f.type_id))}</b><br><span class="small muted">LV ${f.level} · ${esc(typeName(f.type_id))}</span></span></button>`).join('');
+      box.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => {
+        const f = list[+b.dataset.i];
+        addTo(side, { serial: f.serial, public_id: f.public_id, type_id: f.type_id, level: f.level, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name || me.name, img: f._img });
+      });
+    } catch (e) { box.innerHTML = `<p class="warn">${esc(errMsg(e))}</p>`; }
+  }
+
+  // ---------- Kampf ----------
+  function startFight(l) {
+    const mk = (side) => ({ name: l.names[side] || (l[side][0] && l[side][0].owner_name) || `Team ${side}`,
+      figs: l[side].map((e) => ({ key: e.public_id, type_id: e.type_id, level: e.level, name: e.name, img: e.img, owner: e.owner_name })) });
+    let A = mk('A'), B = mk('B');
+    if (A.name === B.name) { A.name += ' (A)'; B.name += ' (B)'; }
+    try { F = { s: K.neu(game.data, A, B), phase: 'hand', side: 'A', pending: {}, setup: { A, B }, version: game.version }; }
+    catch (e) { toast(errMsg(e), 'err'); return; }
+    saveF(); render();
+  }
+  const other = (x) => (x === 'A' ? 'B' : 'A');
+
+  function renderHand() {
+    const name = F.s.teams[F.side].name;
+    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${F.s.runde}</span><span class="small muted">max. ${F.s.maxRunden}</span></div>
+      <div class="hand card ink"><div class="big">🙈</div><h1>${F.side === 'A' && F.s.runde === 1 ? 'Los geht’s,' : 'Handy an'}<br>${esc(name)}</h1>
+      <p class="muted" style="margin:0">${esc(F.s.teams[other(F.side)].name)} schaut weg. ${esc(name)} wählt verdeckt.</p>
+      <button class="btn-main" id="ok">ICH BIN ${esc(name.toUpperCase())}</button></div>
+      <button class="btn-text" id="quit">Kampf abbrechen</button>`;
+    app.querySelector('#ok').onclick = () => { F.phase = 'pick'; F.choice = null; saveF(); render(); };
+    app.querySelector('#quit').onclick = quit;
+  }
+
+  function renderPick() {
+    const s = F.s, side = F.side, f = K.aktiv(s, side), opp = K.aktiv(s, other(side)), o = K.optionen(s, side), R = s.regeln;
+    const dodge = K.step5(Math.max(R.ausweichen_min, Math.min(R.ausweichen_max, R.ausweichen_basis + (f.tempo - opp.tempo) * R.ausweichen_pro_tempo + f.mods.dodgeNext + f.chanceBonus)));
+    const sel = (a) => F.choice && F.choice.typ === a.typ && F.choice.i === a.i;
+    const atk = o.attacken.map(({ i, a, ok, chance }) => `<button class="act" data-a='{"typ":"angriff","i":${i}}' aria-pressed="${sel({ typ: 'angriff', i })}" ${ok ? '' : 'disabled'}>
+        <b>${esc(a.name)}</b><span class="d">${a.schaden > 0 ? `${a.treffer > 1 ? a.treffer + ' × ' : ''}${Math.round(a.schaden * f.schadenFaktor)} Schaden · ` : ''}${chance} % (W20 ${chance >= 100 ? 'sicher' : K.need(chance) + '+'}) · ${a.kosten} 🍺${a.effekt ? ' · ' + esc(effText(a.effekt)) : ''}${ok ? '' : ' · zu wenig Nörten'}</span></button>`).join('');
+    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${s.runde} · ${esc(s.teams[side].name.toUpperCase())}</span></div>
+      <div class="peek">🙈 Nicht spicken, ${esc(s.teams[other(side)].name)}!</div>
+      ${fighter(s, other(side), false)}<div class="vs" style="font-size:15px">VS</div>${fighter(s, side, true)}
+      <div class="actlist">${atk}</div>
+      <div class="act-grid">
+        <button class="act" data-a='{"typ":"verteidigen"}' aria-pressed="${sel({ typ: 'verteidigen' })}" ${o.verteidigen ? '' : 'disabled'}><b>🛡️ Verteidigen</b><span class="d">${R.kosten_verteidigen} 🍺 · halber Schaden, Konter</span></button>
+        <button class="act" data-a='{"typ":"ausweichen"}' aria-pressed="${sel({ typ: 'ausweichen' })}" ${o.ausweichen ? '' : 'disabled'}><b>💨 Ausweichen</b><span class="d">${R.kosten_ausweichen} 🍺 · ${dodge} % · sonst ×${String(R.getroffen_faktor).replace('.', ',')}</span></button>
+        <button class="act" data-a='{"typ":"auftanken"}' aria-pressed="${sel({ typ: 'auftanken' })}"><b>🍺 Auftanken</b><span class="d">+${R.auftanken} · getroffen nur +${R.auftanken_getroffen}</span></button>
+        <button class="act" id="sw" ${o.wechseln.length ? '' : 'disabled'} aria-pressed="${!!(F.choice && F.choice.typ === 'wechseln')}"><b>🔄 Wechseln</b><span class="d">${F.choice && F.choice.typ === 'wechseln' ? 'zu ' + esc(s.teams[side].figs[F.choice.i].name) : o.wechseln.length ? 'kostet die Runde' : 'keine Bank'}</span></button>
+      </div>
+      <div class="sticky"><button class="btn-main" id="lock" ${F.choice ? '' : 'disabled'}>AUSWAHL FESTLEGEN</button></div>`;
+    app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); renderPick(); });
+    app.querySelector('#sw').onclick = () => {
+      const el = sheet(`<h2>Wen einwechseln?</h2><div class="pick-list">${o.wechseln.map((w) => { const b = s.teams[side].figs[w.i];
+        return `<button data-i="${w.i}"><span class="thumb hatch">${b.img ? `<img src="${esc(b.img)}" alt="">` : esc(b.type_id)}</span><span><b>${esc(b.name)}</b><br><span class="small muted">${b.lp}/${b.lpMax} LP · ${b.noerten} Nörten</span></span></button>`; }).join('')}</div>
+        <p class="small muted" style="margin:0">Der Wechsel passiert zuerst – die neue Figur steckt einen Angriff dieser Runde ein.</p>`);
+      el.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { F.choice = { typ: 'wechseln', i: +b.dataset.i }; closeSheet(); renderPick(); });
+    };
+    app.querySelector('#lock').onclick = () => {
+      if (!K.gueltig(s, side, F.choice)) { toast('Diese Aktion geht gerade nicht.', 'err'); return; }
+      F.pending[side] = F.choice; F.choice = null;
+      if (side === 'A') { F.side = 'B'; F.phase = 'hand'; }
+      else { resolve(); return; }
+      saveF(); render();
+    };
+  }
+
+  function resolve() {
+    const before = JSON.parse(JSON.stringify(F.s));
+    const acts = { A: F.pending.A, B: F.pending.B };
+    const labels = { A: actLabel(before, 'A', acts.A), B: actLabel(before, 'B', acts.B) };
+    const ev = K.runde(F.s, acts.A, acts.B);
+    F.last = { before, ev, labels, runde: before.runde }; F.pending = {}; F.phase = 'reveal'; F.played = false;
+    saveF(); render();
+  }
+
+  async function renderReveal() {
+    const { before, ev, labels, runde } = F.last;
+    const d = JSON.parse(JSON.stringify(before));
+    const panels = () => `${fighter(d, 'A', false)}${fighter(d, 'B', false)}`;
+    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${runde} · AUFDECKEN</span></div>
+      <div class="reveal">
+        <div class="choice"><span class="small muted">${esc(d.teams.A.name)}</span><b>${esc(labels.A.t)}</b><span class="d">${esc(labels.A.d || '')}</span></div>
+        <div class="vs" style="align-self:center;font-size:15px">VS</div>
+        <div class="choice"><span class="small muted">${esc(d.teams.B.name)}</span><b>${esc(labels.B.t)}</b><span class="d">${esc(labels.B.d || '')}</span></div>
+      </div>
+      <div id="panels" class="actions" style="gap:8px">${panels()}</div>
+      <div class="dice-wrap" id="dice" hidden></div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="sticky actions"><button class="btn-main" id="next">${F.played ? 'WEITER' : 'ÜBERSPRINGEN'}</button></div>`;
+    const log = app.querySelector('#log'), pan = app.querySelector('#panels'), dice = app.querySelector('#dice'), next = app.querySelector('#next');
+    let skip = F.played;
+    const apply = (e) => {
+      const fig = e.fi != null ? d.teams[e.side].figs[e.fi] : null;
+      if (e.t === 'lp') fig.lp = e.value;
+      if (e.t === 'noerten') fig.noerten = e.value;
+      if (e.t === 'wechsel') d.teams[e.side].active = e.fi;
+      if (e.t === 'ko') fig.ko = true;
+      if (e.t === 'konter' || e.t === 'effekt') for (const x of ['A', 'B']) d.teams[x].figs.forEach((f, i) => { f.mods = F.s.teams[x].figs[i].mods; });
+    };
+    const line = (e) => {
+      if (!e.text) return;
+      const p = document.createElement('p');
+      p.className = (e.side || '') + (e.t === 'ende' ? ' end' : e.t === 'ko' || e.t === 'konter' || (e.t === 'wurf' && e.ok) ? ' good' : '');
+      p.textContent = e.t === 'wurf' ? `🎲 ${e.label}: ${e.roll}${e.chance >= 100 ? '' : ` (braucht ${e.need}+)`} – ${e.text}` : e.text;
+      log.appendChild(p);
+    };
+    next.onclick = () => { if (!F.played) { skip = true; return; } after(); };
+    for (const e of ev) {
+      if (!skip && e.t === 'wurf' && e.chance < 100) {
+        dice.hidden = false;
+        dice.innerHTML = `<div class="d20 spin"><span>?</span></div><div class="dice-txt"><b>${esc(e.label)}</b><span>${e.chance} % · braucht ${e.need}+</span></div>`;
+        const n = dice.querySelector('.d20'), sp = n.querySelector('span');
+        if (!REDUCED) for (let k = 0; k < 10 && !skip; k++) { sp.textContent = 1 + Math.floor(Math.random() * 20); await wait(55); }
+        n.classList.remove('spin'); n.classList.add(e.ok ? 'ok' : 'fail'); sp.textContent = e.roll;
+        if (!skip) await wait(650);
+      }
+      apply(e); line(e);
+      if (!skip) { pan.innerHTML = panels(); log.lastElementChild && log.lastElementChild.scrollIntoView({ block: 'nearest' }); await wait(e.t === 'info' || e.t === 'noerten' ? 450 : 750); }
+    }
+    pan.innerHTML = `${fighter(F.s, 'A', false)}${fighter(F.s, 'B', false)}`;
+    F.played = true; saveF(); next.textContent = 'WEITER';
+  }
+
+  function after() {
+    const s = F.s;
+    if (s.over) { F.phase = 'ende'; }
+    else if (s.needSwitch.length) { F.phase = 'ersetzen'; F.side = s.needSwitch[0]; }
+    else { F.phase = 'hand'; F.side = 'A'; }
+    saveF(); render();
+  }
+
+  function renderErsetzen() {
+    const s = F.s, side = F.side, t = s.teams[side];
+    app.innerHTML = `<div class="round"><span class="disp">K.O.!</span></div>
+      <div class="card ink actions"><h2>${esc(t.name)}: Wer kommt rein?</h2><p class="small muted" style="margin:0">${esc(K.aktiv(s, side).name)} ist k.o. Der Ersatz kostet nichts.</p>
+      <div class="pick-list">${K.bank(s, side).map(({ f, i }) => `<button data-i="${i}"><span class="thumb hatch">${f.img ? `<img src="${esc(f.img)}" alt="">` : esc(f.type_id)}</span>
+        <span><b>${esc(f.name)}</b><br><span class="small muted">${f.lp}/${f.lpMax} LP · ${f.noerten} Nörten</span></span></button>`).join('')}</div></div>`;
+    app.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { K.ersetzen(s, side, +b.dataset.i); after(); });
+  }
+
+  function renderEnde() {
+    const s = F.s, w = s.winner;
+    app.innerHTML = `<div class="win card ink"><div class="crown">${w ? '🏆' : '🤝'}</div>
+        <h1>${w ? esc(s.teams[w].name.toUpperCase()) + ' GEWINNT!' : 'UNENTSCHIEDEN!'}</h1>
+        <p class="muted" style="margin:0">${s.grund === 'runden' ? `Nach ${s.runde - 1} Runden zählen die übrigen Lebenspunkte.` : `Nach ${s.runde - 1} Runden.`}</p></div>
+      ${['A', 'B'].map((side) => `<section class="card actions" style="gap:6px"><b>${esc(s.teams[side].name)}</b>${s.teams[side].figs.map((f) =>
+        `<div class="small">${f.ko ? '💤' : '💪'} ${esc(f.name)} · ${f.lp}/${f.lpMax} LP · ${f.noerten} Nörten</div>`).join('')}</section>`).join('')}
+      <p class="small muted" style="margin:0">XP und Level-ups kommen mit Phase 4 – das Ergebnis wird noch nicht gespeichert.</p>
+      <div class="actions"><button class="btn-main" id="again">REVANCHE</button><button class="btn" id="lobby">Neue Aufstellung</button></div>`;
+    app.querySelector('#again').onclick = () => { F = { s: K.neu(game.data, F.setup.A, F.setup.B), phase: 'hand', side: 'A', pending: {}, setup: F.setup, version: game.version }; saveF(); render(); };
+    app.querySelector('#lobby').onclick = () => { F = null; saveF(); renderLobby(); };
+  }
+
+  function quit() {
+    if (!confirm('Kampf wirklich abbrechen?')) return;
+    F = null; saveF(); renderLobby();
+  }
+
+  function render() {
+    window.scrollTo(0, 0);
+    if (!F) return renderLobby();
+    ({ hand: renderHand, pick: renderPick, reveal: renderReveal, ersetzen: renderErsetzen, ende: renderEnde })[F.phase]();
+  }
+
+  // ---------- Start ----------
+  try { [types, game] = await Promise.all([Noerti.types(), Noerti.gameData()]); }
+  catch (e) { app.innerHTML = `<div class="card">Die Arena konnte nicht laden: ${esc(errMsg(e))}</div>`; return; }
+  F = loadF();
+  if (F && (!F.s || !F.phase || !F.s.maxRunden)) F = null;
+  render();
+  window.addEventListener('storage', (e) => { if (e.key === 'noerti-arena-lobby' && !F) renderLobby(); });
+})();
+</script>
+</body>
+</html>
