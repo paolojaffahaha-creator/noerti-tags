@@ -1,0 +1,62 @@
+{
+  "format": 1,
+  "regeln": {
+    "noerten_start": 100,
+    "auftanken": 25,
+    "auftanken_getroffen": 10,
+    "auftanken_gegen_verteidigen": 35,
+    "kosten_verteidigen": 5,
+    "kosten_ausweichen": 10,
+    "verteidigen_faktor": 0.5,
+    "getroffen_faktor": 1.25,
+    "konter_treffer": 20,
+    "konter_noerten": 10,
+    "ausweichen_basis": 50,
+    "ausweichen_pro_tempo": 5,
+    "ausweichen_min": 25,
+    "ausweichen_max": 75,
+    "max_runden": 15,
+    "level_lp_pct": 3,
+    "level_schaden_pct": 2,
+    "level_chance_alle": 2,
+    "level_chance_max": 10,
+    "standard_attacke": { "name": "Feigen-Hieb", "schaden": 10, "treffer": 1, "chance": 95, "kosten": 10, "effekt": null }
+  },
+  "typen": {
+    "001": {
+      "lp": 100, "tempo": 5, "standard": true,
+      "attacken": [
+        { "name": "Pollenwolke", "ab": 1, "schaden": 8, "treffer": 1, "chance": 90, "kosten": 15, "effekt": { "art": "gegner_chance", "wert": 15 }, "stufe10": { "effekt": { "art": "gegner_chance", "wert": 25 } } },
+        { "name": "Dornenranke", "ab": 5, "schaden": 20, "treffer": 1, "chance": 75, "kosten": 25, "effekt": { "art": "nachschaden", "wert": 5 } }
+      ]
+    },
+    "002": {
+      "lp": 85, "tempo": 8, "standard": true,
+      "attacken": [
+        { "name": "Kickflip", "ab": 1, "schaden": 18, "treffer": 1, "chance": 75, "kosten": 20, "effekt": null, "stufe10": { "schaden": 22 } },
+        { "name": "Grind", "ab": 5, "schaden": 12, "treffer": 1, "chance": 90, "kosten": 15, "effekt": { "art": "ausweichen", "wert": 15 } }
+      ]
+    },
+    "003": {
+      "lp": 110, "tempo": 4, "standard": true,
+      "attacken": [
+        { "name": "Pfotenhiebe", "ab": 1, "schaden": 6, "treffer": 3, "chance": 65, "kosten": 20, "effekt": null },
+        { "name": "Kuscheln", "ab": 5, "schaden": 0, "treffer": 1, "chance": 100, "kosten": 25, "effekt": { "art": "heilen", "wert": 15 }, "stufe10": { "effekt": { "art": "heilen", "wert": 25 } } }
+      ]
+    },
+    "004": {
+      "lp": 100, "tempo": 6, "standard": true,
+      "attacken": [
+        { "name": "Fingerschnipp", "ab": 1, "schaden": 14, "treffer": 1, "chance": 90, "kosten": 15, "effekt": null },
+        { "name": "Doppelfeige", "ab": 5, "schaden": 12, "treffer": 2, "chance": 75, "kosten": 25, "effekt": null, "stufe10": { "chance": 80 } }
+      ]
+    },
+    "005": {
+      "lp": 120, "tempo": 3, "standard": true,
+      "attacken": [
+        { "name": "Bass-Drop", "ab": 1, "schaden": 30, "treffer": 1, "chance": 60, "kosten": 35, "effekt": null, "stufe10": { "chance": 70 } },
+        { "name": "Lautstärke 11", "ab": 5, "schaden": 0, "treffer": 1, "chance": 100, "kosten": 15, "effekt": { "art": "verstaerken", "wert": 50 } }
+      ]
+    }
+  }
+}

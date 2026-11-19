@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Nörti Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../app/style.css">
+<style>
+  .wrap { max-width: 760px; padding-bottom: 110px; }
+  h1 { margin: 0; font-size: 30px; line-height: 1.05; }
+  .status { font-size: 13px; color: var(--muted); }
+  .status b { color: var(--ink); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tabs button, .types button { font: 500 14px var(--body); border: 2px solid var(--ink); border-radius: 99px; padding: 6px 14px; background: var(--white); color: var(--ink); cursor: pointer; min-height: 40px; }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: var(--white); }
+  .types { display: flex; gap: 6px; flex-wrap: wrap; }
+  .types button[aria-pressed="true"] { background: var(--marker); box-shadow: 3px 3px 0 var(--ink); }
+  .types button.empty { border-style: dashed; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 500; }
+  label.f input, label.f select { font: 16px var(--body); color: var(--ink); background: var(--white); border: 2px solid var(--ink); border-radius: 10px; padding: 8px 10px; width: 100%; min-height: 42px; }
+  label.f small { font-weight: 400; color: var(--muted); }
+  label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 500; min-height: 40px; }
+  label.chk input { width: 20px; height: 20px; accent-color: var(--ink); }
+  .atk { display: flex; flex-direction: column; gap: 10px; }
+  .atk-head { display: flex; gap: 8px; align-items: center; }
+  .atk-head .disp { font-size: 18px; flex: 1; overflow-wrap: anywhere; }
+  .calc { font-size: 13px; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 8px; padding: 6px 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .calc b { font-weight: 700; }
+  .eff-low { color: var(--err); } .eff-high { color: var(--okc); }
+  details.up { border-top: 1.5px dashed var(--dot); padding-top: 8px; }
+  details.up summary { cursor: pointer; font-size: 14px; font-weight: 500; min-height: 32px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row > * { flex: 1 1 140px; }
+  .mini { font: 500 14px var(--body); border: 2px solid var(--ink); border-radius: 10px; background: var(--white); color: var(--ink); padding: 6px 12px; min-height: 40px; cursor: pointer; }
+  .mini.danger { color: var(--err); border-color: var(--err); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--white); }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 700; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scroll { overflow-x: auto; border: 2px solid var(--ink); border-radius: 12px; }
+  .savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--white); border-top: 3px solid var(--ink);
+    padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .savebar .in { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+  .savebar .btn-main { flex: 1; min-height: 50px; font-size: 17px; box-shadow: 3px 3px 0 var(--ink); }
+  .savebar .btn { width: auto; flex: 0 0 auto; }
+  .savebar .hint { font-size: 13px; color: var(--muted); flex: 1; }
+  .ver { display: flex; gap: 10px; align-items: center; }
+  .ver div { flex: 1; font-size: 14px; }
+  .note { font-size: 14px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="../">NÖRTI ARENA</a>
+    <a class="pill" href="../">Tag-Writer</a>
+  </header>
+  <div>
+    <h1 class="disp">SPIELDATEN-EDITOR</h1>
+    <div class="status" id="status">Lädt …</div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="figuren" aria-selected="true">Figuren</button>
+    <button role="tab" data-tab="uebersicht">Übersicht</button>
+    <button role="tab" data-tab="regeln">Regeln</button>
+    <button role="tab" data-tab="versionen">Versionen</button>
+  </nav>
+  <main id="main" class="actions" style="gap:14px"><div class="spinner" aria-label="Lädt"></div></main>
+</div>
+<div class="savebar"><div class="in">
+  <span class="hint" id="saveHint">Keine Änderungen</span>
+  <button class="btn" id="discard" hidden>Verwerfen</button>
+  <button class="btn-main" id="save" disabled>Speichern</button>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../app/common.js"></script>
+<script>
+(() => {
+  const N = window.Noerti, { esc } = N;
+  const $ = (q, el = document) => el.querySelector(q);
+  const PIN_STORE = 'noerti-tagwriter-pin', DRAFT = 'noerti-editor-draft', TAB = 'noerti-editor-tab';
+  const ls = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
+
+  const EFFEKTE = {
+    '':            { label: 'kein Effekt' },
+    gegner_chance: { label: 'Gegner unsicher', unit: '%', text: (w) => `nächste Attacke des Gegners −${w} % Trefferchance` },
+    nachschaden:   { label: 'Nachschaden', unit: 'Schaden', text: (w) => `nächste Runde ${w} Schaden extra` },
+    ausweichen:    { label: 'Ausweichen +', unit: '%', text: (w) => `eigenes Ausweichen nächste Runde +${w} %` },
+    heilen:        { label: 'Heilen', unit: 'LP', text: (w) => `heilt ${w} LP` },
+    verstaerken:   { label: 'Verstärken', unit: '%', text: (w) => `nächste eigene Attacke +${w} % Schaden` }
+  };
+  const REGELN = [
+    ['Nörten', [['noerten_start', 'Start-Nörten pro Figur'], ['auftanken', 'Auftanken (+)'], ['auftanken_getroffen', 'Auftanken, wenn getroffen'], ['auftanken_gegen_verteidigen', 'Auftanken gegen Verteidigen']]],
+    ['Aktionen', [['kosten_verteidigen', 'Kosten Verteidigen'], ['kosten_ausweichen', 'Kosten Ausweichen'], ['verteidigen_faktor', 'Schaden beim Verteidigen ×', 0.05], ['getroffen_faktor', 'Schaden beim Auftanken / missglücktem Ausweichen ×', 0.05], ['konter_treffer', 'Konter: Trefferchance + %'], ['konter_noerten', 'Konter: Gegner verliert Nörten']]],
+    ['Ausweichen', [['ausweichen_basis', 'Grundchance %'], ['ausweichen_pro_tempo', '% pro Tempo-Unterschied'], ['ausweichen_min', 'mindestens %'], ['ausweichen_max', 'höchstens %']]],
+    ['Kampf & Level', [['max_runden', 'Max. Runden'], ['level_lp_pct', 'LP + % pro Level'], ['level_schaden_pct', 'Schaden + % pro Level'], ['level_chance_alle', 'Trefferchance +1 % alle … Level'], ['level_chance_max', 'Trefferchance-Bonus max. %']]]
+  ];
+
+  let figs = [], base = null, saved = null, data = null, versions = null;
+  let tab = ls.get(TAB) || 'figuren', sel = null;
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const dirty = () => JSON.stringify(data) !== JSON.stringify(saved);
+  const figName = (id) => (figs.find((f) => f.id === id) || {}).name || id;
+  const num = (v, d = 0) => { const n = parseFloat(String(v).replace(',', '.')); return Number.isFinite(n) ? n : d; };
+  const fmt = (n, d = 1) => n.toLocaleString('de-DE', { maximumFractionDigits: d, minimumFractionDigits: 0 });
+
+  function persist() {
+    ls.set(DRAFT, dirty() ? JSON.stringify({ base: base.version, data }) : null);
+    const d = dirty();
+    $('#save').disabled = !d; $('#discard').hidden = !d;
+    $('#saveHint').textContent = d ? 'Ungespeicherte Änderungen (Entwurf bleibt auf diesem Gerät)' : 'Keine Änderungen';
+  }
+  function setStatus() {
+    $('#status').innerHTML = base.version
+      ? `Version <b>${base.version}</b>${base.note ? ` „${esc(base.note)}“` : ''} · gespeichert ${esc(N.fmtDate(base.created_at))} · gilt für alle Spieler`
+      : '<b>Startwerte</b> aus <code>spieldaten.json</code> – noch nichts in der Datenbank gespeichert';
+  }
+
+  // ---------- Berechnung ----------
+  function calc(a) {
+    const hits = Math.max(1, Math.round(num(a.treffer, 1))), ch = num(a.chance, 100);
+    const exp = num(a.schaden) * hits * ch / 100;
+    const k = num(a.kosten);
+    const need = ch >= 100 ? 'immer' : ch <= 0 ? 'nie' : `bei ${Math.max(1, Math.min(20, 21 - Math.round(ch / 5)))}+`;
+    return { hits, exp, perN: k > 0 ? exp / k : null, need };
+  }
+  function calcHtml(a) {
+    const c = calc(a), e = a.effekt && EFFEKTE[a.effekt.art];
+    const eff = c.perN == null ? '' : `<span class="${c.perN < 0.5 ? 'eff-low' : c.perN > 0.9 ? 'eff-high' : ''}"><b>${fmt(c.perN, 2)}</b> Schaden pro Nörti</span>`;
+    return `<span>Ø <b>${fmt(c.exp)}</b> Schaden${c.hits > 1 ? ` (${c.hits} Würfe)` : ''}</span>${eff}<span>W20: trifft ${c.need}</span>${e && e.text ? `<span>${esc(e.text(num(a.effekt.wert)))}</span>` : ''}`;
+  }
+
+  // ---------- Figuren ----------
+  const newAttack = (ab) => ({ name: 'Neue Attacke', ab, schaden: 12, treffer: 1, chance: 80, kosten: 15, effekt: null });
+  function attackCount(t) { return (t.standard ? 1 : 0) + t.attacken.length; }
+
+  function attackFields(a, path, isStd) {
+    const eff = (a.effekt && a.effekt.art) || '';
+    return `
+      <div class="grid">
+        <label class="f">Name<input data-p="${path}.name" value="${esc(a.name)}" maxlength="24"></label>
+        ${isStd ? '' : `<label class="f">Frei ab Level<select data-p="${path}.ab" data-num>${[1, 5, 10, 15].map((l) => `<option ${a.ab == l ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`}
+        <label class="f">Schaden pro Treffer<input data-p="${path}.schaden" data-num type="number" min="0" max="99" inputmode="numeric" value="${a.schaden}"></label>
+        <label class="f">Anzahl Treffer<input data-p="${path}.treffer" data-num type="number" min="1" max="5" inputmode="numeric" value="${a.treffer || 1}"><small>jeder Treffer wird einzeln gewürfelt</small></label>
+        <label class="f">Trefferchance %<input data-p="${path}.chance" data-num type="number" min="5" max="100" step="5" inputmode="numeric" value="${a.chance}"></label>
+        <label class="f">Kosten (Nörten)<input data-p="${path}.kosten" data-num type="number" min="0" max="100" inputmode="numeric" value="${a.kosten}"></label>
+        <label class="f">Effekt<select data-p="${path}.effekt.art" data-rerender>${Object.entries(EFFEKTE).map(([k, v]) => `<option value="${k}" ${k === eff ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label>
+        ${eff ? `<label class="f">Effekt-Wert (${EFFEKTE[eff].unit})<input data-p="${path}.effekt.wert" data-num type="number" min="0" max="100" inputmode="numeric" value="${a.effekt.wert}"></label>` : ''}
+      </div>
+      <div class="calc" data-calc="${path}">${calcHtml(a)}</div>`;
+  }
+  function upgradeFields(a, path) {
+    const u = a.stufe10 || {}, eff = (a.effekt && a.effekt.art) || '';
+    const v = (k) => (u[k] != null ? u[k] : '');
+    return `<details class="up" ${a.stufe10 ? 'open' : ''}><summary>Verbesserung ab Level 10${a.stufe10 ? ' ✓' : ''}</summary>
+      <p class="small muted" style="margin:6px 0">Leer lassen = bleibt gleich. Höchstens eine Attacke pro Figur sollte eine Verbesserung haben.</p>
+      <div class="grid">
+        <label class="f">Schaden<input data-up="${path}" data-k="schaden" type="number" min="0" max="99" inputmode="numeric" value="${v('schaden')}" placeholder="${a.schaden}"></label>
+        <label class="f">Trefferchance %<input data-up="${path}" data-k="chance" type="number" min="5" max="100" step="5" inputmode="numeric" value="${v('chance')}" placeholder="${a.chance}"></label>
+        <label class="f">Kosten<input data-up="${path}" data-k="kosten" type="number" min="0" max="100" inputmode="numeric" value="${v('kosten')}" placeholder="${a.kosten}"></label>
+        ${eff ? `<label class="f">Effekt-Wert<input data-up="${path}" data-k="effekt" type="number" min="0" max="100" inputmode="numeric" value="${u.effekt ? u.effekt.wert : ''}" placeholder="${a.effekt.wert}"></label>` : ''}
+      </div></details>`;
+  }
+
+  function renderFiguren() {
+    const ids = [...new Set([...figs.map((f) => f.id), ...Object.keys(data.typen)])].sort();
+    if (!sel || !ids.includes(sel)) sel = ids[0];
+    const t = data.typen[sel];
+    let html = `<div class="types" role="group" aria-label="Figur wählen">${ids.map((id) =>
+      `<button data-sel="${id}" aria-pressed="${id === sel}" class="${data.typen[id] ? '' : 'empty'}">${esc(id)} ${esc(figName(id))}</button>`).join('')}</div>`;
+    if (!t) {
+      html += `<section class="card ink actions"><p style="margin:0"><b>${esc(figName(sel))}</b> hat noch keine Kampfwerte.</p>
+        <button class="btn-main" data-act="create">Kampfwerte anlegen</button></section>`;
+      $('#main').innerHTML = html; return;
+    }
+    const std = data.regeln.standard_attacke;
+    html += `<section class="card ink actions">
+      <div class="atk-head"><span class="disp" style="font-size:22px">${esc(sel)} ${esc(figName(sel))}</span>
+        <button class="mini danger" data-act="dropType">Werte löschen</button></div>
+      <div class="grid">
+        <label class="f">Lebenspunkte (LP)<input data-p="typen.${sel}.lp" data-num type="number" min="1" max="999" inputmode="numeric" value="${t.lp}"></label>
+        <label class="f">Tempo (1–10)<input data-p="typen.${sel}.tempo" data-num type="number" min="1" max="10" inputmode="numeric" value="${t.tempo}"><small>±${data.regeln.ausweichen_pro_tempo} % Ausweichen je Punkt</small></label>
+      </div>
+      <label class="chk"><input type="checkbox" data-p="typen.${sel}.standard" ${t.standard ? 'checked' : ''} data-rerender> ${esc(std.name)} (Standard-Attacke) nutzen</label>
+      <p class="small muted" style="margin:0">${attackCount(t)} von 3 Attacken belegt. Start mit allen Attacken „ab Level 1“.</p>
+    </section>`;
+    if (t.standard) html += `<section class="card atk"><div class="atk-head"><span class="disp">${esc(std.name)}</span><span class="small muted">Standard · bei „Regeln“ änderbar</span></div>
+      <div class="calc">${calcHtml(std)}</div></section>`;
+    t.attacken.forEach((a, i) => {
+      const p = `typen.${sel}.attacken.${i}`;
+      html += `<section class="card atk">
+        <div class="atk-head"><span class="disp">${esc(a.name)}</span>
+          ${i > 0 ? `<button class="mini" data-act="up" data-i="${i}" aria-label="nach oben">↑</button>` : ''}
+          <button class="mini danger" data-act="del" data-i="${i}">Entfernen</button></div>
+        ${attackFields(a, p)}${upgradeFields(a, p)}</section>`;
+    });
+    if (attackCount(t) < 3) html += `<button class="btn" data-act="add">+ Attacke hinzufügen</button>`;
+    $('#main').innerHTML = html;
+  }
+
+  // ---------- Übersicht ----------
+  function renderUebersicht() {
+    const std = data.regeln.standard_attacke;
+    const rows = Object.keys(data.typen).sort().map((id) => {
+      const t = data.typen[id];
+      const atks = [...(t.standard ? [{ ...std, ab: 1 }] : []), ...t.attacken];
+      return atks.map((a, i) => { const c = calc(a); return `<tr>
+        ${i === 0 ? `<td rowspan="${atks.length}"><b>${esc(id)} ${esc(figName(id))}</b><br><span class="muted">${t.lp} LP · Tempo ${t.tempo}</span></td>` : ''}
+        <td>${esc(a.name)}${a.ab > 1 ? ` <span class="muted">(Lv ${a.ab})</span>` : ''}${a.effekt ? `<br><span class="muted">${esc(EFFEKTE[a.effekt.art].text(a.effekt.wert))}</span>` : ''}</td>
+        <td class="n">${c.hits > 1 ? `${c.hits}×` : ''}${a.schaden}</td><td class="n">${a.chance} %</td><td class="n">${a.kosten}</td>
+        <td class="n">${fmt(c.exp)}</td><td class="n ${c.perN != null && c.perN < 0.5 ? 'eff-low' : c.perN > 0.9 ? 'eff-high' : ''}">${c.perN == null ? '–' : fmt(c.perN, 2)}</td></tr>`; }).join('');
+    }).join('');
+    $('#main').innerHTML = `<p class="small muted" style="margin:0">Alle Figuren auf Level 1 im Vergleich. <span class="eff-high">Grün</span> = sehr effizient (über 0,9 Schaden pro Nörti), <span class="eff-low">rot</span> = teuer (unter 0,5). Starke Attacken dürfen teurer sein – sie bringen dafür mehr Schaden pro Runde.</p>
+      <div class="scroll"><table><thead><tr><th>Figur</th><th>Attacke</th><th class="n">Schaden</th><th class="n">Chance</th><th class="n">Kosten</th><th class="n">Ø</th><th class="n">pro Nörti</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  // ---------- Regeln ----------
+  function renderRegeln() {
+    const r = data.regeln, std = r.standard_attacke;
+    $('#main').innerHTML = REGELN.map(([title, fields]) => `<section class="card actions"><b>${title}</b><div class="grid">${fields.map(([k, label, step]) =>
+      `<label class="f">${label}<input data-p="regeln.${k}" data-num type="number" step="${step || 1}" inputmode="decimal" value="${r[k]}"></label>`).join('')}</div></section>`).join('')
+      + `<section class="card atk"><b>Standard-Attacke (für alle Figuren mit Häkchen)</b>${attackFields(std, 'regeln.standard_attacke', true)}</section>`;
+  }
+
+  // ---------- Versionen ----------
+  async function renderVersionen() {
+    $('#main').innerHTML = `<section class="card actions">
+        <b>Sichern & Austausch</b>
+        <p class="small muted" style="margin:0">Spieldaten als Datei herunterladen, z. B. um sie im Vault als <code>spieldaten.json</code> abzulegen.</p>
+        <div class="row"><button class="btn" data-act="export">Als JSON herunterladen</button><button class="btn" data-act="defaults">Startwerte laden</button></div>
+      </section><section class="card actions"><b>Gespeicherte Versionen</b><div id="vlist"><div class="spinner"></div></div></section>`;
+    try { versions = await N.api.gameDataVersions(); } catch (e) { versions = null; }
+    const el = $('#vlist'); if (!el) return;
+    if (!versions) { el.innerHTML = '<p class="small muted" style="margin:0">Datenbank nicht erreichbar oder SQL-Nachtrag 004 fehlt noch.</p>'; return; }
+    if (!versions.length) { el.innerHTML = '<p class="small muted" style="margin:0">Noch keine Version gespeichert.</p>'; return; }
+    el.innerHTML = versions.map((v) => `<div class="ver"><div><b>Version ${v.version}</b>${v.version === base.version ? ' · aktuell' : ''}<br><span class="muted small">${esc(N.fmtDate(v.created_at))}${v.note ? ' · ' + esc(v.note) : ''}</span></div>
+      ${v.version === base.version ? '' : `<button class="mini" data-act="loadv" data-v="${v.version}">Laden</button>`}</div>`).join('');
+  }
+
+  function render() {
+    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    ({ figuren: renderFiguren, uebersicht: renderUebersicht, regeln: renderRegeln, versionen: renderVersionen })[tab]();
+    persist();
+  }
+
+  // ---------- Eingaben ----------
+  function setPath(path, value) {
+    const keys = path.split('.'); let o = data;
+    for (let i = 0; i < keys.length - 1; i++) o = o[keys[i]];
+    o[keys[keys.length - 1]] = value;
+  }
+  function getPath(path) { return path.split('.').reduce((o, k) => (o == null ? o : o[k]), data); }
+
+  $('#main').addEventListener('input', (e) => {
+    const el = e.target;
+    if (el.dataset.up) {
+      const a = getPath(el.dataset.up), k = el.dataset.k, v = el.value.trim();
+      a.stufe10 ||= {};
+      if (v === '') delete a.stufe10[k]; else a.stufe10[k] = k === 'effekt' ? { art: a.effekt.art, wert: num(v) } : num(v);
+      if (!Object.keys(a.stufe10).length) delete a.stufe10;
+      persist(); return;
+    }
+    const p = el.dataset.p; if (!p || el.dataset.rerender !== undefined) return;
+    setPath(p, el.dataset.num !== undefined ? num(el.value) : el.value);
+    const calcPath = p.replace(/\.(name|ab|schaden|treffer|chance|kosten|effekt\.wert)$/, '').replace(/\.effekt$/, '');
+    const c = document.querySelector(`[data-calc="${calcPath}"]`);
+    if (c) c.innerHTML = calcHtml(getPath(calcPath));
+    if (p.endsWith('.name')) { const h = el.closest('.atk')?.querySelector('.atk-head .disp'); if (h) h.textContent = el.value; }
+    persist();
+  });
+  $('#main').addEventListener('change', (e) => {
+    const el = e.target, p = el.dataset.p;
+    if (!p || el.dataset.rerender === undefined) return;
+    if (el.type === 'checkbox') {
+      const t = data.typen[sel];
+      if (el.checked && t.attacken.length >= 3) { el.checked = false; N.toast('Schon 3 Attacken – erst eine entfernen.', 'err'); return; }
+      setPath(p, el.checked);
+    } else if (p.endsWith('.effekt.art')) {
+      const a = getPath(p.replace(/\.effekt\.art$/, ''));
+      a.effekt = el.value ? { art: el.value, wert: (a.effekt && a.effekt.wert) || 10 } : null;
+      if (a.stufe10) { delete a.stufe10.effekt; if (!Object.keys(a.stufe10).length) delete a.stufe10; }
+    }
+    render();
+  });
+  $('#main').addEventListener('click', async (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.sel) { sel = b.dataset.sel; render(); return; }
+    const act = b.dataset.act, t = data.typen[sel], i = +b.dataset.i;
+    if (act === 'create') { data.typen[sel] = { lp: 100, tempo: 5, standard: true, attacken: [newAttack(1)] }; render(); }
+    else if (act === 'dropType') {
+      if (!confirm(`Kampfwerte von ${figName(sel)} löschen? (Erst beim Speichern endgültig)`)) return;
+      delete data.typen[sel]; render();
+    }
+    else if (act === 'add') { t.attacken.push(newAttack(t.attacken.length ? 5 : 1)); render(); }
+    else if (act === 'del') { if (confirm(`„${t.attacken[i].name}“ entfernen?`)) { t.attacken.splice(i, 1); render(); } }
+    else if (act === 'up') { [t.attacken[i - 1], t.attacken[i]] = [t.attacken[i], t.attacken[i - 1]]; render(); }
+    else if (act === 'export') {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'spieldaten.json'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+    else if (act === 'defaults') {
+      if (!confirm('Startwerte aus spieldaten.json in den Editor laden? (Erst beim Speichern gültig)')) return;
+      data = await fetch(N.ROOT + 'spieldaten.json', { cache: 'no-store' }).then((r) => r.json()); tab = 'figuren'; render(); N.toast('Startwerte geladen – noch nicht gespeichert');
+    }
+    else if (act === 'loadv') {
+      if (dirty() && !confirm('Ungespeicherte Änderungen gehen verloren. Trotzdem laden?')) return;
+      const g = await N.api.getGameData(+b.dataset.v);
+      data = clone(g.data); tab = 'figuren'; render(); N.toast(`Version ${g.version} geladen – mit „Speichern“ wird sie zur aktuellen`);
+    }
+  });
+  document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; ls.set(TAB, tab); render(); }));
+
+  // ---------- Prüfen & Speichern ----------
+  function problems() {
+    const out = [];
+    for (const [id, t] of Object.entries(data.typen)) {
+      const n = figName(id);
+      if (!(t.lp > 0)) out.push(`${n}: LP fehlen`);
+      if (!(t.tempo >= 1 && t.tempo <= 10)) out.push(`${n}: Tempo muss 1–10 sein`);
+      if (attackCount(t) < 1 || attackCount(t) > 3) out.push(`${n}: 1–3 Attacken nötig`);
+      if (!(t.standard || t.attacken.some((a) => a.ab <= 1))) out.push(`${n}: braucht eine Attacke ab Level 1`);
+      t.attacken.forEach((a) => {
+        if (!a.name.trim()) out.push(`${n}: Attacke ohne Namen`);
+        if (a.chance % 5 || a.chance < 5 || a.chance > 100) out.push(`${n} / ${a.name}: Trefferchance in 5er-Schritten (5–100)`);
+        if (!(a.treffer >= 1 && a.treffer <= 5)) out.push(`${n} / ${a.name}: 1–5 Treffer`);
+      });
+    }
+    return out;
+  }
+  $('#discard').onclick = () => { if (confirm('Alle ungespeicherten Änderungen verwerfen?')) { data = clone(saved); render(); } };
+  $('#save').onclick = () => {
+    const errs = problems();
+    if (errs.length) { N.sheet(`<h2>Noch nicht ganz</h2><ul style="margin:0;padding-left:20px">${errs.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><button class="btn" data-close>OK</button>`, (el) => el.querySelector('[data-close]').onclick = N.closeSheet); return; }
+    const pin = ls.get(PIN_STORE) || '';
+    const el = N.sheet(`<h2>Speichern</h2>
+      <p>Die neue Version gilt sofort für alle Kämpfe. Alte Versionen bleiben unter „Versionen“ erhalten.</p>
+      <label class="field">Notiz (optional)<input id="note" maxlength="120" placeholder="z. B. Skater schneller"></label>
+      <label class="field" ${pin ? 'hidden' : ''}>Admin-PIN<input id="pinIn" type="password" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn-main" id="go">Version ${base.version + 1} speichern</button>
+      ${pin ? '<button class="btn-text" id="forget">Andere PIN verwenden</button>' : ''}`);
+    const forget = el.querySelector('#forget');
+    if (forget) forget.onclick = () => { ls.set(PIN_STORE, null); N.closeSheet(); $('#save').click(); };
+    el.querySelector('#go').onclick = async (ev) => {
+      const p = pin || el.querySelector('#pinIn').value.trim();
+      if (!p) { N.toast('Bitte PIN eingeben', 'err'); return; }
+      ev.target.disabled = true;
+      try {
+        const r = await N.api.saveGameData(data, p, base.version, el.querySelector('#note').value.trim());
+        ls.set(PIN_STORE, p);
+        base = { version: r.version, data: clone(data), note: el.querySelector('#note').value.trim() || null, created_at: new Date().toISOString() };
+        saved = clone(data); N.closeSheet(); setStatus(); render(); N.toast(`Version ${r.version} gespeichert ✓`);
+      } catch (e) {
+        ev.target.disabled = false;
+        const m = N.errMsg(e);
+        if (/PIN/.test(m)) ls.set(PIN_STORE, null);
+        N.toast(/function|schema cache/i.test(m) ? 'SQL-Nachtrag 004 fehlt noch in Supabase' : m, 'err');
+      }
+    };
+  };
+  window.addEventListener('beforeunload', (e) => { if (data && dirty()) { e.preventDefault(); e.returnValue = ''; } });
+
+  // ---------- Start ----------
+  (async () => {
+    try {
+      [figs, base] = await Promise.all([N.types(), N.gameData()]);
+      saved = clone(base.data); data = clone(base.data);
+      const d = ls.get(DRAFT);
+      if (d) {
+        try { const j = JSON.parse(d); if (j.base === base.version) { data = j.data; N.toast('Entwurf wiederhergestellt'); } else ls.set(DRAFT, null); } catch { ls.set(DRAFT, null); }
+      }
+      setStatus(); render();
+    } catch (e) {
+      $('#main').innerHTML = `<p class="card">Spieldaten konnten nicht geladen werden: ${esc(N.errMsg(e))}</p>`;
+    }
+  })();
+})();
+</script>
+</body>
+</html>

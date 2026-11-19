@@ -112,7 +112,10 @@
         const { error } = await (await sb()).auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: redirect } });
         if (error) throw error;
       },
-      async signOut() { await (await sb()).auth.signOut(); }
+      async signOut() { await (await sb()).auth.signOut(); },
+      getGameData: (v) => rpc('get_game_data', v ? { p_version: v } : {}),
+      gameDataVersions: () => rpc('game_data_versions'),
+      saveGameData: (data, pin, base, note) => rpc('save_game_data', { p_data: data, p_pin: pin, p_base: base, p_note: note || null })
     };
   }
 
@@ -170,16 +173,29 @@
       async imageUrl(pid, file) { return load().blobs[pid + '/' + file] || ''; },
       async linkEmail(email) { await wait(); const s = load(); s.me.pendingEmail = email; save(s); },
       async signInEmail() { await wait(); },
-      async signOut() { const s = load(); s.me = null; save(s); }
+      async signOut() { const s = load(); s.me = null; save(s); },
+      async getGameData(v) { const g = load().game || []; return (v ? g.find((x) => x.version === v) : g[g.length - 1]) || null; },
+      async gameDataVersions() { return (load().game || []).map(({ version, note, created_at }) => ({ version, note, created_at })).reverse(); },
+      async saveGameData(data, pin, base, note) {
+        await wait(); if (!pin) fail('Falsche PIN');
+        const s = load(); s.game ||= []; const cur = s.game.length ? s.game[s.game.length - 1].version : 0;
+        if (base != null && base !== cur) fail(`Inzwischen gespeichert (Version ${cur}). Bitte neu laden.`);
+        s.game.push({ version: cur + 1, data, note: note || null, created_at: new Date().toISOString() }); save(s); return { version: cur + 1 };
+      }
     };
   }
 
   const api = MOCK ? mockApi() : realApi();
+
+  // Spieldaten (Regeln, Typen, Attacken): aktuelle Version aus der Datenbank, sonst die Startwerte aus spieldaten.json
+  let gameP = null;
+  const gameData = () => (gameP ||= api.getGameData().catch(() => null)
+    .then((g) => g || json('spieldaten.json').then((data) => ({ version: 0, data, note: 'Startwerte', created_at: null }))));
   if (MOCK) document.addEventListener('DOMContentLoaded', () => {
     const b = document.createElement('div'); b.className = 'mockbar';
     b.innerHTML = 'Testmodus mit Beispieldaten – nichts wird gespeichert. <a href="?mock=0">Beenden</a>';
     document.body.prepend(b);
   });
 
-  window.Noerti = { ROOT, MOCK, api, config, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage };
+  window.Noerti = { ROOT, MOCK, api, config, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage, gameData };
 })();
