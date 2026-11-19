@@ -115,7 +115,9 @@
       async signOut() { await (await sb()).auth.signOut(); },
       getGameData: (v) => rpc('get_game_data', v ? { p_version: v } : {}),
       gameDataVersions: () => rpc('game_data_versions'),
-      saveGameData: (data, pin, base, note) => rpc('save_game_data', { p_data: data, p_pin: pin, p_base: base, p_note: note || null })
+      saveGameData: (data, pin, base, note) => rpc('save_game_data', { p_data: data, p_pin: pin, p_base: base, p_note: note || null }),
+      reportMatch: (m) => rpc('report_match', { p_client_id: m.id, p_a: m.a, p_b: m.b, p_winner: m.winner, p_rounds: m.rounds, p_reason: m.reason, p_log: m.log, p_game_version: m.version }),
+      leaderboard: (n) => rpc('leaderboard', { p_limit: n || 20 })
     };
   }
 
@@ -183,7 +185,24 @@
         const s = load(); s.game ||= []; const cur = s.game.length ? s.game[s.game.length - 1].version : 0;
         if (base != null && base !== cur) fail(`Inzwischen gespeichert (Version ${cur}). Bitte neu laden.`);
         s.game.push({ version: cur + 1, data, note: note || null, created_at: new Date().toISOString() }); save(s); return { version: cur + 1 };
-      }
+      },
+      async reportMatch(m) {
+        await wait(); const s = load(); s.matches ||= {}; s.met ||= [];
+        if (s.matches[m.id]) return { again: true, figures: s.matches[m.id] };
+        const out = [];
+        for (const side of ['A', 'B']) for (const serial of m[side.toLowerCase()]) {
+          const f = s.figures[serial]; if (!f) fail('Figur nicht registriert');
+          const opp = m[side === 'A' ? 'b' : 'a'];
+          const bonus = opp.some((o) => s.figures[o].owner && f.owner && s.figures[o].owner !== f.owner && !s.met.includes(serial + o)) ? 20 : 0;
+          const gain = (m.winner == null ? 20 : m.winner === side ? 30 : 10) + bonus, before = f.level;
+          f.xp += gain; f.level = Math.min(20, 1 + Math.floor(Math.sqrt(f.xp / 40)));
+          if (m.winner === side) f.wins++; else if (m.winner) f.losses++;
+          opp.forEach((o) => s.met.push(serial + o));
+          out.push({ public_id: f.public_id, side, rated: true, xp_gain: gain, bonus, level_before: before, level: f.level, xp: f.xp });
+        }
+        s.matches[m.id] = out; save(s); return { again: false, figures: out };
+      },
+      async leaderboard() { const s = load(); return Object.values(s.figures).map((f) => view(s, f)).sort((a, b) => b.level - a.level || b.xp - a.xp || b.wins - a.wins); }
     };
   }
 

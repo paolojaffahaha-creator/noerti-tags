@@ -87,6 +87,8 @@
   .win { text-align: center; padding: 18px 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
   .win .crown { font-size: 56px; line-height: 1; }
   [hidden] { display: none !important; }
+  .lvup { background: var(--marker); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px; box-shadow: 3px 3px 0 var(--ink); animation: pop .4s ease both; }
+  .lvup > b { font: 400 18px var(--disp); }
   @media (prefers-reduced-motion: reduce) { .choice, .log p { animation: none; } .d20.spin { animation: none; } .lpbar > div, .mug .liq { transition: none; } }
 </style>
 </head>
@@ -178,6 +180,7 @@
       <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf – dann wird abwechselnd verdeckt gewählt.</p></div>
       <div class="sizes" role="group" aria-label="Teamgröße">${[1, 2, 3].map((n) => `<button data-size="${n}" aria-pressed="${l.size === n}">${n} gegen ${n}</button>`).join('')}</div>
       ${team('A')}<div class="vs">VS</div>${team('B')}
+      <a class="small" href="../bestenliste/" style="text-align:center">🏆 Bestenliste</a>
       <div class="sticky actions"><button class="btn-main" id="go" ${ready ? '' : 'disabled'}>KAMPF STARTEN</button>
       ${l.A.length + l.B.length ? '<button class="btn-text" id="clear">Aufstellung leeren</button>' : ''}</div>`;
     app.querySelectorAll('[data-size]').forEach((b) => b.onclick = () => {
@@ -252,9 +255,13 @@
       figs: l[side].map((e) => ({ key: e.public_id, type_id: e.type_id, level: e.level, name: e.name, img: e.img, owner: e.owner_name })) });
     let A = mk('A'), B = mk('B');
     if (A.name === B.name) { A.name += ' (A)'; B.name += ' (B)'; }
-    try { F = { s: K.neu(game.data, A, B), phase: 'hand', side: 'A', pending: {}, setup: { A, B }, version: game.version }; }
+    try { newFight({ A, B }, { A: l.A.map((e) => e.serial), B: l.B.map((e) => e.serial) }); }
     catch (e) { toast(errMsg(e), 'err'); return; }
     saveF(); render();
+  }
+  const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3) | 8).toString(16); }));
+  function newFight(setup, serials) {
+    F = { id: uuid(), s: K.neu(game.data, setup.A, setup.B), phase: 'hand', side: 'A', pending: {}, setup, serials, version: game.version, report: null };
   }
   const other = (x) => (x === 'A' ? 'B' : 'A');
 
@@ -376,17 +383,62 @@
     app.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { K.ersetzen(s, side, +b.dataset.i); after(); });
   }
 
+  function unlocks(typeId, from, to) {
+    const t = game.data.typen[typeId], out = [];
+    for (let lv = from + 1; lv <= to; lv++) {
+      (t ? t.attacken : []).filter((a) => (a.ab || 1) === lv).forEach((a) => out.push(`Neue Attacke: <b>${esc(a.name)}</b>`));
+      if (lv === 10) (t ? t.attacken : []).filter((a) => a.stufe10).forEach((a) => out.push(`<b>${esc(a.name)}</b> wird stärker`));
+      if (lv === 15) out.push('Besonderer Kartenrahmen');
+      if (lv === 20) out.push('Titel freigeschaltet – Max-Level!');
+    }
+    return out;
+  }
+  function xpBlock() {
+    const r = F.report;
+    if (!r) return '<div class="card"><div class="spinner" style="margin:10px auto"></div><p class="small muted" style="margin:0;text-align:center">Ergebnis wird gespeichert …</p></div>';
+    if (r.error) return `<div class="card actions"><p class="warn" style="margin:0">Ergebnis nicht gespeichert: ${esc(r.error)}</p><button class="btn" id="retry">Nochmal versuchen</button></div>`;
+    return ['A', 'B'].map((side) => `<section class="card actions" style="gap:10px"><b>${esc(F.s.teams[side].name)}</b>${F.s.teams[side].figs.map((f) => {
+      const x = r.figures.find((y) => y.public_id === f.key); if (!x) return '';
+      const li = Noerti.levelInfo(x.xp, x.level), up = x.level > x.level_before;
+      const ul = up ? unlocks(f.type_id, x.level_before, x.level) : [];
+      return `<div class="actions" style="gap:4px">
+        <div class="nm" style="display:flex;gap:8px;align-items:baseline"><span>${f.ko ? '💤' : '💪'}</span><b style="flex:1">${esc(f.name)}</b>
+          <span class="disp" style="font-size:15px">${x.rated ? `+${x.xp_gain} XP` : 'keine XP'}</span></div>
+        ${x.bonus ? `<span class="small muted">inkl. ${x.bonus} XP Begegnungs-Bonus – neuer Gegner!</span>` : ''}
+        ${x.rated ? '' : '<span class="small muted">Heute schon 3× gegen diese Gegner gekämpft.</span>'}
+        <div class="bar"><div class="xpfill" style="width:${li.pct}%;background:var(--marker)"></div></div>
+        <span class="small muted">LV ${x.level} · ${esc(li.text)}</span>
+        ${up ? `<div class="lvup"><b>⬆ LEVEL UP! ${x.level_before} → ${x.level}</b><span>+${(x.level - x.level_before) * game.data.regeln.level_lp_pct} % LP · +${(x.level - x.level_before) * game.data.regeln.level_schaden_pct} % Schaden</span>${ul.map((u) => `<span>✨ ${u}</span>`).join('')}</div>` : ''}
+      </div>`; }).join('')}</section>`).join('');
+  }
+  async function sendReport() {
+    const s = F.s;
+    try {
+      const r = await api.reportMatch({ id: F.id, a: F.serials.A, b: F.serials.B, winner: s.winner, rounds: Math.max(1, s.runde - 1), reason: s.grund || 'ko',
+        log: { history: s.history, teams: ['A', 'B'].map((x) => s.teams[x].figs.map((f) => ({ type: f.type_id, level: f.level, lp: f.lp, ko: f.ko }))) }, version: F.version || null });
+      F.report = { figures: r.figures };
+      // neue Level für Revanche und Aufstellung übernehmen
+      const lv = Object.fromEntries(r.figures.map((x) => [x.public_id, x.level]));
+      for (const side of ['A', 'B']) F.setup[side].figs.forEach((f) => { if (lv[f.key]) f.level = lv[f.key]; });
+      const l = lobby.load(); for (const side of ['A', 'B']) l[side].forEach((e) => { if (lv[e.public_id]) e.level = lv[e.public_id]; }); lobby.save(l);
+      if (r.figures.some((x) => x.level > x.level_before)) toast('⬆ Level up!');
+    } catch (e) { F.report = { error: errMsg(e) }; }
+    saveF();
+    if (F.phase === 'ende') renderEnde();
+  }
+
   function renderEnde() {
     const s = F.s, w = s.winner;
     app.innerHTML = `<div class="win card ink"><div class="crown">${w ? '🏆' : '🤝'}</div>
         <h1>${w ? esc(s.teams[w].name.toUpperCase()) + ' GEWINNT!' : 'UNENTSCHIEDEN!'}</h1>
         <p class="muted" style="margin:0">${s.grund === 'runden' ? `Nach ${s.runde - 1} Runden zählen die übrigen Lebenspunkte.` : `Nach ${s.runde - 1} Runden.`}</p></div>
-      ${['A', 'B'].map((side) => `<section class="card actions" style="gap:6px"><b>${esc(s.teams[side].name)}</b>${s.teams[side].figs.map((f) =>
-        `<div class="small">${f.ko ? '💤' : '💪'} ${esc(f.name)} · ${f.lp}/${f.lpMax} LP · ${f.noerten} Nörten</div>`).join('')}</section>`).join('')}
-      <p class="small muted" style="margin:0">XP und Level-ups kommen mit Phase 4 – das Ergebnis wird noch nicht gespeichert.</p>
-      <div class="actions"><button class="btn-main" id="again">REVANCHE</button><button class="btn" id="lobby">Neue Aufstellung</button></div>`;
-    app.querySelector('#again').onclick = () => { F = { s: K.neu(game.data, F.setup.A, F.setup.B), phase: 'hand', side: 'A', pending: {}, setup: F.setup, version: game.version }; saveF(); render(); };
-    app.querySelector('#lobby').onclick = () => { F = null; saveF(); renderLobby(); };
+      ${xpBlock()}
+      <div class="actions"><button class="btn-main" id="again" ${F.report && !F.report.error ? '' : 'disabled'}>REVANCHE</button>
+        <button class="btn" id="lobby">Neue Aufstellung</button><a class="btn" href="../bestenliste/">Bestenliste</a></div>`;
+    const rt = app.querySelector('#retry'); if (rt) rt.onclick = () => { F.report = null; renderEnde(); };
+    app.querySelector('#again').onclick = () => { newFight(F.setup, F.serials); saveF(); render(); };
+    app.querySelector('#lobby').onclick = () => { if (F.report && !F.report.error || confirm('Das Ergebnis ist noch nicht gespeichert. Trotzdem weiter?')) { F = null; saveF(); renderLobby(); } };
+    if (!F.report) sendReport();
   }
 
   function quit() {
@@ -404,7 +456,7 @@
   try { [types, game] = await Promise.all([Noerti.types(), Noerti.gameData()]); }
   catch (e) { app.innerHTML = `<div class="card">Die Arena konnte nicht laden: ${esc(errMsg(e))}</div>`; return; }
   F = loadF();
-  if (F && (!F.s || !F.phase || !F.s.maxRunden)) F = null;
+  if (F && (!F.s || !F.phase || !F.s.maxRunden || !F.id)) F = null;
   render();
   window.addEventListener('storage', (e) => { if (e.key === 'noerti-arena-lobby' && !F) renderLobby(); });
 })();

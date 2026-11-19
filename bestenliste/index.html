@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nörti Bestenliste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../app/style.css">
+<style>
+  h1 { margin: 0; font-family: var(--disp); font-weight: 400; font-size: 32px; line-height: 1.05; }
+  .row { display: flex; align-items: center; gap: 10px; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 10px; }
+  .row.top { border-width: 3px; box-shadow: 4px 4px 0 var(--ink); }
+  .rank { font: 400 22px var(--disp); width: 34px; text-align: center; flex: 0 0 auto; }
+  .thumb { width: 48px; height: 48px; border-radius: 10px; border: 2px solid var(--ink); overflow: hidden; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font: 400 14px var(--disp); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .num { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: 0 0 auto; }
+  .mine { background: #FFF6D1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="../arena/">NÖRTI ARENA</a>
+    <a class="pill" href="../arena/">Arena</a>
+  </header>
+  <div><h1>BESTENLISTE</h1><p class="muted" style="margin:4px 0 0">Die stärksten Figuren – nach Level, dann XP.</p></div>
+  <main id="app" class="actions" style="gap:8px"><div class="spinner" aria-label="Lädt"></div></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../app/common.js"></script>
+<script>
+(async () => {
+  const { api, esc, errMsg } = Noerti;
+  const app = document.getElementById('app');
+  try {
+    const [types, list] = await Promise.all([Noerti.types(), api.leaderboard(30)]);
+    const tn = (id) => (types.find((t) => t.id === id) || {}).name || 'Typ ' + id;
+    const played = list.filter((f) => f.wins + f.losses > 0 || f.xp > 0);
+    if (!played.length) { app.innerHTML = '<div class="card">Noch keine Kämpfe gemeldet. Ab in die <a href="../arena/">Arena</a>!</div>'; return; }
+    for (const f of played) f._img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
+    const medal = ['🥇', '🥈', '🥉'];
+    app.innerHTML = played.map((f, i) => `<div class="row ${i < 3 ? 'top' : ''} ${f.is_mine ? 'mine' : ''}">
+      <span class="rank">${medal[i] || i + 1}</span>
+      <span class="thumb hatch">${f._img ? `<img src="${esc(f._img)}" alt="">` : esc(f.type_id)}</span>
+      <span class="who"><b>${esc(f.nickname || tn(f.type_id))}</b><span class="small muted">${esc(tn(f.type_id))}${f.owner_name ? ' · ' + esc(f.owner_name) : ''}${f.is_mine ? ' · deine' : ''}</span></span>
+      <span class="num"><span class="lv">LV ${f.level}</span><span class="small muted">${f.wins}:${f.losses} · ${f.xp} XP</span></span>
+    </div>`).join('');
+  } catch (e) { app.innerHTML = `<div class="card">Bestenliste nicht erreichbar: ${esc(errMsg(e))}</div>`; }
+})();
+</script>
+</body>
+</html>
