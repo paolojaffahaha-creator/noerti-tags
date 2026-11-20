@@ -183,6 +183,101 @@
   .lvup { background: var(--marker); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px; box-shadow: 3px 3px 0 var(--ink); animation: pop .4s ease both; }
   .lvup > b { font: 400 18px var(--disp); }
   @media (prefers-reduced-motion: reduce) { .choice, .log p { animation: none; } .d20.spin { animation: none; } .lpbar > div, .mug .liq { transition: none; } }
+
+  /* ---------- Anschaulicher (2026-11-20): Teamfarben, Aktionskarten, Wer-schlägt-wen ---------- */
+  :root { --tA: var(--sound); --tB: var(--street); --tA-l: #EDE6FD; --tB-l: #FDE9DC; --ok-l: #BDEBCB; --bad-l: #FBD4CC; }
+  .tA { --tc: var(--tA); --tc-l: var(--tA-l); } .tB { --tc: var(--tB); --tc-l: var(--tB-l); }
+  .tchip { display: inline-flex; align-items: center; gap: 6px; font: 700 12px var(--body); letter-spacing: .04em; color: var(--white); background: var(--tc); border: 2px solid var(--ink); border-radius: 99px; padding: 1px 10px; white-space: nowrap; }
+  .sticky { pointer-events: none; } .sticky > * { pointer-events: auto; }
+  /* Aufstellung */
+  .steps { display: flex; gap: 6px; font: 700 12px var(--body); color: var(--muted); }
+  .steps span { flex: 1; text-align: center; padding: 4px 2px; border-bottom: 3px solid var(--dot); }
+  .steps span.done { color: var(--ink); border-bottom-color: var(--okc); }
+  .steps span.now { color: var(--ink); border-bottom-color: var(--ink); }
+  .team.card { border-top: 8px solid var(--tc); position: relative; }
+  .team .tchip { align-self: flex-start; }
+  .team .count { position: absolute; right: 12px; top: 10px; font: 700 13px var(--body); color: var(--muted); }
+  .slot.empty { border-color: var(--tc); color: var(--ink); background: var(--tc-l); }
+  .todo { font-size: 13px; text-align: center; color: var(--muted); margin: 0; background: var(--white); border: 2px solid var(--ink); border-radius: 10px; padding: 5px 10px; }
+  .todo b { color: var(--ink); }
+  /* Übergabe */
+  .hand { background: var(--tc-l); border-top: 10px solid var(--tc); }
+  .hand .avatar { width: 84px; height: 84px; border-radius: 50%; background: var(--tc); color: var(--white); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center; font: 400 40px var(--disp); }
+  .hand .btn-main { background: var(--tc); color: var(--white); }
+  .roundbar { display: flex; flex-direction: column; gap: 4px; }
+  .roundbar .bar { height: 8px; } .roundbar .bar > div { background: var(--ink); }
+  /* Infokasten mit Teamfarbe */
+  .ibox { border-left: 7px solid var(--tc); }
+  /* kompakte Bühne beim Wählen */
+  .stage.compact { height: 236px; } .stage.mid { height: 286px; }
+  .stage.mid .fig.far { top: 30px; } .stage.mid .fig.near { bottom: 28px; }
+  .stage.compact .fig.far { top: 24px; right: 8%; } .stage.compact .fig.near { bottom: 22px; }
+  .stage.compact .sprite { width: 70px; height: 70px; } .stage.compact .fig.near .sprite { width: 80px; height: 80px; }
+  .stage.compact .sprite .sp-id { font-size: 24px; } .stage.compact .sprite .sp-n { font-size: 10px; }
+  .stage.compact .plat { height: 26px; bottom: -10px; }
+  /* Wählen */
+  .pickhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .help { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--ink); background: var(--white); font: 400 18px var(--disp); cursor: pointer; color: var(--ink); flex: 0 0 auto; }
+  .tank { display: flex; align-items: center; gap: 10px; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 6px 10px; font-size: 14px; }
+  .tank .meter { flex: 1; height: 14px; border: 2px solid var(--ink); border-radius: 7px; background: var(--white); overflow: hidden; position: relative; }
+  .tank .meter i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--beer); transition: width .3s ease; }
+  .tank .meter i.cost { background: repeating-linear-gradient(135deg, var(--beer) 0 4px, var(--foam) 4px 8px); }
+  .tank .mug span { display: none; }
+  .cost small { font-size: 14px; }
+  .tank b { font: 400 16px var(--disp); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sec-h { font: 700 12px var(--body); color: var(--muted); letter-spacing: .05em; margin: 2px 2px -4px; display: flex; justify-content: space-between; }
+  .acard { display: grid; grid-template-columns: 62px 1fr auto; gap: 10px; align-items: center; text-align: left; width: 100%; font: 15px var(--body); color: var(--ink);
+    background: var(--white); border: 2px solid var(--ink); border-radius: 14px; padding: 8px 10px 8px 8px; cursor: pointer; min-height: 64px; position: relative; }
+  .acard[aria-pressed="true"] { background: var(--marker); border-width: 3px; box-shadow: 4px 4px 0 var(--ink); transform: translate(-2px, -2px); }
+  .acard:disabled { cursor: default; background: #F1F2F5; color: var(--muted); }
+  .acard:disabled .big, .acard:disabled .cost { opacity: .45; }
+  .acard .big { height: 48px; border-radius: 10px; background: var(--ink); color: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+  .acard .big b { font: 400 21px var(--disp); }
+  .acard .big small { font: 700 9px var(--body); letter-spacing: .05em; margin-top: 3px; color: var(--marker); }
+  .acard .big.heal { background: var(--lp); } .acard .big.heal small { color: var(--white); }
+  .acard .big.fx { background: var(--sound); } .acard .big.fx small { color: var(--white); }
+  .acard .mid { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .acard .mid > b { font: 400 17px var(--disp); line-height: 1.1; }
+  .acard .extra { font-size: 12px; color: var(--muted); }
+  .acard .why { font-size: 12px; font-weight: 700; color: var(--err); }
+  .hitbar { display: flex; align-items: center; gap: 6px; font: 700 12px var(--body); font-variant-numeric: tabular-nums; }
+  .hitbar .segs { flex: 1; display: grid; grid-template-columns: repeat(20, 1fr); gap: 1px; max-width: 150px; }
+  .hitbar .segs i { height: 8px; border-radius: 2px; background: var(--bad-l); }
+  .hitbar .segs i.g { background: var(--okc); }
+  .cost { display: flex; flex-direction: column; align-items: center; font: 400 15px var(--disp); line-height: 1; gap: 2px; min-width: 38px; }
+  .cost small { font: 700 10px var(--body); color: var(--muted); }
+  .cost.free { color: var(--okc); }
+  .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tcard { text-align: left; font: 14px var(--body); color: var(--ink); background: var(--white); border: 2px solid var(--ink); border-radius: 14px; padding: 8px 10px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px; min-height: 104px; position: relative; }
+  .tcard[aria-pressed="true"] { background: var(--marker); border-width: 3px; box-shadow: 4px 4px 0 var(--ink); transform: translate(-2px, -2px); }
+  .tcard:disabled { cursor: default; background: #F1F2F5; color: var(--muted); }
+  .tcard .th { display: flex; align-items: center; gap: 6px; }
+  .tcard .th .ic { font-size: 22px; line-height: 1; }
+  .tcard .th { justify-content: space-between; }
+  .tcard .tt { font: 400 16px var(--disp); line-height: 1.1; }
+  .tcard .th .cost { min-width: 0; font-size: 13px; flex-direction: row; gap: 1px; }
+  .tcard .th .cost small { font-size: 12px; }
+  .tcard { min-width: 0; }
+  .tcard .what { font-size: 12px; line-height: 1.3; }
+  .vsrow { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+  .vsrow span { font: 700 10.5px var(--body); border-radius: 99px; padding: 1px 7px; border: 1.5px solid var(--ink); }
+  .vsrow .s { background: var(--ok-l); } .vsrow .w { background: var(--bad-l); }
+  .confirm { display: flex; flex-direction: column; gap: 4px; }
+  .confirm .btn-main { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.1; }
+  .confirm .btn-main small { font: 500 13px var(--body); }
+  /* Wer schlägt wen (Hilfe) */
+  .cycle { display: block; align-self: center; width: min(100%, 300px); height: auto; flex: 0 0 auto; }
+  .rules { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+  .rules div { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; }
+  .rules div > span:first-child { font-size: 20px; line-height: 1.2; text-align: center; }
+  /* Aufdecken: beide Wahlen nebeneinander */
+  .reveal2 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: stretch; }
+  .reveal2 .choice { border-top: 6px solid var(--tc); background: var(--tc-l); }
+  .reveal2 .choice .who { font: 700 11px var(--body); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .reveal2 .vs { align-self: center; font-size: 16px; }
+  .verdict { font: 700 13px var(--body); text-align: center; background: var(--ink); color: var(--white); border-radius: 10px; padding: 5px 10px; }
 </style>
 </head>
 <body>
@@ -265,17 +360,22 @@
           <div class="who"><b>${esc(e.name)}</b><span class="small muted">LV ${e.level} · ${esc(typeName(e.type_id))}${e.owner_name ? ' · ' + esc(e.owner_name) : ''}</span>
             ${missing(e) ? '<div class="warn">Noch keine Kampfwerte – im Editor anlegen</div>' : ''}</div>
           <button class="x" data-del="${side}${i}" aria-label="${esc(e.name)} entfernen">×</button></div>`).join('');
-      for (let i = list.length; i < l.size; i++) slots += `<button class="slot empty" data-add="${side}">+ Figur hinzufügen</button>`;
-      return `<section class="team card"><input class="team-name" data-name="${side}" value="${esc(l.names[side] || '')}" placeholder="${esc(ph)}" maxlength="20" aria-label="Name Team ${side}">${slots}</section>`;
+      for (let i = list.length; i < l.size; i++) slots += `<button class="slot empty" data-add="${side}">＋ Figur ${i + 1} hinzufügen</button>`;
+      return `<section class="team card t${side}"><span class="tchip">TEAM ${side}</span><span class="count">${list.length} / ${l.size}</span>
+        <input class="team-name" data-name="${side}" value="${esc(l.names[side] || '')}" placeholder="${esc(ph)} ✎" maxlength="20" aria-label="Name Team ${side}">${slots}</section>`;
     };
     const ready = l.A.length === l.size && l.B.length === l.size && ![...l.A, ...l.B].some(missing);
+    const todo = ['A', 'B'].filter((x) => l[x].length < l.size).map((x) => `<b>Team ${x}</b> fehlt noch ${l.size - l[x].length === 1 ? '1 Figur' : (l.size - l[x].length) + ' Figuren'}`);
+    if (!todo.length && !ready) todo.push('Eine Figur hat noch keine Kampfwerte');
+    const filled = l.A.length + l.B.length;
     app.innerHTML = `
-      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf – dann wird abwechselnd verdeckt gewählt.</p></div>
+      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf. Danach wählt jeder verdeckt seinen Zug – das Handy wird hin und her gereicht.</p></div>
+      <div class="steps" aria-hidden="true"><span class="done">① Teamgröße</span><span class="${ready ? 'done' : 'now'}">② Figuren</span><span class="${ready ? 'now' : ''}">③ Kämpfen</span></div>
       <div class="sizes" role="group" aria-label="Teamgröße">${[1, 2, 3].map((n) => `<button data-size="${n}" aria-pressed="${l.size === n}">${n} gegen ${n}</button>`).join('')}</div>
       ${team('A')}<div class="vs">VS</div>${team('B')}
       <a class="small" href="../bestenliste/" style="text-align:center">🏆 Bestenliste</a>
-      <div class="sticky actions"><button class="btn-main" id="go" ${ready ? '' : 'disabled'}>KAMPF STARTEN</button>
-      ${l.A.length + l.B.length ? '<button class="btn-text" id="clear">Aufstellung leeren</button>' : ''}</div>`;
+      <div class="sticky actions">${ready ? '' : `<p class="todo">${todo.join(' · ')}</p>`}<button class="btn-main" id="go" ${ready ? '' : 'disabled'}>KAMPF STARTEN</button>
+      ${filled ? '<button class="btn-text" id="clear">Aufstellung leeren</button>' : ''}</div>`;
     app.querySelectorAll('[data-size]').forEach((b) => b.onclick = () => {
       const n = +b.dataset.size; l.size = n; l.A = l.A.slice(0, n); l.B = l.B.slice(0, n); lobby.save(l); renderLobby();
     });
@@ -359,10 +459,12 @@
   const other = (x) => (x === 'A' ? 'B' : 'A');
 
   function renderHand() {
-    const name = F.s.teams[F.side].name;
-    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${F.s.runde}</span><span class="small muted">max. ${F.s.maxRunden}</span></div>
-      <div class="hand card ink"><div class="big">🙈</div><h1>${F.side === 'A' && F.s.runde === 1 ? 'Los geht’s,' : 'Handy an'}<br>${esc(name)}</h1>
-      <p class="muted" style="margin:0">${esc(F.s.teams[other(F.side)].name)} schaut weg. ${esc(name)} wählt verdeckt.</p>
+    const name = F.s.teams[F.side].name, oName = F.s.teams[other(F.side)].name;
+    const first = F.side === 'A' && F.s.runde === 1;
+    app.innerHTML = `${roundBar(F.s)}
+      <div class="hand card ink t${F.side}"><div class="avatar">${F.side}</div>
+      <h1>${first ? 'Los geht’s,' : 'Gib das Handy an'}<br>${esc(name)}</h1>
+      <p style="margin:0"><b>🙈 ${esc(oName)}</b> schaut weg.<br><span class="muted">${F.side === 'A' ? `Danach wählt ${esc(oName)}, dann wird gleichzeitig aufgedeckt.` : `${esc(oName)} hat schon gewählt – jetzt bist du dran.`}</span></p>
       <button class="btn-main" id="ok">ICH BIN ${esc(name.toUpperCase())}</button></div>
       <button class="btn-text" id="quit">Kampf abbrechen</button>`;
     app.querySelector('#ok').onclick = () => { F.phase = 'pick'; F.choice = null; saveF(); render(); };
@@ -385,38 +487,131 @@
         <div class="ib-row"><span class="lptext">${f.lp} / ${f.lpMax}</span>${t.figs.length > 1 ? `<span class="bench">${t.figs.map((x) => `<span class="${x.ko ? 'ko' : ''}"></span>`).join('')}</span>` : ''}<span class="team-l">${esc(t.name)}</span></div>
       </div>${mug(f.noerten, s.regeln.noerten_start, 22)}${badges(f)}`;
   }
-  function stage(s, near, bubbles) {
-    const spot = (side, pos) => `<div class="ibox ${pos}" data-side="${side}">${ibox(s, side)}</div>
+  function stage(s, near, bubbles, compact) {
+    const spot = (side, pos) => `<div class="ibox ${pos} t${side}" data-side="${side}">${ibox(s, side)}</div>
       <div class="fig ${pos}" data-side="${side}"><div class="plat"></div>${sprite(K.aktiv(s, side))}
         ${bubbles && bubbles[side] ? `<div class="bubble">${esc(bubbles[side])}</div>` : ''}</div>`;
-    return `<div class="stage" id="stage">${spot(other(near), 'far')}${spot(near, 'near')}<div class="fx" id="fx"></div></div>`;
+    return `<div class="stage ${compact ? 'compact' : ''}" id="stage">${spot(other(near), 'far')}${spot(near, 'near')}<div class="fx" id="fx"></div></div>`;
   }
   const bubbleText = (l) => (l.t.match(/^\p{Extended_Pictographic}/u) ? l.t : '⚔️ ' + l.t);
+
+  // ---------- Wer schlägt wen (gemeinsam für Wählen, Aufdecken, Hilfe) ----------
+  const ICON = { angriff: '⚔️', verteidigen: '🛡️', ausweichen: '💨', auftanken: '🍺', wechseln: '🔄' };
+  const NAME = { angriff: 'Angriff', verteidigen: 'Verteidigen', ausweichen: 'Ausweichen', auftanken: 'Auftanken', wechseln: 'Wechseln' };
+  const VS = {   // was diese Wahl schlägt (s) und wogegen sie schwach ist (w)
+    angriff: { s: ['auftanken'], w: ['verteidigen'] },
+    verteidigen: { s: ['angriff'], w: ['auftanken'] },
+    auftanken: { s: ['verteidigen'], w: ['angriff'] },
+    ausweichen: { s: [], w: [] }
+  };
+  const vsRow = (typ) => { const v = VS[typ]; if (!v) return '';
+    return `<div class="vsrow">${v.s.map((x) => `<span class="s">✓ gegen ${ICON[x]} ${NAME[x]}</span>`).join('')}${v.w.map((x) => `<span class="w">✗ gegen ${ICON[x]} ${NAME[x]}</span>`).join('')}</div>`; };
+  function verdict(R, a, b) {   // kurzer Satz, was beim Aufdecken passiert (aus Sicht der Regeln, ohne Würfel)
+    const k = a + '|' + b, f = String(R.getroffen_faktor).replace('.', ',');
+    const t = {
+      'angriff|auftanken': `⚔️ schlägt 🍺 – Angriff trifft mit ×${f}`,
+      'angriff|verteidigen': '🛡️ schlägt ⚔️ – nur halber Schaden, bei Treffer Konter',
+      'angriff|angriff': '⚔️ gegen ⚔️ – wer schneller ist, trifft zuerst',
+      'angriff|ausweichen': '💨 gegen ⚔️ – Würfelduell: ganz oder gar nicht',
+      'verteidigen|auftanken': `🍺 schlägt 🛡️ – Auftanken bringt +${R.auftanken_gegen_verteidigen}`,
+      'auftanken|auftanken': 'Beide tanken auf',
+      'verteidigen|verteidigen': 'Beide warten ab – nichts passiert',
+      'ausweichen|ausweichen': 'Beide weichen aus – nichts passiert',
+      'ausweichen|verteidigen': 'Niemand greift an – nichts passiert',
+      'ausweichen|auftanken': '🍺 tankt in Ruhe, 💨 war umsonst'
+    };
+    if (a === 'wechseln' || b === 'wechseln') return '🔄 Der Wechsel passiert zuerst';
+    return t[k] || t[b + '|' + a] || '';
+  }
+  function helpSheet() {
+    const R = game.data.regeln, f = String(R.getroffen_faktor).replace('.', ',');
+    const node = (x, y, ic, t) => `<g><circle cx="${x}" cy="${y}" r="34" fill="#fff" stroke="var(--ink)" stroke-width="3"/><text x="${x}" y="${y + 2}" font-size="26" text-anchor="middle">${ic}</text><text x="${x}" y="${y + 52}" font-size="13" font-weight="700" text-anchor="middle" fill="var(--ink)" font-family="Rubik, sans-serif">${t}</text></g>`;
+    const arrow = (x1, y1, x2, y2, lx, ly) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--okc)" stroke-width="4" marker-end="url(#ah)"/><text x="${lx}" y="${ly}" font-size="11" font-weight="700" text-anchor="middle" fill="var(--okc)" font-family="Rubik, sans-serif">schlägt</text>`;
+    sheet(`<h2>Wer schlägt wen?</h2>
+      <p class="small muted">Beide wählen verdeckt, dann wird gleichzeitig aufgedeckt. Die Pfeile zeigen, wer im Vorteil ist.</p>
+      <svg class="cycle" viewBox="0 0 300 250" role="img" aria-label="Angriff schlägt Auftanken, Auftanken schlägt Verteidigen, Verteidigen schlägt Angriff">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--okc)"/></marker></defs>
+        ${arrow(180, 66, 222, 136, 222, 92)}${arrow(200, 186, 104, 186, 152, 178)}${arrow(80, 136, 122, 66, 78, 92)}
+        ${node(150, 42, '⚔️', 'ANGRIFF')}${node(246, 168, '🍺', 'AUFTANKEN')}${node(54, 168, '🛡️', 'VERTEIDIGEN')}
+      </svg>
+      <div class="rules">
+        <div><span>⚔️</span><span><b>Angriff</b> trifft beim Auftanken mit ×${f}. Gegen Verteidigen nur halber Schaden – und der Gegner bekommt einen Konter.</span></div>
+        <div><span>🛡️</span><span><b>Verteidigen</b> halbiert Schaden. Wird geblockt, gibt es einen <b>Konter</b>: +${R.konter_treffer} % Treffer beim nächsten Angriff, Angreifer verliert ${R.konter_noerten} Nörten.</span></div>
+        <div><span>🍺</span><span><b>Auftanken</b> füllt den Krug (+${R.auftanken}). Nutzt der Gegner die Runde nur zum Verteidigen, gibt es sogar mehr. Wer dabei getroffen wird, bekommt nur +${R.auftanken_getroffen}.</span></div>
+        <div><span>💨</span><span><b>Ausweichen</b> ist die riskante Wahl: Würfelduell gegen einen Angriff – klappt es, geht alles daneben, sonst ×${f} Schaden.</span></div>
+        <div><span>🔄</span><span><b>Wechseln</b> kostet die Runde. Die neue Figur steckt den Angriff dieser Runde ein – bringt aber einen eigenen vollen Krug mit.</span></div>
+        <div><span>🎲</span><span><b>Würfel:</b> 75 % heißt beim W20 „6 oder höher“. Die Leiste zeigt grün, welche Zahlen reichen.</span></div>
+      </div>
+      <button class="btn" id="hclose">Verstanden</button>`).querySelector('#hclose').onclick = closeSheet;
+  }
+
+  function roundBar(s, extra) {
+    return `<div class="roundbar"><div class="round"><span class="disp">RUNDE ${s.runde}</span><span class="small muted">${extra || `von max. ${s.maxRunden}`}</span></div>
+      <div class="bar" aria-hidden="true"><div style="width:${Math.min(100, Math.round((s.runde - 1) / s.maxRunden * 100))}%"></div></div></div>`;
+  }
+  const hitbar = (chance) => {
+    const n = K.need(chance);
+    return `<span class="hitbar"><span class="segs" aria-hidden="true">${Array.from({ length: 20 }, (_, i) => `<i class="${i + 1 >= n ? 'g' : ''}"></i>`).join('')}</span>${chance >= 100 ? 'sicher' : `${chance} %`}</span>`;
+  };
+
+  function meter(now, after, max) {
+    const pct = (v) => Math.round(v / max * 100), lo = Math.min(now, after), hi = Math.max(now, after);
+    return `<i style="width:${pct(lo)}%"></i>${hi > lo ? `<i class="cost" style="left:${pct(lo)}%;width:${pct(hi - lo)}%"></i>` : ''}`;
+  }
 
   function renderPick() {
     const s = F.s, side = F.side, f = K.aktiv(s, side), opp = K.aktiv(s, other(side)), o = K.optionen(s, side), R = s.regeln;
     const dodge = K.step5(Math.max(R.ausweichen_min, Math.min(R.ausweichen_max, R.ausweichen_basis + (f.tempo - opp.tempo) * R.ausweichen_pro_tempo + f.mods.dodgeNext + f.chanceBonus)));
     const sel = (a) => F.choice && F.choice.typ === a.typ && F.choice.i === a.i;
-    const atk = o.attacken.map(({ i, a, ok, chance }) => `<button class="act" data-a='{"typ":"angriff","i":${i}}' aria-pressed="${sel({ typ: 'angriff', i })}" ${ok ? '' : 'disabled'}>
-        <b>${esc(a.name)}</b><span class="d">${a.schaden > 0 ? `${a.treffer > 1 ? a.treffer + ' × ' : ''}${Math.round(a.schaden * f.schadenFaktor)} Schaden · ` : ''}${chance} % (W20 ${chance >= 100 ? 'sicher' : K.need(chance) + '+'}) · ${a.kosten} 🍺${a.effekt ? ' · ' + esc(effText(a.effekt)) : ''}${ok ? '' : ' · zu wenig Nörten'}</span></button>`).join('');
+    const cost = (c) => !c ? null : c.typ === 'angriff' ? f.attacken[c.i].kosten : c.typ === 'verteidigen' ? R.kosten_verteidigen : c.typ === 'ausweichen' ? R.kosten_ausweichen : c.typ === 'auftanken' ? -R.auftanken : 0;
+    const max = R.noerten_start, now = f.noerten, c = cost(F.choice), after = c == null ? now : Math.max(0, Math.min(max, now - c));
+    const pct = (v) => Math.round(v / max * 100);
+
+    const atk = o.attacken.map(({ i, a, ok, chance }) => {
+      const dmg = Math.round(a.schaden * f.schadenFaktor);
+      const big = a.schaden > 0 ? `<span class="big"><b>${a.treffer > 1 ? a.treffer + '×' + dmg : dmg}</b><small>SCHADEN</small></span>`
+        : a.effekt && a.effekt.art === 'heilen' ? `<span class="big heal"><b>+${a.effekt.wert}</b><small>LP</small></span>`
+        : `<span class="big fx"><b>✨</b><small>EFFEKT</small></span>`;
+      const ex = a.effekt ? effText(a.effekt) : '';
+      return `<button class="acard" data-a='{"typ":"angriff","i":${i}}' aria-pressed="${sel({ typ: 'angriff', i })}" ${ok ? '' : 'disabled'}>
+        ${big}<span class="mid"><b>${esc(a.name)}</b>${a.schaden > 0 || chance < 100 ? hitbar(chance) : ''}
+          ${ex ? `<span class="extra">✨ ${esc(ex)}</span>` : ''}${ok ? '' : `<span class="why">Zu wenig Nörten – erst auftanken</span>`}</span>
+        <span class="cost"><span>−${a.kosten}</span><small>🍺</small></span></button>`;
+    }).join('');
+    const sw = F.choice && F.choice.typ === 'wechseln' ? s.teams[side].figs[F.choice.i] : null;
+    const tcard = (typ, attrs, ic, title, costHtml, what, enabled) => `<button class="tcard" ${attrs} aria-pressed="${typ === 'wechseln' ? !!sw : sel({ typ })}" ${enabled ? '' : 'disabled'}>
+        <span class="th"><span class="ic">${ic}</span>${costHtml}</span><b class="tt">${title}</b><span class="what">${what}</span>${vsRow(typ)}</button>`;
+    const cst = (n) => `<span class="cost"><span>−${n}</span><small>🍺</small></span>`;
     const chosen = F.choice ? actLabel(s, side, F.choice) : null;
-    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${s.runde}</span><span class="small muted">🙈 Nicht spicken, ${esc(s.teams[other(side)].name)}!</span></div>
-      ${stage(s, side, chosen ? { [side]: bubbleText(chosen) } : null)}
-      <div class="dialog">${chosen ? `${esc(f.name)}: <b>${esc(chosen.t)}</b>${chosen.d ? ' – ' + esc(chosen.d) : ''}. Festlegen?` : `Was soll <b>${esc(f.name)}</b> tun?`}</div>
-      <div class="menu"><span class="menu-h">ATTACKEN</span>${atk}<span class="menu-h">AKTIONEN</span>
-      <div class="act-grid">
-        <button class="act" data-a='{"typ":"verteidigen"}' aria-pressed="${sel({ typ: 'verteidigen' })}" ${o.verteidigen ? '' : 'disabled'}><b>🛡️ Verteidigen</b><span class="d">${R.kosten_verteidigen} 🍺 · halber Schaden, Konter</span></button>
-        <button class="act" data-a='{"typ":"ausweichen"}' aria-pressed="${sel({ typ: 'ausweichen' })}" ${o.ausweichen ? '' : 'disabled'}><b>💨 Ausweichen</b><span class="d">${R.kosten_ausweichen} 🍺 · ${dodge} % · sonst ×${String(R.getroffen_faktor).replace('.', ',')}</span></button>
-        <button class="act" data-a='{"typ":"auftanken"}' aria-pressed="${sel({ typ: 'auftanken' })}"><b>🍺 Auftanken</b><span class="d">+${R.auftanken} · getroffen nur +${R.auftanken_getroffen}</span></button>
-        <button class="act" id="sw" ${o.wechseln.length ? '' : 'disabled'} aria-pressed="${!!(F.choice && F.choice.typ === 'wechseln')}"><b>🔄 Wechseln</b><span class="d">${F.choice && F.choice.typ === 'wechseln' ? 'zu ' + esc(s.teams[side].figs[F.choice.i].name) : o.wechseln.length ? 'kostet die Runde' : 'keine Bank'}</span></button>
-      </div></div>
-      <div class="sticky"><button class="btn-main" id="lock" ${F.choice ? '' : 'disabled'}>AUSWAHL FESTLEGEN</button></div>`;
-    app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); renderPick(); });
+    const first = s.runde === 1 && side === 'A';
+
+    app.innerHTML = `<div class="pickhead"><span class="tchip t${side}" style="background:var(--t${side})">TEAM ${side} WÄHLT</span>
+        <span class="small muted" style="flex:1;text-align:right">Runde ${s.runde} / ${s.maxRunden}</span>
+        <button class="help" id="help" aria-label="Wer schlägt wen? Regeln anzeigen">?</button></div>
+      ${stage(s, side, chosen ? { [side]: bubbleText(chosen) } : null, true)}
+      <div class="tank" aria-label="Nörten von ${esc(f.name)}: ${now} von ${max}">
+        ${mug(after, max, 22)}<span class="meter">${meter(now, after, max)}</span>
+        <b>${after === now ? `${now} Nörten` : `${now} → ${after}`}</b></div>
+      ${first ? `<p class="small" style="margin:0;text-align:center">Neu hier? <a href="#" id="help2">So funktioniert „Wer schlägt wen“</a></p>` : ''}
+      <div class="sec-h"><span>⚔️ ANGREIFEN – was soll ${esc(f.name.toUpperCase())} tun?</span></div>
+      ${vsRow('angriff')}
+      <div class="actlist">${atk}</div>
+      <div class="sec-h"><span>🧠 TAKTIK</span></div>
+      <div class="tgrid">
+        ${tcard('verteidigen', `data-a='{"typ":"verteidigen"}'`, '🛡️', 'Verteidigen', cst(R.kosten_verteidigen), 'Halber Schaden. Geblockt → Konter.', o.verteidigen)}
+        ${tcard('ausweichen', `data-a='{"typ":"ausweichen"}'`, '💨', 'Ausweichen', cst(R.kosten_ausweichen), `🎲 ${dodge} %: alles daneben – sonst ×${String(R.getroffen_faktor).replace('.', ',')} Schaden.`, o.ausweichen)}
+        ${tcard('auftanken', `data-a='{"typ":"auftanken"}'`, '🍺', 'Auftanken', `<span class="cost free"><span>+${R.auftanken}</span><small>🍺</small></span>`, `Krug füllen. Getroffen nur +${R.auftanken_getroffen}.`, true)}
+        ${tcard('wechseln', 'id="sw"', '🔄', 'Wechseln', `<span class="cost free"><span>0</span><small>🍺</small></span>`, sw ? `Zu <b>${esc(sw.name)}</b> – kostet die Runde.` : o.wechseln.length ? 'Andere Figur rein – kostet die Runde.' : 'Keine Figur auf der Bank.', o.wechseln.length)}
+      </div>
+      <div class="sticky confirm"><button class="btn-main" id="lock" ${F.choice ? '' : 'disabled'}>${chosen ? `${esc(chosen.t.replace(/^\p{Extended_Pictographic}️?\s*/u, '').toUpperCase())} FESTLEGEN<small>${side === 'A' ? `danach ist ${esc(s.teams.B.name)} dran` : 'danach wird aufgedeckt'}</small>` : 'AKTION ANTIPPEN'}</button></div>`;
+    app.querySelector('#help').onclick = helpSheet;
+    const h2 = app.querySelector('#help2'); if (h2) h2.onclick = (e) => { e.preventDefault(); helpSheet(); };
+    app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); const y = scrollY; renderPick(); scrollTo(0, y); });
     app.querySelector('#sw').onclick = () => {
       const el = sheet(`<h2>Wen einwechseln?</h2><div class="pick-list">${o.wechseln.map((w) => { const b = s.teams[side].figs[w.i];
         return `<button data-i="${w.i}"><span class="thumb hatch">${b.img ? `<img src="${esc(b.img)}" alt="">` : esc(b.type_id)}</span><span><b>${esc(b.name)}</b><br><span class="small muted">${b.lp}/${b.lpMax} LP · ${b.noerten} Nörten</span></span></button>`; }).join('')}</div>
         <p class="small muted" style="margin:0">Der Wechsel passiert zuerst – die neue Figur steckt einen Angriff dieser Runde ein.</p>`);
-      el.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { F.choice = { typ: 'wechseln', i: +b.dataset.i }; closeSheet(); renderPick(); });
+      el.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { F.choice = { typ: 'wechseln', i: +b.dataset.i }; closeSheet(); const y = scrollY; renderPick(); scrollTo(0, y); });
     };
     app.querySelector('#lock').onclick = () => {
       if (!K.gueltig(s, side, F.choice)) { toast('Diese Aktion geht gerade nicht.', 'err'); return; }
@@ -432,7 +627,7 @@
     const acts = { A: F.pending.A, B: F.pending.B };
     const labels = { A: actLabel(before, 'A', acts.A), B: actLabel(before, 'B', acts.B) };
     const ev = K.runde(F.s, acts.A, acts.B);
-    F.last = { before, ev, labels, runde: before.runde }; F.pending = {}; F.phase = 'reveal'; F.played = false;
+    F.last = { before, ev, labels, acts, runde: before.runde }; F.pending = {}; F.phase = 'reveal'; F.played = false;
     saveF(); render();
   }
 
@@ -441,10 +636,14 @@
     const { before, ev, labels, runde } = F.last;
     const d = JSON.parse(JSON.stringify(F.played ? F.s : before));
     const bub = F.played ? null : { A: bubbleText(labels.A), B: bubbleText(labels.B) };
-    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${runde}</span><span class="small muted">${esc(d.teams.A.name)} vs. ${esc(d.teams.B.name)}</span></div>
-      ${stage(d, 'A', bub)}
+    const acts = F.last.acts || {};
+    const vd = acts.A && acts.B ? verdict(d.regeln, acts.A.typ, acts.B.typ) : '';
+    const ch = (x) => `<div class="choice t${x}"><span class="who">${esc(d.teams[x].name)}</span><b>${esc(labels[x].t)}</b>${labels[x].d ? `<span class="d">${esc(labels[x].d)}</span>` : ''}</div>`;
+    app.innerHTML = `${roundBar({ runde, maxRunden: d.maxRunden }, 'Aufdecken!')}
+      <div class="reveal2">${ch('A')}<span class="vs">VS</span>${ch('B')}</div>${vd ? `<div class="verdict">${esc(vd)}</div>` : ''}
+      ${stage(d, 'A', bub).replace('class="stage ', 'class="stage mid ')}
       <div class="dialog" id="dlg" aria-live="polite"></div>
-      <div class="sticky actions" style="gap:0"><button class="btn-main" id="next" ${F.played ? '' : 'disabled'}>WEITER</button>
+      <div class="actions" style="gap:0"><button class="btn-main" id="next" ${F.played ? '' : 'disabled'}>WEITER</button>
       ${F.played ? '' : '<button class="skip" id="skip">Animation überspringen</button>'}</div>`;
     const $ = (q) => app.querySelector(q), dlg = $('#dlg'), fx = $('#fx'), next = $('#next');
     const say = (html, more) => { dlg.innerHTML = html + (more ? '<span class="more">▼</span>' : ''); };
@@ -496,7 +695,7 @@
       fx.innerHTML = '';
     }
 
-    say(`${esc(d.teams.A.name)}: <b>${esc(labels.A.t)}</b><br>${esc(d.teams.B.name)}: <b>${esc(labels.B.t)}</b>`, true);
+    say(`<b>Aufgedeckt!</b> ${esc(labels.A.t)} gegen ${esc(labels.B.t)}.`, true);
     for (const x of ['A', 'B']) { const a = F.last.ev && labels[x].t; if (/Verteidigen/.test(a)) spriteEl(x).classList.add('guard'); }
     await pause(1600);
 
