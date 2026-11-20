@@ -86,6 +86,99 @@
   .sticky { position: sticky; bottom: 0; padding: 10px 0 calc(6px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--paper) 30%); }
   .win { text-align: center; padding: 18px 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
   .win .crown { font-size: 56px; line-height: 1; }
+  /* Kampfbühne: Gegner oben rechts, eigene Figur unten links, Infokästen gegenüber */
+  .stage { position: relative; height: 340px; border: 3px solid var(--ink); border-radius: 18px; overflow: hidden; box-shadow: 5px 5px 0 var(--ink);
+    background: radial-gradient(var(--dot) 1.1px, transparent 1.1px) 0 0 / 16px 16px, linear-gradient(#F7F8FA 0 58%, #ECEEF1 58%); }
+  .stage::after { content: ""; position: absolute; left: 0; right: 0; top: 58%; border-top: 2px dashed var(--dot); }
+  .ibox { position: absolute; z-index: 3; width: 57%; background: var(--white); border: 2.5px solid var(--ink); border-radius: 12px; padding: 5px 6px 5px 9px;
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; box-shadow: 3px 3px 0 var(--ink); }
+  .ibox.far { left: 8px; top: 8px; }
+  .ibox.near { right: 8px; bottom: 8px; }
+  .ibox .main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .ibox .nm { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+  .ibox .nm b { font: 400 15px var(--disp); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .ibox .nm .lv { font-size: 11px; padding: 0 5px; white-space: nowrap; flex: 0 0 auto; }
+  .ibox .hp { display: flex; align-items: center; gap: 5px; }
+  .ibox .hp-l { font: 700 10px var(--body); background: var(--ink); color: var(--marker); border-radius: 4px; padding: 0 4px; }
+  .ibox .lpbar { flex: 1; height: 10px; }
+  .ibox .ib-row { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--muted); }
+  .ibox .ib-row .team-l { margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50%; }
+  .ibox .badges { grid-column: 1 / -1; }
+  .ibox .mug span { font-size: 12px; }
+  .fig { position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+  .fig.far { right: 7%; top: 40px; }
+  .fig.near { left: 6%; bottom: 34px; }
+  .plat { position: absolute; bottom: -12px; width: 150%; height: 34px; border: 2px solid var(--ink); border-radius: 50%;
+    background: repeating-linear-gradient(135deg, #F4F5F7 0 6px, #E2E5EA 6px 12px); z-index: -1; }
+  .sprite { width: 92px; height: 92px; background: var(--white); border: 2.5px solid var(--ink); border-radius: 10px; padding: 5px; box-shadow: 4px 4px 0 var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(3deg); animation: bob 2.4s ease-in-out infinite; }
+  .fig.near .sprite { width: 104px; height: 104px; transform: rotate(-3deg); animation-delay: -1.2s; }
+  .sprite img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; }
+  .sprite .sp-id { font: 400 32px var(--disp); line-height: 1; }
+  .sprite .sp-n { font-size: 12px; color: var(--muted); text-align: center; }
+  .sprite.noimg { background: repeating-linear-gradient(135deg, #FFFFFF 0 10px, #F1F2F5 10px 20px); }
+  @keyframes bob { 50% { translate: 0 -4px; } }
+  .bubble { position: absolute; top: -14px; z-index: 4; font: 700 12px var(--body); background: var(--marker); border: 2px solid var(--ink); border-radius: 99px; padding: 2px 9px; white-space: nowrap; animation: popin .35s ease both; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+  .fig.far .bubble { right: -6px; } .fig.near .bubble { left: -4px; }
+  @keyframes popin { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+  /* Bewegungen */
+  .fig.near .sprite.lunge { animation: lungeN .55s ease; }
+  .fig.far .sprite.lunge { animation: lungeF .55s ease; }
+  @keyframes lungeN { 40% { translate: 70px -60px; } }
+  @keyframes lungeF { 40% { translate: -70px 60px; } }
+  .sprite.hit { animation: hit .5s ease; }
+  @keyframes hit { 0%,100% { translate: 0; filter: none; } 15% { translate: -8px 0; filter: sepia(1) saturate(6) hue-rotate(-40deg); } 30% { translate: 8px 0; } 45% { translate: -6px 0; filter: sepia(1) saturate(6) hue-rotate(-40deg); } 60% { translate: 5px 0; } }
+  .fig.near .sprite.dodge { animation: dodgeN .6s ease; } .fig.far .sprite.dodge { animation: dodgeF .6s ease; }
+  @keyframes dodgeN { 40% { translate: -40px 6px; opacity: .45; } }
+  @keyframes dodgeF { 40% { translate: 40px -6px; opacity: .45; } }
+  .sprite.guard { box-shadow: 0 0 0 5px var(--white), 0 0 0 8px var(--sound), 4px 4px 0 8px var(--ink); }
+  .sprite.heal { animation: glow .8s ease; }
+  @keyframes glow { 50% { box-shadow: 0 0 0 8px #BDEBCB, 4px 4px 0 8px var(--ink); } }
+  .sprite.koed { animation: none; transform: rotate(80deg) translateY(18px); filter: grayscale(1); opacity: .5; transition: transform .6s ease, opacity .6s; }
+  .sprite.out { transition: transform .35s ease, opacity .35s; opacity: 0; }
+  .fig.near .sprite.out { transform: translateX(-160px); } .fig.far .sprite.out { transform: translateX(160px); }
+  .float { position: absolute; z-index: 5; font: 400 26px var(--disp); pointer-events: none; animation: floatUp 1.1s ease-out both; white-space: nowrap; -webkit-text-stroke: 1px var(--ink); }
+  .float.dmg { color: var(--lp-low); } .float.heal { color: var(--lp); } .float.beer { color: var(--beer); font-size: 20px; } .float.info { color: var(--ink); -webkit-text-stroke: 0; font: 700 13px var(--body); background: var(--marker); border: 2px solid var(--ink); border-radius: 99px; padding: 1px 8px; }
+  @keyframes floatUp { from { transform: translateY(10px) scale(.6); opacity: 0; } 20% { transform: translateY(0) scale(1.15); opacity: 1; } to { transform: translateY(-46px); opacity: 0; } }
+  .fx { position: absolute; inset: 0; z-index: 6; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+  .stamp { position: absolute; font: 400 34px var(--disp); color: var(--white); background: var(--ink); padding: 4px 16px; border-radius: 10px; transform: rotate(-6deg); animation: stamp .9s ease both; box-shadow: 4px 4px 0 var(--marker); }
+  .stamp.good { background: var(--lp); } .stamp.bad { background: var(--lp-low); } .stamp.gold { background: var(--marker); color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  @keyframes stamp { 0% { transform: rotate(-6deg) scale(2.4); opacity: 0; } 25% { transform: rotate(-6deg) scale(1); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(-6deg) scale(1); } }
+  /* Würfel */
+  .dicebox { background: var(--white); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 var(--ink); padding: 10px 12px; width: min(92%, 330px);
+    display: flex; flex-direction: column; align-items: center; gap: 6px; animation: popin .25s ease both; }
+  .dlabel { font: 700 13px var(--body); text-align: center; }
+  .dlabel b { font: 400 17px var(--disp); display: block; }
+  .die { position: relative; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; }
+  .die svg { position: absolute; inset: 0; }
+  .die span { position: relative; font: 400 30px var(--disp); margin-top: 8px; }
+  .die.roll svg { animation: tumble .5s linear infinite; }
+  .die.roll { animation: hop .5s ease-in-out infinite; }
+  @keyframes tumble { to { transform: rotate(360deg); } }
+  @keyframes hop { 50% { transform: translateY(-14px) scale(1.05); } }
+  .die.land { animation: land .35s ease; }
+  @keyframes land { 0% { transform: scale(1.35); } 60% { transform: scale(.92); } }
+  .die.ok .face { fill: #BDEBCB; } .die.fail .face { fill: #FBD4CC; }
+  .strip { display: grid; grid-template-columns: repeat(20, 1fr); gap: 2px; width: 100%; }
+  .strip i { font: 700 9px var(--body); font-style: normal; text-align: center; padding: 3px 0; border-radius: 3px; background: #FBD4CC; color: #8a2a1c; border: 1.5px solid transparent; }
+  .strip i.g { background: #BDEBCB; color: #155c32; }
+  .strip i.cur { border-color: var(--ink); transform: scale(1.25); }
+  .strip i.res { background: var(--ink); color: var(--white); transform: scale(1.35); }
+  .dtext { font-size: 13px; text-align: center; }
+  .dtext b { font-family: var(--disp); font-weight: 400; }
+  /* Textkasten */
+  .dialog { position: relative; background: var(--white); border: 3px solid var(--ink); border-radius: 14px; padding: 12px 34px 12px 14px; min-height: 72px;
+    font: 500 17px/1.35 var(--body); box-shadow: inset 0 0 0 3px var(--white), inset 0 0 0 5px var(--dot); cursor: pointer; }
+  .dialog .more { position: absolute; right: 12px; bottom: 8px; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .menu { border: 3px solid var(--ink); border-radius: 14px; background: var(--white); padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .menu .act { border-width: 2px; }
+  .menu-h { font: 700 12px var(--body); color: var(--muted); letter-spacing: .04em; padding: 0 4px; }
+  .skip { font: 500 14px var(--body); background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 8px; align-self: center; min-height: 40px; }
+  @media (prefers-reduced-motion: reduce) {
+    .sprite, .fig .sprite.lunge, .sprite.hit, .fig .sprite.dodge, .die.roll, .die.roll svg, .die.land, .bubble, .float, .stamp, .dicebox { animation: none !important; }
+    .dialog .more { animation: none; }
+  }
   [hidden] { display: none !important; }
   .lvup { background: var(--marker); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px; box-shadow: 3px 3px 0 var(--ink); animation: pop .4s ease both; }
   .lvup > b { font: 400 18px var(--disp); }
@@ -276,22 +369,47 @@
     app.querySelector('#quit').onclick = quit;
   }
 
+  // ---------- Kampfbühne ----------
+  const D20 = `<svg viewBox="0 0 100 100" aria-hidden="true"><polygon class="face" points="50,3 93,27 93,73 50,97 7,73 7,27" fill="#fff" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"/>
+    <polygon points="50,24 80,72 20,72" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M50 3 L50 24 M93 27 L80 72 M7 27 L20 72 M93 73 L80 72 M7 73 L20 72 M50 97 L80 72 M50 97 L20 72 M7 27 L50 24 M93 27 L50 24" stroke="var(--ink)" stroke-width="1.6" opacity=".55"/></svg>`;
+  function sprite(f) {
+    return f.img ? `<div class="sprite ${f.ko ? 'koed' : ''}"><img src="${esc(f.img)}" alt=""></div>`
+      : `<div class="sprite noimg ${f.ko ? 'koed' : ''}"><span class="sp-id">${esc(f.type_id)}</span><span class="sp-n">${esc(typeName(f.type_id))}</span></div>`;
+  }
+  function ibox(s, side) {
+    const t = s.teams[side], f = t.figs[t.active], p = f.lp / f.lpMax;
+    return `<div class="main">
+        <div class="nm"><b>${esc(f.name)}</b><span class="lv">LV ${f.level}</span></div>
+        <div class="hp"><span class="hp-l">LP</span><div class="lpbar"><div class="lpfill" style="width:${Math.round(p * 100)}%;background:${lpColor(p)}"></div></div></div>
+        <div class="ib-row"><span class="lptext">${f.lp} / ${f.lpMax}</span>${t.figs.length > 1 ? `<span class="bench">${t.figs.map((x) => `<span class="${x.ko ? 'ko' : ''}"></span>`).join('')}</span>` : ''}<span class="team-l">${esc(t.name)}</span></div>
+      </div>${mug(f.noerten, s.regeln.noerten_start, 22)}${badges(f)}`;
+  }
+  function stage(s, near, bubbles) {
+    const spot = (side, pos) => `<div class="ibox ${pos}" data-side="${side}">${ibox(s, side)}</div>
+      <div class="fig ${pos}" data-side="${side}"><div class="plat"></div>${sprite(K.aktiv(s, side))}
+        ${bubbles && bubbles[side] ? `<div class="bubble">${esc(bubbles[side])}</div>` : ''}</div>`;
+    return `<div class="stage" id="stage">${spot(other(near), 'far')}${spot(near, 'near')}<div class="fx" id="fx"></div></div>`;
+  }
+  const bubbleText = (l) => (l.t.match(/^\p{Extended_Pictographic}/u) ? l.t : '⚔️ ' + l.t);
+
   function renderPick() {
     const s = F.s, side = F.side, f = K.aktiv(s, side), opp = K.aktiv(s, other(side)), o = K.optionen(s, side), R = s.regeln;
     const dodge = K.step5(Math.max(R.ausweichen_min, Math.min(R.ausweichen_max, R.ausweichen_basis + (f.tempo - opp.tempo) * R.ausweichen_pro_tempo + f.mods.dodgeNext + f.chanceBonus)));
     const sel = (a) => F.choice && F.choice.typ === a.typ && F.choice.i === a.i;
     const atk = o.attacken.map(({ i, a, ok, chance }) => `<button class="act" data-a='{"typ":"angriff","i":${i}}' aria-pressed="${sel({ typ: 'angriff', i })}" ${ok ? '' : 'disabled'}>
         <b>${esc(a.name)}</b><span class="d">${a.schaden > 0 ? `${a.treffer > 1 ? a.treffer + ' × ' : ''}${Math.round(a.schaden * f.schadenFaktor)} Schaden · ` : ''}${chance} % (W20 ${chance >= 100 ? 'sicher' : K.need(chance) + '+'}) · ${a.kosten} 🍺${a.effekt ? ' · ' + esc(effText(a.effekt)) : ''}${ok ? '' : ' · zu wenig Nörten'}</span></button>`).join('');
-    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${s.runde} · ${esc(s.teams[side].name.toUpperCase())}</span></div>
-      <div class="peek">🙈 Nicht spicken, ${esc(s.teams[other(side)].name)}!</div>
-      ${fighter(s, other(side), false)}<div class="vs" style="font-size:15px">VS</div>${fighter(s, side, true)}
-      <div class="actlist">${atk}</div>
+    const chosen = F.choice ? actLabel(s, side, F.choice) : null;
+    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${s.runde}</span><span class="small muted">🙈 Nicht spicken, ${esc(s.teams[other(side)].name)}!</span></div>
+      ${stage(s, side, chosen ? { [side]: bubbleText(chosen) } : null)}
+      <div class="dialog">${chosen ? `${esc(f.name)}: <b>${esc(chosen.t)}</b>${chosen.d ? ' – ' + esc(chosen.d) : ''}. Festlegen?` : `Was soll <b>${esc(f.name)}</b> tun?`}</div>
+      <div class="menu"><span class="menu-h">ATTACKEN</span>${atk}<span class="menu-h">AKTIONEN</span>
       <div class="act-grid">
         <button class="act" data-a='{"typ":"verteidigen"}' aria-pressed="${sel({ typ: 'verteidigen' })}" ${o.verteidigen ? '' : 'disabled'}><b>🛡️ Verteidigen</b><span class="d">${R.kosten_verteidigen} 🍺 · halber Schaden, Konter</span></button>
         <button class="act" data-a='{"typ":"ausweichen"}' aria-pressed="${sel({ typ: 'ausweichen' })}" ${o.ausweichen ? '' : 'disabled'}><b>💨 Ausweichen</b><span class="d">${R.kosten_ausweichen} 🍺 · ${dodge} % · sonst ×${String(R.getroffen_faktor).replace('.', ',')}</span></button>
         <button class="act" data-a='{"typ":"auftanken"}' aria-pressed="${sel({ typ: 'auftanken' })}"><b>🍺 Auftanken</b><span class="d">+${R.auftanken} · getroffen nur +${R.auftanken_getroffen}</span></button>
         <button class="act" id="sw" ${o.wechseln.length ? '' : 'disabled'} aria-pressed="${!!(F.choice && F.choice.typ === 'wechseln')}"><b>🔄 Wechseln</b><span class="d">${F.choice && F.choice.typ === 'wechseln' ? 'zu ' + esc(s.teams[side].figs[F.choice.i].name) : o.wechseln.length ? 'kostet die Runde' : 'keine Bank'}</span></button>
-      </div>
+      </div></div>
       <div class="sticky"><button class="btn-main" id="lock" ${F.choice ? '' : 'disabled'}>AUSWAHL FESTLEGEN</button></div>`;
     app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); renderPick(); });
     app.querySelector('#sw').onclick = () => {
@@ -318,52 +436,113 @@
     saveF(); render();
   }
 
+  // ---------- Aufdecken: Runde Schritt für Schritt abspielen ----------
   async function renderReveal() {
     const { before, ev, labels, runde } = F.last;
-    const d = JSON.parse(JSON.stringify(before));
-    const panels = () => `${fighter(d, 'A', false)}${fighter(d, 'B', false)}`;
-    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${runde} · AUFDECKEN</span></div>
-      <div class="reveal">
-        <div class="choice"><span class="small muted">${esc(d.teams.A.name)}</span><b>${esc(labels.A.t)}</b><span class="d">${esc(labels.A.d || '')}</span></div>
-        <div class="vs" style="align-self:center;font-size:15px">VS</div>
-        <div class="choice"><span class="small muted">${esc(d.teams.B.name)}</span><b>${esc(labels.B.t)}</b><span class="d">${esc(labels.B.d || '')}</span></div>
-      </div>
-      <div id="panels" class="actions" style="gap:8px">${panels()}</div>
-      <div class="dice-wrap" id="dice" hidden></div>
-      <div class="log" id="log" aria-live="polite"></div>
-      <div class="sticky actions"><button class="btn-main" id="next">${F.played ? 'WEITER' : 'ÜBERSPRINGEN'}</button></div>`;
-    const log = app.querySelector('#log'), pan = app.querySelector('#panels'), dice = app.querySelector('#dice'), next = app.querySelector('#next');
-    let skip = F.played;
-    const apply = (e) => {
-      const fig = e.fi != null ? d.teams[e.side].figs[e.fi] : null;
-      if (e.t === 'lp') fig.lp = e.value;
-      if (e.t === 'noerten') fig.noerten = e.value;
-      if (e.t === 'wechsel') d.teams[e.side].active = e.fi;
-      if (e.t === 'ko') fig.ko = true;
-      if (e.t === 'konter' || e.t === 'effekt') for (const x of ['A', 'B']) d.teams[x].figs.forEach((f, i) => { f.mods = F.s.teams[x].figs[i].mods; });
+    const d = JSON.parse(JSON.stringify(F.played ? F.s : before));
+    const bub = F.played ? null : { A: bubbleText(labels.A), B: bubbleText(labels.B) };
+    app.innerHTML = `<div class="round"><span class="disp">RUNDE ${runde}</span><span class="small muted">${esc(d.teams.A.name)} vs. ${esc(d.teams.B.name)}</span></div>
+      ${stage(d, 'A', bub)}
+      <div class="dialog" id="dlg" aria-live="polite"></div>
+      <div class="sticky actions" style="gap:0"><button class="btn-main" id="next" ${F.played ? '' : 'disabled'}>WEITER</button>
+      ${F.played ? '' : '<button class="skip" id="skip">Animation überspringen</button>'}</div>`;
+    const $ = (q) => app.querySelector(q), dlg = $('#dlg'), fx = $('#fx'), next = $('#next');
+    const say = (html, more) => { dlg.innerHTML = html + (more ? '<span class="more">▼</span>' : ''); };
+    $('#next').onclick = () => { if (F.played) after(); };
+    if (F.played) { say(`Runde ${runde} ist vorbei.`, false); return; }
+
+    let skip = false, tapR = null;
+    const tap = () => { if (tapR) { const r = tapR; tapR = null; r(); } };
+    dlg.onclick = tap; $('#stage').onclick = tap;
+    $('#skip').onclick = () => { skip = true; tap(); };
+    const pause = (ms) => (skip ? Promise.resolve() : new Promise((r) => { tapR = r; setTimeout(() => { if (tapR === r) tapR = null; r(); }, REDUCED ? Math.min(ms, 400) : ms); }));
+    const figEl = (side) => app.querySelector(`.fig[data-side="${side}"]`);
+    const spriteEl = (side) => figEl(side).querySelector('.sprite');
+    const anim = (side, cls) => { if (skip) return; const sp = spriteEl(side); sp.classList.remove(cls); void sp.offsetWidth; sp.classList.add(cls); setTimeout(() => sp.classList.remove(cls), 900); };
+    const float = (side, text, cls, where) => {
+      if (skip) return;
+      const host = where === 'box' ? app.querySelector(`.ibox[data-side="${side}"]`) : figEl(side);
+      const el = document.createElement('div'); el.className = 'float ' + cls; el.textContent = text;
+      el.style.left = where === 'box' ? 'auto' : '50%'; el.style.right = where === 'box' ? '6px' : 'auto'; el.style.top = where === 'box' ? '-10px' : '10%';
+      if (where !== 'box') el.style.marginLeft = '-30px';
+      host.appendChild(el); setTimeout(() => el.remove(), 1200);
     };
-    const line = (e) => {
-      if (!e.text) return;
-      const p = document.createElement('p');
-      p.className = (e.side || '') + (e.t === 'ende' ? ' end' : e.t === 'ko' || e.t === 'konter' || (e.t === 'wurf' && e.ok) ? ' good' : '');
-      p.textContent = e.t === 'wurf' ? `🎲 ${e.label}: ${e.roll}${e.chance >= 100 ? '' : ` (braucht ${e.need}+)`} – ${e.text}` : e.text;
-      log.appendChild(p);
+    const stamp = (text, cls) => { if (skip) return; const el = document.createElement('div'); el.className = 'stamp ' + (cls || ''); el.textContent = text; fx.appendChild(el); setTimeout(() => el.remove(), 950); };
+    const box = (side) => {
+      const el = app.querySelector(`.ibox[data-side="${side}"]`), old = el.querySelector('.lpfill').style.width;
+      el.innerHTML = ibox(d, side);
+      const fill = el.querySelector('.lpfill'), nw = fill.style.width;
+      if (!skip) { fill.style.width = old; requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = nw; })); }
     };
-    next.onclick = () => { if (!F.played) { skip = true; return; } after(); };
-    for (const e of ev) {
-      if (!skip && e.t === 'wurf' && e.chance < 100) {
-        dice.hidden = false;
-        dice.innerHTML = `<div class="d20 spin"><span>?</span></div><div class="dice-txt"><b>${esc(e.label)}</b><span>${e.chance} % · braucht ${e.need}+</span></div>`;
-        const n = dice.querySelector('.d20'), sp = n.querySelector('span');
-        if (!REDUCED) for (let k = 0; k < 10 && !skip; k++) { sp.textContent = 1 + Math.floor(Math.random() * 20); await wait(55); }
-        n.classList.remove('spin'); n.classList.add(e.ok ? 'ok' : 'fail'); sp.textContent = e.roll;
-        if (!skip) await wait(650);
+    const syncMods = () => { for (const x of ['A', 'B']) d.teams[x].figs.forEach((f, i) => { f.mods = JSON.parse(JSON.stringify(F.s.teams[x].figs[i].mods)); }); };
+    const who = (side) => K.aktiv(d, side).name;
+
+    async function dice(e) {
+      const strip = Array.from({ length: 20 }, (_, i) => `<i class="${i + 1 >= e.need ? 'g' : ''}" data-n="${i + 1}">${i + 1}</i>`).join('');
+      fx.innerHTML = `<div class="dicebox"><div class="dlabel">${esc(who(e.side))} würfelt<b>${esc(e.label)}</b></div>
+        <div class="die roll">${D20}<span>?</span></div><div class="strip">${strip}</div>
+        <div class="dtext">Grün = geschafft · braucht <b>${e.need}+</b> (${e.chance} %)</div></div>`;
+      const die = fx.querySelector('.die'), num = die.querySelector('span'), cells = fx.querySelectorAll('.strip i'), txt = fx.querySelector('.dtext');
+      if (!skip && !REDUCED) for (let k = 0; k < 14 && !skip; k++) {
+        const n = 1 + Math.floor(Math.random() * 20); num.textContent = n;
+        cells.forEach((c) => c.classList.toggle('cur', +c.dataset.n === n));
+        await new Promise((r) => setTimeout(r, 55 + k * 9));
       }
-      apply(e); line(e);
-      if (!skip) { pan.innerHTML = panels(); log.lastElementChild && log.lastElementChild.scrollIntoView({ block: 'nearest' }); await wait(e.t === 'info' || e.t === 'noerten' ? 450 : 750); }
+      cells.forEach((c) => c.classList.remove('cur'));
+      die.classList.remove('roll'); die.classList.add('land', e.ok ? 'ok' : 'fail'); num.textContent = e.roll;
+      cells[e.roll - 1].classList.add('res');
+      txt.innerHTML = `<b>${e.roll}</b> ${e.ok ? '≥' : '<'} ${e.need} → <b>${e.ok ? 'geschafft!' : 'nicht geschafft!'}</b>`;
+      await pause(1300);
+      fx.innerHTML = '';
     }
-    pan.innerHTML = `${fighter(F.s, 'A', false)}${fighter(F.s, 'B', false)}`;
-    F.played = true; saveF(); next.textContent = 'WEITER';
+
+    say(`${esc(d.teams.A.name)}: <b>${esc(labels.A.t)}</b><br>${esc(d.teams.B.name)}: <b>${esc(labels.B.t)}</b>`, true);
+    for (const x of ['A', 'B']) { const a = F.last.ev && labels[x].t; if (/Verteidigen/.test(a)) spriteEl(x).classList.add('guard'); }
+    await pause(1600);
+
+    for (const e of ev) {
+      const f = e.fi != null ? d.teams[e.side].figs[e.fi] : null;
+      if (e.t === 'noerten') {
+        const delta = e.value - f.noerten; f.noerten = e.value; box(e.side);
+        if (delta) float(e.side, `${delta > 0 ? '+' : '−'}${Math.abs(delta)} 🍺`, 'beer', 'box');
+        if (delta > 0) { say(esc(e.text), true); await pause(1200); } else await pause(380);
+      } else if (e.t === 'wechsel') {
+        say(esc(e.text), true);
+        if (!skip) { spriteEl(e.side).classList.add('out'); await pause(380); }
+        d.teams[e.side].active = e.fi;
+        figEl(e.side).querySelector('.sprite').outerHTML = sprite(K.aktiv(d, e.side)); box(e.side);
+        await pause(1000);
+      } else if (e.t === 'angriff') {
+        say(esc(e.text), true); anim(e.side, 'lunge'); await pause(900);
+      } else if (e.t === 'wurf') {
+        if (e.chance < 100) await dice(e);
+        if (e.label === 'Ausweichen') { if (e.ok) { anim(e.side, 'dodge'); stamp('AUSGEWICHEN!', 'good'); } else stamp('ERWISCHT!', 'bad'); }
+        else stamp(e.ok ? 'TREFFER!' : 'DANEBEN!', e.ok ? 'good' : 'bad');
+        say(esc(e.text), true); await pause(800);
+      } else if (e.t === 'lp') {
+        const diff = e.value - f.lp; f.lp = e.value; box(e.side);
+        if (diff < 0) { anim(e.side, 'hit'); float(e.side, `−${-diff}`, 'dmg'); } else if (diff > 0) { anim(e.side, 'heal'); float(e.side, `+${diff}`, 'heal'); }
+        say(esc(e.text), true); await pause(1100);
+      } else if (e.t === 'effekt' || e.t === 'konter') {
+        syncMods(); box('A'); box('B');
+        if (e.t === 'konter') stamp('KONTER!', 'gold'); else float(e.side, '✨', 'info');
+        say(esc(e.text), true); await pause(1300);
+      } else if (e.t === 'ko') {
+        f.ko = true; f.lp = 0; box(e.side); spriteEl(e.side).classList.add('koed'); stamp('K.O.!', 'bad');
+        say(esc(e.text), true); await pause(1500);
+      } else if (e.t === 'ende') {
+        say(`<b>${esc(e.text)}</b>`, false); await pause(800);
+      } else if (e.text) {
+        say(esc(e.text), true); await pause(1100);
+      }
+    }
+    app.querySelectorAll('.sprite.guard').forEach((x) => x.classList.remove('guard'));
+    fx.innerHTML = '';
+    F.played = true; saveF();
+    // Endstand sicher anzeigen
+    for (const x of ['A', 'B']) { d.teams[x] = JSON.parse(JSON.stringify(F.s.teams[x])); box(x); }
+    if (!ev.some((e) => e.t === 'ende')) say(`Runde ${runde} ist vorbei. Weiter zu Runde ${F.s.runde}!`, false);
+    next.disabled = false; const sk = $('#skip'); if (sk) sk.remove();
   }
 
   function after() {
