@@ -4,53 +4,133 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Nörti Editor</title>
+<title>Nörti Werkstatt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="../app/style.css">
 <style>
-  .wrap { max-width: 760px; padding-bottom: 110px; }
+  :root { --atk: #E5484D; --def: #2F6FE4; --eva: #23965A; --tank: #E39A0B; --soft: #F5F6F8; }
+  .wrap { max-width: 1120px; padding-bottom: 110px; }
   h1 { margin: 0; font-size: 30px; line-height: 1.05; }
+  h2 { margin: 0; font: 400 22px var(--disp); }
   .status { font-size: 13px; color: var(--muted); }
   .status b { color: var(--ink); }
+  .status .warn { color: var(--err); font-weight: 700; }
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tabs button, .types button { font: 500 14px var(--body); border: 2px solid var(--ink); border-radius: 99px; padding: 6px 14px; background: var(--white); color: var(--ink); cursor: pointer; min-height: 40px; }
+  .tabs button, .chips button { font: 500 14px var(--body); border: 2px solid var(--ink); border-radius: 99px; padding: 6px 14px; background: var(--white); color: var(--ink); cursor: pointer; min-height: 40px; }
   .tabs button[aria-selected="true"] { background: var(--ink); color: var(--white); }
-  .types { display: flex; gap: 6px; flex-wrap: wrap; }
-  .types button[aria-pressed="true"] { background: var(--marker); box-shadow: 3px 3px 0 var(--ink); }
-  .types button.empty { border-style: dashed; color: var(--muted); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 500; }
-  label.f input, label.f select { font: 16px var(--body); color: var(--ink); background: var(--white); border: 2px solid var(--ink); border-radius: 10px; padding: 8px 10px; width: 100%; min-height: 42px; }
-  label.f small { font-weight: 400; color: var(--muted); }
-  label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 500; min-height: 40px; }
-  label.chk input { width: 20px; height: 20px; accent-color: var(--ink); }
-  .atk { display: flex; flex-direction: column; gap: 10px; }
-  .atk-head { display: flex; gap: 8px; align-items: center; }
-  .atk-head .disp { font-size: 18px; flex: 1; overflow-wrap: anywhere; }
-  .calc { font-size: 13px; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 8px; padding: 6px 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
-  .calc b { font-weight: 700; }
-  .eff-low { color: var(--err); } .eff-high { color: var(--okc); }
-  details.up { border-top: 1.5px dashed var(--dot); padding-top: 8px; }
-  details.up summary { cursor: pointer; font-size: 14px; font-weight: 500; min-height: 32px; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .row > * { flex: 1 1 140px; }
-  .mini { font: 500 14px var(--body); border: 2px solid var(--ink); border-radius: 10px; background: var(--white); color: var(--ink); padding: 6px 12px; min-height: 40px; cursor: pointer; }
+  .layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .side { position: sticky; top: 12px; display: flex; flex-direction: column; gap: 6px; background: var(--white); border: 2px solid var(--ink); border-radius: 14px; padding: 10px; }
+  .side button { font: 500 14.5px var(--body); text-align: left; display: flex; gap: 8px; align-items: center; padding: 8px 10px; border: 2px solid transparent; border-radius: 10px; background: none; color: var(--ink); cursor: pointer; min-height: 40px; }
+  .side button .id { font: 500 12px ui-monospace, Consolas, monospace; color: var(--muted); }
+  .side button[aria-pressed="true"] { background: var(--marker); border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+  .side button.empty { color: var(--muted); }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .side { position: static; flex-direction: row; overflow-x: auto; } .side button { white-space: nowrap; } }
+  .main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 500; min-width: 0; }
+  label.f input, label.f select, .in { font: 16px var(--body); color: var(--ink); background: var(--white); border: 2px solid var(--ink); border-radius: 10px; padding: 7px 9px; width: 100%; min-height: 40px; min-width: 0; }
+  label.f small, .hint { font-weight: 400; color: var(--muted); font-size: 12.5px; }
+  label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 500; min-height: 36px; }
+  label.chk input { width: 20px; height: 20px; accent-color: var(--ink); flex: 0 0 auto; }
+  .mini { font: 500 14px var(--body); border: 2px solid var(--ink); border-radius: 10px; background: var(--white); color: var(--ink); padding: 5px 11px; min-height: 36px; cursor: pointer; }
   .mini.danger { color: var(--err); border-color: var(--err); }
+  .mini:disabled { opacity: .4; cursor: default; }
+  .dashed { border: 2px dashed var(--muted); border-radius: 10px; padding: 7px; font: 500 13.5px var(--body); color: var(--muted); background: none; cursor: pointer; width: 100%; min-height: 38px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* Kategorien */
+  .c-angriff { --c: var(--atk); } .c-verteidigung { --c: var(--def); } .c-ausweichen { --c: var(--eva); } .c-auftanken { --c: var(--tank); }
+  .cats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .cat { border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; background: var(--white); display: flex; flex-direction: column; }
+  .cat > .hd { background: var(--c); color: var(--white); padding: 7px 11px; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid var(--ink); }
+  .cat > .hd b { font: 400 16px var(--disp); }
+  .cat > .hd span { font-size: 12px; font-weight: 700; }
+  .cat .list { padding: 8px; display: flex; flex-direction: column; gap: 7px; }
+  .act { border: 2px solid var(--ink); border-radius: 10px; padding: 7px 9px; display: flex; flex-direction: column; gap: 3px; background: var(--white); cursor: pointer; text-align: left; font: inherit; color: inherit; }
+  .act:hover { background: var(--soft); }
+  .act[aria-pressed="true"] { box-shadow: 4px 4px 0 var(--c); border-color: var(--c); }
+  .act .t { display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
+  .act .t b { font-weight: 700; overflow-wrap: anywhere; }
+  .act .lv { font: 700 11px var(--body); border: 1.5px solid var(--ink); border-radius: 6px; padding: 0 5px; background: var(--marker); white-space: nowrap; }
+  .act .lv.no { background: var(--soft); }
+  .act .s { font-size: 12.5px; color: var(--muted); }
+  .act.later { background: repeating-linear-gradient(135deg, #F4F5F7 0 8px, #ECEEF2 8px 16px); }
+  .tplsel { font: 13.5px var(--body); border: 2px dashed var(--muted); border-radius: 10px; padding: 6px; color: var(--muted); background: var(--white); width: 100%; min-height: 38px; }
+
+  /* Aktions-Editor */
+  .aed { border: 3px solid var(--c, var(--ink)); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 14px; background: var(--white); box-shadow: 5px 5px 0 var(--ink); }
+  .aed .top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .aed .top h2 { color: var(--c); }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+  .cols > * { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .block { border: 2px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 9px; }
+  .block > .bh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .block > .bh b { font: 700 12px var(--body); letter-spacing: .1em; text-transform: uppercase; }
+  .seg { display: inline-flex; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; flex-wrap: wrap; }
+  .seg button { font: 500 13.5px var(--body); padding: 6px 11px; border: 0; border-right: 2px solid var(--ink); background: var(--white); cursor: pointer; color: var(--ink); min-height: 36px; }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
+  .d20 { display: grid; grid-template-columns: repeat(20, 1fr); gap: 2px; }
+  .d20 span { height: 20px; border: 1.5px solid var(--ink); border-radius: 4px; font: 600 9.5px ui-monospace, Consolas, monospace; display: grid; place-items: center; background: #FBD4CC; color: #8a2a1c; }
+  .d20 span.ok { background: #BDEBCB; color: #155c32; }
+  .lines { display: flex; flex-direction: column; gap: 6px; }
+  .line { display: grid; gap: 6px; align-items: center; grid-template-columns: 1fr 1fr 36px; }
+  .line.fx { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)) 36px; border: 1.5px solid var(--line); border-radius: 10px; padding: 6px; }
+  .line .in { min-height: 36px; padding: 5px 7px; font-size: 15px; }
+  .line .x { border: 2px solid var(--ink); background: var(--white); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 16px; color: var(--ink); }
+  .line .x:disabled { opacity: .35; }
+  .heads { font-size: 12px; color: var(--muted); }
+  .stack { display: flex; height: 24px; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
+  .stack div { display: grid; place-items: center; font: 600 11px ui-monospace, Consolas, monospace; border-right: 2px solid var(--ink); white-space: nowrap; overflow: hidden; min-width: 0; }
+  .stack div:last-child { border-right: 0; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .summary > div { border: 2px solid var(--ink); border-radius: 10px; padding: 7px 9px; background: var(--soft); }
+  .summary b { display: block; font: 400 22px var(--disp); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .summary span { font-size: 12px; color: var(--muted); }
+  .pcard { border: 3px solid var(--ink); border-radius: 14px; padding: 9px 11px; display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; background: var(--white); box-shadow: 4px 4px 0 var(--c); }
+  .pcard .big { font: 400 24px var(--disp); line-height: 1; text-align: center; color: var(--c); overflow-wrap: anywhere; }
+  .pcard .info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .pcard .info b { font: 400 17px var(--disp); }
+  .mini20 { display: grid; grid-template-columns: repeat(20, 1fr); gap: 1px; max-width: 180px; }
+  .mini20 i { height: 6px; border-radius: 1px; background: var(--line); }
+  .mini20 i.ok { background: var(--okc); }
+
+  /* Level-Pfad */
+  .lvl { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1.5px dashed var(--line); }
+  .lvl:last-child { border-bottom: 0; }
+  .lvbadge { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .lvbadge b { font: 400 18px var(--disp); width: 44px; height: 44px; display: grid; place-items: center; border: 3px solid var(--ink); border-radius: 50%; background: var(--white); }
+  .lvbadge.wahl b { background: var(--marker); border-radius: 10px; }
+  .lvbadge.leer b { border-style: dashed; color: var(--muted); }
+  .lvbadge span { font-size: 11px; color: var(--muted); font-weight: 700; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+  .opt { border: 2px solid var(--ink); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--white); }
+  .opt .oh { display: flex; justify-content: space-between; align-items: center; gap: 6px; font: 700 11px var(--body); color: var(--muted); letter-spacing: .05em; }
+  .opt .txt { font-size: 13.5px; font-weight: 500; }
+  .opt .in { min-height: 36px; padding: 5px 7px; font-size: 14.5px; }
+  .warnbox { border: 2px solid var(--err); background: #FDECEA; border-radius: 12px; padding: 8px 12px; font-size: 14px; }
+  .warnbox ul { margin: 4px 0 0; padding-left: 18px; }
+  .sumrow { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sumrow span { border: 2px solid var(--ink); border-radius: 10px; padding: 4px 10px; background: var(--white); font-size: 13.5px; }
+  .sumrow b { font-family: var(--disp); font-weight: 400; }
+
+  /* Tabellen */
   table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--white); }
   th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { font-weight: 700; }
   td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .scroll { overflow-x: auto; border: 2px solid var(--ink); border-radius: 12px; }
+  .heat td.n { font-weight: 700; }
+  .eff-low { color: var(--err); } .eff-high { color: var(--okc); }
   .savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--white); border-top: 3px solid var(--ink);
     padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-  .savebar .in { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
-  .savebar .btn-main { flex: 1; min-height: 50px; font-size: 17px; box-shadow: 3px 3px 0 var(--ink); }
+  .savebar .in2 { max-width: 1120px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+  .savebar .btn-main { flex: 0 1 320px; min-height: 50px; font-size: 17px; box-shadow: 3px 3px 0 var(--ink); }
   .savebar .btn { width: auto; flex: 0 0 auto; }
   .savebar .hint { font-size: 13px; color: var(--muted); flex: 1; }
   .ver { display: flex; gap: 10px; align-items: center; }
   .ver div { flex: 1; font-size: 14px; }
-  .note { font-size: 14px; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -58,21 +138,22 @@
 <div class="wrap">
   <header class="top">
     <a class="logo" href="../">NÖRTI ARENA</a>
-    <a class="pill" href="../">Tag-Writer</a>
+    <span class="row"><a class="pill" href="../arena/">Arena</a><a class="pill" href="../">Tag-Writer</a></span>
   </header>
   <div>
-    <h1 class="disp">SPIELDATEN-EDITOR</h1>
+    <h1 class="disp">NÖRTI WERKSTATT</h1>
     <div class="status" id="status">Lädt …</div>
   </div>
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="figuren" aria-selected="true">Figuren</button>
-    <button role="tab" data-tab="uebersicht">Übersicht</button>
-    <button role="tab" data-tab="regeln">Regeln</button>
+    <button role="tab" data-tab="figuren" aria-selected="true">Figuren &amp; Aktionen</button>
+    <button role="tab" data-tab="pfad">Level-Pfad</button>
+    <button role="tab" data-tab="balance">Balance-Test</button>
+    <button role="tab" data-tab="regeln">Kampfregeln</button>
     <button role="tab" data-tab="versionen">Versionen</button>
   </nav>
-  <main id="main" class="actions" style="gap:14px"><div class="spinner" aria-label="Lädt"></div></main>
+  <div id="root"><div class="spinner" aria-label="Lädt"></div></div>
 </div>
-<div class="savebar"><div class="in">
+<div class="savebar"><div class="in2">
   <span class="hint" id="saveHint">Keine Änderungen</span>
   <button class="btn" id="discard" hidden>Verwerfen</button>
   <button class="btn-main" id="save" disabled>Speichern</button>
@@ -80,35 +161,107 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../app/common.js"></script>
+<script src="../app/kampf.js"></script>
 <script>
 (() => {
-  const N = window.Noerti, { esc } = N;
+  const N = window.Noerti, K = window.NoertiKampf, { esc } = N;
   const $ = (q, el = document) => el.querySelector(q);
-  const PIN_STORE = 'noerti-tagwriter-pin', DRAFT = 'noerti-editor-draft', TAB = 'noerti-editor-tab';
+  const PIN_STORE = 'noerti-tagwriter-pin', DRAFT = 'noerti-editor-draft-v2', TAB = 'noerti-editor-tab';
   const ls = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
 
-  const EFFEKTE = {
-    '':            { label: 'kein Effekt' },
-    gegner_chance: { label: 'Gegner unsicher', unit: '%', text: (w) => `nächste Attacke des Gegners −${w} % Trefferchance` },
-    nachschaden:   { label: 'Nachschaden', unit: 'Schaden', text: (w) => `nächste Runde ${w} Schaden extra` },
-    ausweichen:    { label: 'Ausweichen +', unit: '%', text: (w) => `eigenes Ausweichen nächste Runde +${w} %` },
-    heilen:        { label: 'Heilen', unit: 'LP', text: (w) => `heilt ${w} LP` },
-    verstaerken:   { label: 'Verstärken', unit: '%', text: (w) => `nächste eigene Attacke +${w} % Schaden` }
+  const KAT = {
+    angriff:      { label: 'Angriff',      unit: 'Schaden',          big: (a) => bigNum(a, '') },
+    verteidigung: { label: 'Verteidigung', unit: 'Reduktion %',      big: (a) => a.sonder.schild ? bigNum(a, '', ' ⛨') : '−' + bigNum(a, '', '%') },
+    ausweichen:   { label: 'Ausweichen',   unit: '',                 big: (a) => a.wuerfe.chance + '%' },
+    auftanken:    { label: 'Auftanken',    unit: 'Nörten',           big: (a) => '+' + bigNum(a, '') }
   };
-  const REGELN = [
-    ['Nörten', [['noerten_start', 'Start-Nörten pro Figur'], ['auftanken', 'Auftanken (+)'], ['auftanken_getroffen', 'Auftanken, wenn getroffen'], ['auftanken_gegen_verteidigen', 'Auftanken gegen Verteidigen']]],
-    ['Aktionen', [['kosten_verteidigen', 'Kosten Verteidigen'], ['kosten_ausweichen', 'Kosten Ausweichen'], ['verteidigen_faktor', 'Schaden beim Verteidigen ×', 0.05], ['getroffen_faktor', 'Schaden beim Auftanken / missglücktem Ausweichen ×', 0.05], ['konter_treffer', 'Konter: Trefferchance + %'], ['konter_noerten', 'Konter: Gegner verliert Nörten']]],
-    ['Ausweichen', [['ausweichen_basis', 'Grundchance %'], ['ausweichen_pro_tempo', '% pro Tempo-Unterschied'], ['ausweichen_min', 'mindestens %'], ['ausweichen_max', 'höchstens %']]],
-    ['Kampf & Level', [['max_runden', 'Max. Runden pro Figur im Team'], ['level_lp_pct', 'LP + % pro Level'], ['level_schaden_pct', 'Schaden + % pro Level'], ['level_chance_alle', 'Trefferchance +1 % alle … Level'], ['level_chance_max', 'Trefferchance-Bonus max. %']]]
-  ];
+  const WURF = { einfach: '1 Wurf', mehrfach: 'Mehrfach', zufall: 'Zufällige Anzahl', kette: 'Kette' };
+  const WURF_TXT = { einfach: 'ein Wurf entscheidet', mehrfach: 'jeder Wurf einzeln, Wert je Erfolg', zufall: 'erst Anzahl würfeln (von–bis), dann jeden Wurf', kette: 'weiter bis zum ersten Fehlwurf, Wert steigt pro Glied' };
+  const WANN = { immer: 'immer', erfolg: 'bei Erfolg', fehlschlag: 'bei Fehlschlag' };
+  const ZIEL = { selbst: 'selbst', gegner: 'Gegner' };
+  const PFAD_ART = { lp_faktor: 'LP-Faktor +', noerten_faktor: 'Nörten-Faktor +', tempo: 'Tempo +', lernt: 'Neue Aktion', verbessern: 'Aktion verbessern', optik: 'Optik (Rahmen, Titel)' };
+  const FELD = { chance: 'Chance (%)', wert: 'Wert / Schaden', kosten: 'Kosten', n: 'Anzahl Würfe', effekt: 'Effekt-Stärke' };
+
+  // Vorlagen aus dem Baustein-Katalog
+  const W = (chance, art = 'einfach', more = {}) => ({ art, chance, ...more });
+  const O = (...p) => p.map(([wert, anteil]) => ({ anteil: anteil ?? 100, wert }));
+  const E = (wann, ziel, art, wert, runden = 1) => ({ wann, ziel, art, wert, runden });
+  const VORLAGEN = {
+    angriff: [
+      ['Einfach', { kosten: 15, wuerfe: W(85), ausgaenge: O([14]) }],
+      ['Mehrfach (3 × 6)', { kosten: 20, wuerfe: W(65, 'mehrfach', { n: 3 }), ausgaenge: O([6]) }],
+      ['Zufällige Anzahl (2–4 ×)', { kosten: 25, wuerfe: W(75, 'zufall', { n: 2, bis: 4 }), ausgaenge: O([6]) }],
+      ['Kette (bis 5 ×, steigend)', { kosten: 20, wuerfe: W(70, 'kette', { n: 5, steigerung: 2 }), ausgaenge: O([4]) }],
+      ['Glücksrad', { kosten: 30, wuerfe: W(60), ausgaenge: O([20, 60], [30, 30], [45, 10]) }],
+      ['Kritisch (15 % × 2)', { kosten: 20, wuerfe: W(75), ausgaenge: O([16, 85], [32, 15]) }],
+      ['Gift (Nachschaden)', { kosten: 25, wuerfe: W(75), ausgaenge: O([15]), effekte: [E('erfolg', 'gegner', 'gift', 5, 2)] }],
+      ['Verunsichern', { kosten: 15, wuerfe: W(90), ausgaenge: O([8]), effekte: [E('erfolg', 'gegner', 'chance', -15)] }],
+      ['Verstärken (kein Schaden)', { kosten: 15, wuerfe: W(100), ausgaenge: O([0]), effekte: [E('immer', 'selbst', 'schaden', 50)] }],
+      ['Lebensraub', { kosten: 15, wuerfe: W(85), ausgaenge: O([12]), sonder: { lebensraub: 50 } }],
+      ['Durchschlag', { kosten: 20, wuerfe: W(80), ausgaenge: O([14]), sonder: { durchschlag: 50 } }],
+      ['Unausweichlich', { kosten: 12, wuerfe: W(100), ausgaenge: O([8]), sonder: { unausweichlich: true } }],
+      ['Zuerst dran', { kosten: 10, wuerfe: W(95), ausgaenge: O([8]), sonder: { zuerst: true } }],
+      ['Rückstoß', { kosten: 25, wuerfe: W(80), ausgaenge: O([32]), sonder: { rueckstoss: 8 } }],
+      ['Nörten-Klau', { kosten: 15, wuerfe: W(85), ausgaenge: O([6]), effekte: [E('erfolg', 'gegner', 'noerten', -10), E('erfolg', 'selbst', 'noerten', 10)] }]
+    ],
+    verteidigung: [
+      ['Sicherer Block', { kosten: 5, wuerfe: W(85), ausgaenge: O([40]) }],
+      ['Riskanter Block', { kosten: 10, wuerfe: W(35), ausgaenge: O([90]), effekte: [E('erfolg', 'gegner', 'noerten', -10)] }],
+      ['Schild-Punkte', { kosten: 8, wuerfe: W(90), ausgaenge: O([15]), sonder: { schild: true } }],
+      ['Stufen-Block (Glücksrad)', { kosten: 5, wuerfe: W(100), ausgaenge: O([25, 50], [50, 40], [100, 10]) }],
+      ['Dauerschutz', { kosten: 10, wuerfe: W(100), ausgaenge: O([25]), effekte: [E('immer', 'selbst', 'schutz', 20, 2)] }],
+      ['Provozieren', { kosten: 5, wuerfe: W(80), ausgaenge: O([30]), effekte: [E('immer', 'gegner', 'chance', -15)] }]
+    ],
+    ausweichen: [
+      ['Tempo-Duell', { kosten: 10, wuerfe: W(50) }],
+      ['Feste Chance', { kosten: 10, wuerfe: W(45), sonder: { fest: true } }],
+      ['Halb und halb', { kosten: 8, wuerfe: W(40), sonder: { fest: true, halb: true } }],
+      ['Mit Gegenschlag', { kosten: 12, wuerfe: W(35), sonder: { gegenschlag: 12 } }],
+      ['Rückenwind', { kosten: 10, wuerfe: W(50), effekte: [E('erfolg', 'selbst', 'chance', 15)] }]
+    ],
+    auftanken: [
+      ['Sicher', { kosten: 0, wuerfe: W(100), ausgaenge: O([25]) }],
+      ['Glücksschluck', { kosten: 0, wuerfe: W(100), ausgaenge: O([32, 80], [0, 20]) }],
+      ['Schluck für Schluck', { kosten: 0, wuerfe: W(75, 'mehrfach', { n: 4 }), ausgaenge: O([8]) }],
+      ['Langsam (über Runden)', { kosten: 0, wuerfe: W(100), ausgaenge: O([12]), effekte: [E('immer', 'selbst', 'tank', 10, 2)] }],
+      ['Stärken (+ LP)', { kosten: 0, wuerfe: W(100), ausgaenge: O([12]), sonder: { lp: 12 } }],
+      ['Rausch', { kosten: 0, wuerfe: W(100), ausgaenge: O([60]), effekte: [E('immer', 'selbst', 'chance', -20)] }],
+      ['Mut antrinken', { kosten: 0, wuerfe: W(100), ausgaenge: O([15]), effekte: [E('immer', 'selbst', 'schaden', 25)] }]
+    ]
+  };
 
   let figs = [], base = null, saved = null, data = null, versions = null;
-  let tab = ls.get(TAB) || 'figuren', sel = null;
+  let tab = ls.get(TAB) || 'figuren', sel = null, selAct = null;
+  if (!['figuren', 'pfad', 'balance', 'regeln', 'versionen'].includes(tab)) tab = 'figuren';
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const dirty = () => JSON.stringify(data) !== JSON.stringify(saved);
-  const figName = (id) => (figs.find((f) => f.id === id) || {}).name || id;
+  const fileName = (id) => (figs.find((f) => f.id === id) || {}).name || id;
+  const figName = (id) => (data.typen[id] && data.typen[id].name) || fileName(id);
   const num = (v, d = 0) => { const n = parseFloat(String(v).replace(',', '.')); return Number.isFinite(n) ? n : d; };
-  const fmt = (n, d = 1) => n.toLocaleString('de-DE', { maximumFractionDigits: d, minimumFractionDigits: 0 });
+  const fmt = (n, d = 1) => Number(n).toLocaleString('de-DE', { maximumFractionDigits: d, minimumFractionDigits: 0 });
+  const need = (c) => K.need(K.step5(c));
+  const T = () => data.typen[sel];
+  const norm = (a) => K.aktionBauen(a, []);
+  function bigNum(a0, pre, post = '') {
+    const a = norm(a0), o = a.ausgaenge, v = o.length > 1 ? `${Math.min(...o.map((x) => x.wert))}–${Math.max(...o.map((x) => x.wert))}` : o[0].wert;
+    const n = a.wuerfe.art === 'mehrfach' ? `${a.wuerfe.n}×` : a.wuerfe.art === 'zufall' ? `${a.wuerfe.n}–${a.wuerfe.bis}×` : a.wuerfe.art === 'kette' ? `≤${a.wuerfe.n}×` : '';
+    return pre + n + v + post;
+  }
+  function sub(a0) {
+    const a = norm(a0), p = [];
+    p.push(a.kat === 'ausweichen' ? (a.sonder.fest ? 'feste Chance' : '± Tempo') : a.wuerfe.chance >= 100 ? 'sicher' : `${a.wuerfe.chance} %`);
+    if (a.ausgaenge.length > 1) p.push('Glücksrad');
+    if (a.wuerfe.art === 'kette') p.push('Kette');
+    p.push(`${a.kosten} N`);
+    return p.join(' · ');
+  }
+  const mini20 = (c) => `<div class="mini20">${Array.from({ length: 20 }, (_, i) => `<i class="${i + 1 >= need(c) ? 'ok' : ''}"></i>`).join('')}</div>`;
+  const slug = (name, list) => {
+    let s = String(name).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'aktion';
+    let x = s, i = 2; while (list.some((a) => a.id === x)) x = `${s}_${i++}`; return x;
+  };
+  // Wo im Pfad wird eine Aktion gelernt?
+  const lerntAb = (t, id) => { for (const [l, opts] of Object.entries(t.pfad || {})) if (opts.some((o) => o.art === 'lernt' && o.aktion === id)) return +l; return null; };
 
   function persist() {
     ls.set(DRAFT, dirty() ? JSON.stringify({ base: base.version, data }) : null);
@@ -117,204 +270,401 @@
     $('#saveHint').textContent = d ? 'Ungespeicherte Änderungen (Entwurf bleibt auf diesem Gerät)' : 'Keine Änderungen';
   }
   function setStatus() {
-    $('#status').innerHTML = base.version
-      ? `Version <b>${base.version}</b>${base.note ? ` „${esc(base.note)}“` : ''} · gespeichert ${esc(N.fmtDate(base.created_at))} · gilt für alle Spieler`
-      : '<b>Startwerte</b> aus <code>spieldaten.json</code> – noch nichts in der Datenbank gespeichert';
+    $('#status').innerHTML = base.stale
+      ? `<span class="warn">In der Datenbank liegt noch Version ${base.version} im alten Format (Kampfsystem v1).</span> Angezeigt werden die neuen Startwerte – mit „Speichern“ werden sie zur aktuellen Version.`
+      : base.version
+        ? `Version <b>${base.version}</b>${base.note ? ` „${esc(base.note)}“` : ''} · gespeichert ${esc(N.fmtDate(base.created_at))} · gilt für alle Spieler`
+        : '<b>Startwerte</b> aus <code>spieldaten.json</code> – noch nichts in der Datenbank gespeichert';
   }
 
-  // ---------- Berechnung ----------
-  function calc(a) {
-    const hits = Math.max(1, Math.round(num(a.treffer, 1))), ch = num(a.chance, 100);
-    const exp = num(a.schaden) * hits * ch / 100;
-    const k = num(a.kosten);
-    const need = ch >= 100 ? 'immer' : ch <= 0 ? 'nie' : `bei ${Math.max(1, Math.min(20, 21 - Math.round(ch / 5)))}+`;
-    return { hits, exp, perN: k > 0 ? exp / k : null, need };
+  // ---------- Figurenliste (links) ----------
+  function sideHtml(ids) {
+    return `<nav class="side" aria-label="Figur wählen">${ids.map((id) => `<button data-sel="${id}" aria-pressed="${id === sel}" class="${data.typen[id] ? '' : 'empty'}"><span class="id">${esc(id)}</span>${esc(figName(id))}</button>`).join('')}</nav>`;
   }
-  function calcHtml(a) {
-    const c = calc(a), e = a.effekt && EFFEKTE[a.effekt.art];
-    const eff = c.perN == null ? '' : `<span class="${c.perN < 0.5 ? 'eff-low' : c.perN > 0.9 ? 'eff-high' : ''}"><b>${fmt(c.perN, 2)}</b> Schaden pro Nörti</span>`;
-    return `<span>Ø <b>${fmt(c.exp)}</b> Schaden${c.hits > 1 ? ` (${c.hits} Würfe)` : ''}</span>${eff}<span>W20: trifft ${c.need}</span>${e && e.text ? `<span>${esc(e.text(num(a.effekt.wert)))}</span>` : ''}`;
-  }
+  const allIds = () => [...new Set([...figs.map((f) => f.id), ...Object.keys(data.typen)])].sort();
 
-  // ---------- Figuren ----------
-  const newAttack = (ab) => ({ name: 'Neue Attacke', ab, schaden: 12, treffer: 1, chance: 80, kosten: 15, effekt: null });
-  function attackCount(t) { return (t.standard ? 1 : 0) + t.attacken.length; }
-
-  function attackFields(a, path, isStd) {
-    const eff = (a.effekt && a.effekt.art) || '';
-    return `
-      <div class="grid">
-        <label class="f">Name<input data-p="${path}.name" value="${esc(a.name)}" maxlength="24"></label>
-        ${isStd ? '' : `<label class="f">Frei ab Level<select data-p="${path}.ab" data-num>${[1, 5, 10, 15].map((l) => `<option ${a.ab == l ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`}
-        <label class="f">Schaden pro Treffer<input data-p="${path}.schaden" data-num type="number" min="0" max="99" inputmode="numeric" value="${a.schaden}"></label>
-        <label class="f">Anzahl Treffer<input data-p="${path}.treffer" data-num type="number" min="1" max="5" inputmode="numeric" value="${a.treffer || 1}"><small>jeder Treffer wird einzeln gewürfelt</small></label>
-        <label class="f">Trefferchance %<input data-p="${path}.chance" data-num type="number" min="5" max="100" step="5" inputmode="numeric" value="${a.chance}"></label>
-        <label class="f">Kosten (Nörten)<input data-p="${path}.kosten" data-num type="number" min="0" max="100" inputmode="numeric" value="${a.kosten}"></label>
-        <label class="f">Effekt<select data-p="${path}.effekt.art" data-rerender>${Object.entries(EFFEKTE).map(([k, v]) => `<option value="${k}" ${k === eff ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label>
-        ${eff ? `<label class="f">Effekt-Wert (${EFFEKTE[eff].unit})<input data-p="${path}.effekt.wert" data-num type="number" min="0" max="100" inputmode="numeric" value="${a.effekt.wert}"></label>` : ''}
-      </div>
-      <div class="calc" data-calc="${path}">${calcHtml(a)}</div>`;
-  }
-  function upgradeFields(a, path) {
-    const u = a.stufe10 || {}, eff = (a.effekt && a.effekt.art) || '';
-    const v = (k) => (u[k] != null ? u[k] : '');
-    return `<details class="up" ${a.stufe10 ? 'open' : ''}><summary>Verbesserung ab Level 10${a.stufe10 ? ' ✓' : ''}</summary>
-      <p class="small muted" style="margin:6px 0">Leer lassen = bleibt gleich. Höchstens eine Attacke pro Figur sollte eine Verbesserung haben.</p>
-      <div class="grid">
-        <label class="f">Schaden<input data-up="${path}" data-k="schaden" type="number" min="0" max="99" inputmode="numeric" value="${v('schaden')}" placeholder="${a.schaden}"></label>
-        <label class="f">Trefferchance %<input data-up="${path}" data-k="chance" type="number" min="5" max="100" step="5" inputmode="numeric" value="${v('chance')}" placeholder="${a.chance}"></label>
-        <label class="f">Kosten<input data-up="${path}" data-k="kosten" type="number" min="0" max="100" inputmode="numeric" value="${v('kosten')}" placeholder="${a.kosten}"></label>
-        ${eff ? `<label class="f">Effekt-Wert<input data-up="${path}" data-k="effekt" type="number" min="0" max="100" inputmode="numeric" value="${u.effekt ? u.effekt.wert : ''}" placeholder="${a.effekt.wert}"></label>` : ''}
-      </div></details>`;
-  }
-
+  // ---------- Tab: Figuren & Aktionen ----------
   function renderFiguren() {
-    const ids = [...new Set([...figs.map((f) => f.id), ...Object.keys(data.typen)])].sort();
+    const ids = allIds();
     if (!sel || !ids.includes(sel)) sel = ids[0];
-    const t = data.typen[sel];
-    let html = `<div class="types" role="group" aria-label="Figur wählen">${ids.map((id) =>
-      `<button data-sel="${id}" aria-pressed="${id === sel}" class="${data.typen[id] ? '' : 'empty'}">${esc(id)} ${esc(figName(id))}</button>`).join('')}</div>`;
-    if (!t) {
-      html += `<section class="card ink actions"><p style="margin:0"><b>${esc(figName(sel))}</b> hat noch keine Kampfwerte.</p>
-        <button class="btn-main" data-act="create">Kampfwerte anlegen</button></section>`;
-      $('#main').innerHTML = html; return;
+    const t = T();
+    let main;
+    if (!t) main = `<section class="card ink actions"><p style="margin:0"><b>${esc(figName(sel))}</b> hat noch keine Kampfwerte.</p><button class="btn-main" data-act="create">Kampfwerte anlegen</button></section>`;
+    else {
+      if (!selAct || !t.aktionen.some((a) => a.id === selAct)) selAct = (t.aktionen[0] || {}).id || null;
+      const R = data.regeln, lpN = K.figur(data, { type_id: sel, level: 1, name: '' }).lpMax;
+      main = `<section class="card ink actions" style="gap:12px">
+        <div class="row" style="justify-content:space-between"><h2>${esc(sel)} · ${esc(figName(sel))}</h2><button class="mini danger" data-act="dropType">Werte löschen</button></div>
+        <div class="grid">
+          <label class="f">Name der Figur<input data-p="typen.${sel}.name" value="${esc(t.name || '')}" placeholder="${esc(fileName(sel))}" maxlength="28"><small>leer = ${esc(fileName(sel))}</small></label>
+          <label class="f">LP-Faktor<input data-p="typen.${sel}.lp_faktor" data-num data-live type="number" step="0.05" min="0.3" max="3" inputmode="decimal" value="${t.lp_faktor ?? 1}"><small data-hint="lp">bei „Normal“: ${lpN} LP</small></label>
+          <label class="f">Nörten-Faktor<input data-p="typen.${sel}.noerten_faktor" data-num data-live type="number" step="0.05" min="0.3" max="3" inputmode="decimal" value="${t.noerten_faktor ?? 1}"><small data-hint="no">bei „Normal“: ${Math.round(standardWert('kampf_noerten') * (t.noerten_faktor ?? 1))} Nörten</small></label>
+          <label class="f">Tempo (1–10)<input data-p="typen.${sel}.tempo" data-num type="number" min="1" max="10" inputmode="numeric" value="${t.tempo}"><small>±${R.ausweichen_pro_tempo} % Ausweichen je Punkt</small></label>
+        </div>
+        <p class="small muted" style="margin:0">LP und Nörten werden vor dem Kampf gewählt (${R.kampf_lp.map((x) => `${esc(x.name)} ${x.wert}`).join(' / ')} LP · ${R.kampf_noerten.map((x) => `${esc(x.name)} ${x.wert}`).join(' / ')} Nörten) und mit dem Faktor multipliziert.</p>
+      </section>
+      <div class="cats" id="cats">${catsHtml()}</div>
+      <div id="aed">${aedHtml()}</div>`;
     }
-    const std = data.regeln.standard_attacke;
-    html += `<section class="card ink actions">
-      <div class="atk-head"><span class="disp" style="font-size:22px">${esc(sel)} ${esc(figName(sel))}</span>
-        <button class="mini danger" data-act="dropType">Werte löschen</button></div>
-      <div class="grid">
-        <label class="f">Lebenspunkte (LP)<input data-p="typen.${sel}.lp" data-num type="number" min="1" max="999" inputmode="numeric" value="${t.lp}"></label>
-        <label class="f">Tempo (1–10)<input data-p="typen.${sel}.tempo" data-num type="number" min="1" max="10" inputmode="numeric" value="${t.tempo}"><small>±${data.regeln.ausweichen_pro_tempo} % Ausweichen je Punkt</small></label>
-      </div>
-      <label class="chk"><input type="checkbox" data-p="typen.${sel}.standard" ${t.standard ? 'checked' : ''} data-rerender> ${esc(std.name)} (Standard-Attacke) nutzen</label>
-      <p class="small muted" style="margin:0">${attackCount(t)} von 3 Attacken belegt. Start mit allen Attacken „ab Level 1“.</p>
-    </section>`;
-    if (t.standard) html += `<section class="card atk"><div class="atk-head"><span class="disp">${esc(std.name)}</span><span class="small muted">Standard · bei „Regeln“ änderbar</span></div>
-      <div class="calc">${calcHtml(std)}</div></section>`;
-    t.attacken.forEach((a, i) => {
-      const p = `typen.${sel}.attacken.${i}`;
-      html += `<section class="card atk">
-        <div class="atk-head"><span class="disp">${esc(a.name)}</span>
-          ${i > 0 ? `<button class="mini" data-act="up" data-i="${i}" aria-label="nach oben">↑</button>` : ''}
-          <button class="mini danger" data-act="del" data-i="${i}">Entfernen</button></div>
-        ${attackFields(a, p)}${upgradeFields(a, p)}</section>`;
-    });
-    if (attackCount(t) < 3) html += `<button class="btn" data-act="add">+ Attacke hinzufügen</button>`;
-    $('#main').innerHTML = html;
+    $('#root').innerHTML = `<div class="layout">${sideHtml(ids)}<div class="main">${main}</div></div>`;
   }
+  const standardWert = (k) => { const R = data.regeln, l = R[k] || [{ wert: 100 }]; return (l[R.kampf_standard ?? 1] || l[0]).wert; };
 
-  // ---------- Übersicht ----------
-  function renderUebersicht() {
-    const std = data.regeln.standard_attacke;
-    const rows = Object.keys(data.typen).sort().map((id) => {
-      const t = data.typen[id];
-      const atks = [...(t.standard ? [{ ...std, ab: 1 }] : []), ...t.attacken];
-      return atks.map((a, i) => { const c = calc(a); return `<tr>
-        ${i === 0 ? `<td rowspan="${atks.length}"><b>${esc(id)} ${esc(figName(id))}</b><br><span class="muted">${t.lp} LP · Tempo ${t.tempo}</span></td>` : ''}
-        <td>${esc(a.name)}${a.ab > 1 ? ` <span class="muted">(Lv ${a.ab})</span>` : ''}${a.effekt ? `<br><span class="muted">${esc(EFFEKTE[a.effekt.art].text(a.effekt.wert))}</span>` : ''}</td>
-        <td class="n">${c.hits > 1 ? `${c.hits}×` : ''}${a.schaden}</td><td class="n">${a.chance} %</td><td class="n">${a.kosten}</td>
-        <td class="n">${fmt(c.exp)}</td><td class="n ${c.perN != null && c.perN < 0.5 ? 'eff-low' : c.perN > 0.9 ? 'eff-high' : ''}">${c.perN == null ? '–' : fmt(c.perN, 2)}</td></tr>`; }).join('');
+  function catsHtml() {
+    const t = T();
+    return K.KAT.map((k) => {
+      const list = t.aktionen.map((a, i) => ({ a, i })).filter((x) => x.a.kat === k);
+      const starts = list.filter((x) => x.a.start).length;
+      return `<div class="cat c-${k}"><div class="hd"><b>${KAT[k].label}</b><span>${starts} Start · ${list.length} gesamt</span></div><div class="list">
+        ${list.map(({ a }) => { const ab = a.start ? null : lerntAb(t, a.id);
+          return `<button class="act ${a.start ? '' : 'later'}" data-selact="${esc(a.id)}" aria-pressed="${a.id === selAct}"><span class="t"><b>${esc(a.name)}</b><span class="lv ${a.start || ab ? '' : 'no'}">${a.start ? 'Start' : ab ? 'Lv ' + ab : 'nie'}</span></span><span class="s">${esc(KAT[k].big(a))} · ${esc(sub(a))}</span></button>`; }).join('')}
+        <select class="tplsel" data-tpl="${k}" aria-label="${KAT[k].label} hinzufügen"><option value="">+ ${KAT[k].label} hinzufügen …</option><option value="-1">Leer</option>${VORLAGEN[k].map((v, j) => `<option value="${j}">Vorlage: ${esc(v[0])}</option>`).join('')}</select>
+      </div></div>`;
     }).join('');
-    $('#main').innerHTML = `<p class="small muted" style="margin:0">Alle Figuren auf Level 1 im Vergleich. <span class="eff-high">Grün</span> = sehr effizient (über 0,9 Schaden pro Nörti), <span class="eff-low">rot</span> = teuer (unter 0,5). Starke Attacken dürfen teurer sein – sie bringen dafür mehr Schaden pro Runde.</p>
-      <div class="scroll"><table><thead><tr><th>Figur</th><th>Attacke</th><th class="n">Schaden</th><th class="n">Chance</th><th class="n">Kosten</th><th class="n">Ø</th><th class="n">pro Nörti</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
-  // ---------- Regeln ----------
+  function aedHtml() {
+    const t = T(), i = t.aktionen.findIndex((a) => a.id === selAct);
+    if (i < 0) return '<p class="muted small">Noch keine Aktion – oben eine hinzufügen.</p>';
+    const a = t.aktionen[i], p = `typen.${sel}.aktionen.${i}`, k = a.kat, w = { art: 'einfach', chance: 100, n: 1, ...(a.wuerfe || {}) }, so = a.sonder || {};
+    const ab = lerntAb(t, a.id);
+    const hasOuts = k !== 'ausweichen';
+    const artOk = k === 'angriff' || k === 'auftanken';
+    const outs = (a.ausgaenge && a.ausgaenge.length ? a.ausgaenge : [{ anteil: 100, wert: 0 }]);
+    const unit = k === 'verteidigung' ? (so.schild ? 'Schild-Punkte' : 'Reduktion %') : KAT[k].unit;
+    const sonder = {
+      angriff: `<div class="grid">
+          <label class="f">Durchschlag %<input data-p="${p}.sonder.durchschlag" data-num type="number" min="0" max="100" step="5" value="${so.durchschlag || ''}" placeholder="0"><small>ignoriert Teil der Abwehr</small></label>
+          <label class="f">Lebensraub %<input data-p="${p}.sonder.lebensraub" data-num type="number" min="0" max="100" step="5" value="${so.lebensraub || ''}" placeholder="0"><small>heilt Anteil des Schadens</small></label>
+          <label class="f">Rückstoß LP<input data-p="${p}.sonder.rueckstoss" data-num type="number" min="0" max="50" value="${so.rueckstoss || ''}" placeholder="0"><small>eigener Schaden bei Treffer</small></label></div>
+        <label class="chk"><input type="checkbox" data-p="${p}.sonder.unausweichlich" ${so.unausweichlich ? 'checked' : ''}> Unausweichlich (Ausweichen klappt nie)</label>
+        <label class="chk"><input type="checkbox" data-p="${p}.sonder.zuerst" ${so.zuerst ? 'checked' : ''}> Zuerst dran (vor jedem Tempo)</label>`,
+      verteidigung: `<label class="chk"><input type="checkbox" data-p="${p}.sonder.schild" data-rerender ${so.schild ? 'checked' : ''}> Schild: Wert = Punkte, die insgesamt geschluckt werden (statt %)</label>
+        <p class="small muted" style="margin:0">Gelingt der Wurf, gibt es zusätzlich den Konter aus den Kampfregeln (+${data.regeln.konter_treffer} % Treffer, Angreifer −${data.regeln.konter_noerten} Nörten). Misslingt er: Schaden × ${fmt(data.regeln.verteidigung_fehlschlag_faktor, 2)}.</p>`,
+      ausweichen: `<label class="chk"><input type="checkbox" data-p="${p}.sonder.fest" ${so.fest ? 'checked' : ''}> Feste Chance (Tempo zählt nicht)</label>
+        <label class="chk"><input type="checkbox" data-p="${p}.sonder.halb" ${so.halb ? 'checked' : ''}> Misslingt es: nur halber Schaden statt × ${fmt(data.regeln.getroffen_faktor, 2)}</label>
+        <div class="grid"><label class="f">Gegenschlag (Schaden)<input data-p="${p}.sonder.gegenschlag" data-num type="number" min="0" max="50" value="${so.gegenschlag || ''}" placeholder="0"><small>wenn das Ausweichen klappt</small></label></div>`,
+      auftanken: `<div class="grid"><label class="f">Heilt zusätzlich LP<input data-p="${p}.sonder.lp" data-num type="number" min="0" max="80" value="${so.lp || ''}" placeholder="0"></label></div>
+        <p class="small muted" style="margin:0">Wird man dabei getroffen: × ${fmt(data.regeln.auftanken_getroffen_faktor, 2)} · verteidigt der Gegner nur: × ${fmt(data.regeln.auftanken_gegen_verteidigen_faktor, 2)}.</p>`
+    }[k];
+    return `<section class="aed c-${k}">
+      <div class="top"><div><span class="small muted">Aktions-Editor · <code>${esc(a.id)}</code></span><h2 id="aeTitle">${esc(a.name)}</h2></div>
+        <div class="row"><div class="seg" aria-label="Kategorie">${K.KAT.map((x) => `<button data-kat="${x}" aria-pressed="${x === k}">${KAT[x].label}</button>`).join('')}</div>
+          <button class="mini" data-act="dup">Kopieren</button><button class="mini danger" data-act="delAct">Löschen</button></div></div>
+      <div class="cols"><div>
+        <div class="grid">
+          <label class="f">Name<input data-p="${p}.name" value="${esc(a.name)}" maxlength="24"></label>
+          <label class="f">Kosten (Nörten)<input data-p="${p}.kosten" data-num type="number" min="0" max="100" inputmode="numeric" value="${a.kosten || 0}"></label>
+        </div>
+        <label class="chk"><input type="checkbox" data-p="${p}.start" data-rerender ${a.start ? 'checked' : ''}> Ab Start verfügbar</label>
+        ${a.start ? '' : `<p class="small ${ab ? 'muted' : 'eff-low'}" style="margin:0">${ab ? `Wird im Level-Pfad auf Level ${ab} gelernt.` : 'Wird noch nirgends gelernt – im Level-Pfad als „Neue Aktion“ eintragen.'}</p>`}
+        <div class="block"><div class="bh"><b>${k === 'ausweichen' ? 'Ausweich-Chance' : k === 'verteidigung' ? 'Abwehr-Wurf' : 'Würfe'}</b><span class="small muted">${artOk ? WURF_TXT[w.art] : k === 'ausweichen' ? (so.fest ? 'feste Chance' : `± ${data.regeln.ausweichen_pro_tempo} % je Tempo-Unterschied, ${data.regeln.ausweichen_min}–${data.regeln.ausweichen_max} %`) : 'ein Wurf: greift die Abwehr?'}</span></div>
+          ${artOk ? `<div class="seg">${Object.entries(WURF).map(([x, l]) => `<button data-wurf="${x}" aria-pressed="${x === w.art}">${l}</button>`).join('')}</div>` : ''}
+          ${artOk && w.art !== 'einfach' ? `<div class="grid">
+            <label class="f">${w.art === 'kette' ? 'max. Glieder' : w.art === 'zufall' ? 'von' : 'Anzahl'}<input data-p="${p}.wuerfe.n" data-num type="number" min="1" max="8" value="${w.n || 1}"></label>
+            ${w.art === 'zufall' ? `<label class="f">bis<input data-p="${p}.wuerfe.bis" data-num type="number" min="1" max="8" value="${w.bis || w.n || 1}"></label>` : ''}
+            ${w.art === 'kette' ? `<label class="f">+ Wert je Glied<input data-p="${p}.wuerfe.steigerung" data-num type="number" min="0" max="20" value="${w.steigerung || 0}"></label>` : ''}</div>` : ''}
+          <label class="f">${k === 'ausweichen' ? 'Grundchance %' : 'Erfolgschance je Wurf %'}<input data-p="${p}.wuerfe.chance" data-num type="number" min="5" max="100" step="5" inputmode="numeric" value="${w.chance}"></label>
+          <div class="d20" id="d20" aria-hidden="true"></div>
+        </div>
+        ${hasOuts ? `<div class="block"><div class="bh"><b>Ausgänge bei Erfolg</b><span class="small muted">mehrere Zeilen = Glücksrad</span></div>
+          <div class="line heads"><span>${unit}</span><span>Anteil %</span><span></span></div>
+          <div class="lines">${outs.map((o, j) => `<div class="line"><input class="in" data-p="${p}.ausgaenge.${j}.wert" data-num type="number" min="0" max="200" aria-label="${unit}" value="${o.wert}"><input class="in" data-p="${p}.ausgaenge.${j}.anteil" data-num type="number" min="0" max="100" aria-label="Anteil" value="${o.anteil}"><button class="x" data-act="delOut" data-j="${j}" aria-label="Ausgang entfernen" ${outs.length < 2 ? 'disabled' : ''}>×</button></div>`).join('')}</div>
+          <button class="dashed" data-act="addOut">+ Ausgang (Glücksrad)</button>
+          <div class="stack" id="stack"></div></div>` : ''}
+      </div><div>
+        <div class="block"><div class="bh"><b>Effekte</b><span class="small muted">wirken ab der nächsten Runde</span></div>
+          <div class="lines">${(a.effekte || []).map((e, j) => { const q = `${p}.effekte.${j}`, sofort = K.FX[e.art] && K.FX[e.art].sofort;
+            return `<div class="line fx">
+              <select class="in" data-p="${q}.wann" aria-label="Wann">${Object.entries(WANN).map(([x, l]) => `<option value="${x}" ${x === (e.wann || 'immer') ? 'selected' : ''}>${l}</option>`).join('')}</select>
+              <select class="in" data-p="${q}.ziel" aria-label="Ziel">${Object.entries(ZIEL).map(([x, l]) => `<option value="${x}" ${x === (e.ziel || 'selbst') ? 'selected' : ''}>${l}</option>`).join('')}</select>
+              <select class="in" data-p="${q}.art" data-rerender aria-label="Wirkung">${Object.entries(K.FX).map(([x, d]) => `<option value="${x}" ${x === e.art ? 'selected' : ''}>${d.name}</option>`).join('')}</select>
+              <input class="in" data-p="${q}.wert" data-num type="number" min="-100" max="100" aria-label="Wert" value="${e.wert}">
+              ${sofort ? '<span class="small muted">sofort</span>' : `<input class="in" data-p="${q}.runden" data-num type="number" min="1" max="5" aria-label="Runden" value="${e.runden || 1}" title="Runden">`}
+              <button class="x" data-act="delFx" data-j="${j}" aria-label="Effekt entfernen">×</button></div>`; }).join('') || '<span class="small muted">Keine Effekte.</span>'}</div>
+          <button class="dashed" data-act="addFx">+ Effekt</button>
+          <p class="small muted" style="margin:0">Werte: Chance/Schaden/Ausweichen in %, Schutz = % weniger Schaden, Nachschaden/Heilung/Nörten pro Runde als Zahl. Negativ = schwächer (z. B. Gegner −15 % Trefferchance).</p></div>
+        <div class="block"><div class="bh"><b>Sonderregeln</b></div>${sonder}</div>
+        <div class="block"><div class="bh"><b>Kennzahlen</b><span class="small muted">rechnet live</span></div><div class="summary" id="sum"></div></div>
+        <div class="block"><div class="bh"><b>Karte in der Arena</b></div><div id="pcard"></div></div>
+      </div></div></section>`;
+  }
+
+  function refreshCalc() {
+    const t = T(); if (!t) return;
+    const a0 = t.aktionen.find((a) => a.id === selAct); if (!a0) return;
+    const a = norm(a0), e = K.erwartung(a0), k = a.kat;
+    const d = $('#d20'); if (d) d.innerHTML = Array.from({ length: 20 }, (_, i) => `<span class="${i + 1 >= K.need(a.wuerfe.chance) ? 'ok' : ''}">${i + 1}</span>`).join('');
+    const st = $('#stack');
+    if (st) { const tot = a.ausgaenge.reduce((x, o) => x + Math.max(0, o.anteil), 0) || 1, C = ['#FFE08A', '#BFE8CF', '#C9D8FB', '#F7C6C7', '#E2D6FB'];
+      st.innerHTML = a.ausgaenge.map((o, j) => `<div style="flex:${Math.max(0.001, o.anteil)};background:${C[j % 5]}">${Math.round(Math.max(0, o.anteil) / tot * 100)} %: ${o.wert}</div>`).join(''); }
+    const unit = k === 'angriff' ? 'Schaden' : k === 'auftanken' ? 'Nörten' : '';
+    let rows;
+    if (k === 'ausweichen') rows = [[`${a.wuerfe.chance} %`, a.sonder.fest ? 'feste Chance' : 'bei gleichem Tempo'], [a.kosten, 'Nörten-Kosten'], [a.sonder.gegenschlag || '–', 'Gegenschlag']];
+    else if (k === 'verteidigung') rows = [[a.sonder.schild ? fmt(e.ev) : `${fmt(e.ev, 0)} %`, a.sonder.schild ? 'Ø geschluckt' : 'Ø Schutz'], [`${fmt((1 - (1 - a.wuerfe.chance / 100)) * 100, 0)} %`, 'Abwehr greift'], [a.kosten, 'Nörten-Kosten']];
+    else rows = [[fmt(e.ev), `Ø ${unit}`], [fmt(e.max, 0), `max. ${unit}`], [`${fmt(e.nichts * 100, 0)} %`, 'gar nichts'], ...(k === 'angriff' ? [[e.proNoerti == null ? '–' : fmt(e.proNoerti, 2), 'Schaden je Nörti']] : [])];
+    $('#sum').innerHTML = rows.map((r) => `<div><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join('');
+    const fx = (a.effekte || []).map((x) => K.fxText(x)).filter(Boolean);
+    $('#pcard').innerHTML = `<div class="pcard c-${k}"><div class="big">${esc(KAT[k].big(a0))}</div><div class="info"><b>${esc(a.name)}</b>${a.wuerfe.chance < 100 ? mini20(a.wuerfe.chance) : ''}<span class="small muted">${esc(sub(a0))}${fx.length ? ' · ' + esc(fx.join(', ')) : ''}</span></div></div>`;
+    const ti = $('#aeTitle'); if (ti) ti.textContent = a.name;
+    const c = $('#cats'); if (c) c.innerHTML = catsHtml();
+    const lp = $('[data-hint="lp"]'); if (lp) lp.textContent = `bei „Normal“: ${Math.round(standardWert('kampf_lp') * (t.lp_faktor ?? 1))} LP`;
+    const no = $('[data-hint="no"]'); if (no) no.textContent = `bei „Normal“: ${Math.round(standardWert('kampf_noerten') * (t.noerten_faktor ?? 1))} Nörten`;
+  }
+
+  // ---------- Tab: Level-Pfad ----------
+  function renderPfad() {
+    const ids = allIds().filter((id) => data.typen[id]);
+    if (!sel || !ids.includes(sel)) sel = ids[0];
+    const t = T();
+    if (!t) { $('#root').innerHTML = '<p class="card">Noch keine Figur mit Kampfwerten.</p>'; return; }
+    t.pfad ||= {};
+    const later = t.aktionen.filter((a) => !a.start);
+    const warn = [];
+    later.forEach((a) => { if (!lerntAb(t, a.id)) warn.push(`„${a.name}“ wird nie gelernt.`); });
+    for (const [l, opts] of Object.entries(t.pfad)) opts.forEach((o) => {
+      if ((o.art === 'lernt' || (o.art === 'verbessern' && o.aktion)) && !t.aktionen.some((a) => a.id === o.aktion)) warn.push(`Level ${l}: Aktion „${o.aktion}“ gibt es nicht mehr.`);
+    });
+    for (let l = 2; l <= 20; l++) if (!(t.pfad[l] || []).length) warn.push(`Level ${l} bringt nichts.`);
+    // Endstand mit jeweils erster Option
+    const w0 = {}; for (const [l, o] of Object.entries(t.pfad)) if (o.length > 1) w0[l] = 0;
+    let end = null; try { end = K.figur(data, { type_id: sel, level: 20, wahlen: w0, name: '' }); } catch {}
+    const aktOpts = (cur, only) => t.aktionen.filter((a) => !only || !a.start).map((a) => `<option value="${esc(a.id)}" ${a.id === cur ? 'selected' : ''}>${esc(a.name)} (${KAT[a.kat].label})</option>`).join('');
+    const optHtml = (l, o, j, n) => {
+      const q = `typen.${sel}.pfad.${l}.${j}`;
+      let fields = '';
+      if (['lp_faktor', 'noerten_faktor', 'tempo'].includes(o.art)) fields = `<input class="in" data-p="${q}.wert" data-num type="number" step="${o.art === 'tempo' ? 1 : 0.05}" value="${o.wert}" aria-label="Wert">`;
+      else if (o.art === 'lernt') fields = `<select class="in" data-p="${q}.aktion" aria-label="Aktion">${aktOpts(o.aktion, true)}</select>`;
+      else if (o.art === 'verbessern') {
+        const ziel = o.aktion ? 'a:' + o.aktion : 'k:' + (o.kat || 'angriff');
+        fields = `<select class="in" data-ziel="${q}" aria-label="Was">${t.aktionen.map((a) => `<option value="a:${esc(a.id)}" ${ziel === 'a:' + a.id ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}${K.KAT.map((k) => `<option value="k:${k}" ${ziel === 'k:' + k ? 'selected' : ''}>alle ${KAT[k].label}</option>`).join('')}</select>
+          <div class="row" style="flex-wrap:nowrap"><select class="in" data-p="${q}.feld" aria-label="Feld">${Object.entries(FELD).map(([x, lab]) => `<option value="${x}" ${x === o.feld ? 'selected' : ''}>${lab}</option>`).join('')}</select>
+          <input class="in" data-p="${q}.wert" data-num type="number" value="${o.wert}" aria-label="Wert" style="max-width:80px"></div>`;
+      } else if (o.art === 'optik') fields = `<input class="in" data-p="${q}.text" value="${esc(o.text || '')}" maxlength="40" aria-label="Text">`;
+      return `<div class="opt"><div class="oh"><span>${n > 1 ? 'OPTION ' + String.fromCharCode(65 + j) : 'FEST'}</span><button class="x mini" data-act="delOpt" data-l="${l}" data-j="${j}" aria-label="Option entfernen" style="min-height:28px;padding:0 8px">×</button></div>
+        <select class="in" data-part="${q}" aria-label="Art">${Object.entries(PFAD_ART).map(([x, lab]) => `<option value="${x}" ${x === o.art ? 'selected' : ''}>${lab}</option>`).join('')}</select>
+        ${fields}<span class="txt">${esc(K.optionText(t, o))}</span></div>`;
+    };
+    let rows = '';
+    for (let l = 2; l <= 20; l++) {
+      const opts = t.pfad[l] || [];
+      rows += `<div class="lvl"><div class="lvbadge ${opts.length > 1 ? 'wahl' : opts.length ? '' : 'leer'}"><b>${l}</b><span>${opts.length > 1 ? 'WAHL' : opts.length ? 'FEST' : 'LEER'}</span></div>
+        <div class="opts">${opts.map((o, j) => optHtml(l, o, j, opts.length)).join('')}${opts.length < 3 ? `<button class="dashed" data-act="addOpt" data-l="${l}" style="min-height:90px">+ ${opts.length ? 'Option (macht daraus eine Wahl)' : 'Belohnung'}</button>` : ''}</div></div>`;
+    }
+    $('#root').innerHTML = `<div class="layout">${sideHtml(ids)}<div class="main">
+      <section class="card ink actions" style="gap:10px"><h2>Level-Pfad · ${esc(figName(sel))}</h2>
+        <p class="small muted" style="margin:0">Jedes Level bringt nur, was hier steht (keine festen Boni mehr). Eine Option = bekommt jeder. Zwei oder drei = der Besitzer wählt beim Level-up, die Wahl ist endgültig.</p>
+        ${end ? `<div class="sumrow"><span>Level 20 (immer Option A): <b>${end.lpMax}</b> LP</span><span><b>${end.noertenMax}</b> Nörten</span><span>Tempo <b>${end.tempo}</b></span><span><b>${end.aktionen.filter((a) => a.id !== '_durchschnaufen').length}</b> Aktionen</span></div>` : ''}
+        <div class="row"><label class="f" style="flex:1 1 220px">Pfad übernehmen von<select class="in" id="copyFrom"><option value="">– Figur wählen –</option>${ids.filter((x) => x !== sel).map((x) => `<option value="${x}">${esc(x)} ${esc(figName(x))}</option>`).join('')}</select></label>
+          <button class="mini" data-act="copyPfad" style="align-self:flex-end">Übernehmen</button></div>
+      </section>
+      ${warn.length ? `<div class="warnbox"><b>Hinweise</b><ul>${warn.slice(0, 8).map((x) => `<li>${esc(x)}</li>`).join('')}${warn.length > 8 ? `<li>… und ${warn.length - 8} weitere</li>` : ''}</ul></div>` : ''}
+      <section class="card">${rows}</section></div></div>`;
+  }
+
+  // ---------- Tab: Balance-Test ----------
+  let sim = null;
+  function renderBalance() {
+    const ids = Object.keys(data.typen).sort();
+    const R = data.regeln;
+    const rows = ids.map((id) => {
+      const t = data.typen[id];
+      const acts = t.aktionen;
+      return acts.map((a, i) => { const e = K.erwartung(a), ab = a.start ? 'Start' : lerntAb(t, a.id) ? 'Lv ' + lerntAb(t, a.id) : 'nie';
+        return `<tr>${i === 0 ? `<td rowspan="${acts.length}"><b>${esc(id)} ${esc(figName(id))}</b><br><span class="muted">LP ×${fmt(t.lp_faktor ?? 1, 2)} · N ×${fmt(t.noerten_faktor ?? 1, 2)} · Tempo ${t.tempo}</span></td>` : ''}
+        <td><span class="c-${a.kat}" style="color:var(--c);font-weight:700">${KAT[a.kat].label.slice(0, 4)}.</span> ${esc(a.name)} <span class="muted">(${ab})</span></td>
+        <td class="n">${esc(KAT[a.kat].big(a))}</td><td class="n">${norm(a).wuerfe.chance} %</td><td class="n">${a.kosten || 0}</td>
+        <td class="n">${a.kat === 'ausweichen' ? '–' : fmt(e.ev)}</td><td class="n ${e.proNoerti != null && a.kat === 'angriff' ? (e.proNoerti < 0.5 ? 'eff-low' : e.proNoerti > 0.9 ? 'eff-high' : '') : ''}">${a.kat === 'angriff' && e.proNoerti != null ? fmt(e.proNoerti, 2) : '–'}</td></tr>`; }).join('');
+    }).join('');
+    $('#root').innerHTML = `<div class="main">
+      <section class="card ink actions" style="gap:10px"><h2>Probekämpfe</h2>
+        <p class="small muted" style="margin:0">Jede Figur kämpft gegen jede, beide Seiten wählen zufällig (erst Kategorie, dann Aktion). Zeigt grobe Ausreißer, keine echte Taktik. Rechnet mit dem aktuellen Entwurf.</p>
+        <div class="grid">
+          <label class="f">Level<select class="in" id="simLv">${[1, 5, 10, 15, 20].map((l) => `<option ${l === (sim && sim.lv) ? 'selected' : ''}>${l}</option>`).join('')}</select><small>Wahlen zufällig</small></label>
+          <label class="f">LP<select class="in" id="simLp">${R.kampf_lp.map((x, i) => `<option value="${x.wert}" ${i === (R.kampf_standard ?? 1) ? 'selected' : ''}>${esc(x.name)} (${x.wert})</option>`).join('')}</select></label>
+          <label class="f">Nörten<select class="in" id="simNo">${R.kampf_noerten.map((x, i) => `<option value="${x.wert}" ${i === (R.kampf_standard ?? 1) ? 'selected' : ''}>${esc(x.name)} (${x.wert})</option>`).join('')}</select></label>
+          <label class="f">Kämpfe je Paarung<select class="in" id="simN">${[100, 300, 1000].map((n) => `<option ${n === 300 ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        </div>
+        <button class="btn-main" data-act="sim" style="max-width:320px">PROBEKÄMPFE STARTEN</button>
+        <div id="simOut">${sim ? sim.html : ''}</div>
+      </section>
+      <section class="actions" style="gap:8px"><h2>Alle Aktionen im Vergleich</h2>
+        <p class="small muted" style="margin:0">Ø ohne Gegner-Reaktion. <span class="eff-high">Grün</span> = sehr effizient (über 0,9 Schaden pro Nörti), <span class="eff-low">rot</span> = teuer (unter 0,5).</p>
+        <div class="scroll"><table><thead><tr><th>Figur</th><th>Aktion</th><th class="n">Wert</th><th class="n">Chance</th><th class="n">Kosten</th><th class="n">Ø</th><th class="n">pro Nörti</th></tr></thead><tbody>${rows}</tbody></table></div></section></div>`;
+  }
+  async function runSim() {
+    const ids = Object.keys(data.typen).sort(), lv = +$('#simLv').value, n = +$('#simN').value, opts = { lp: +$('#simLp').value, noerten: +$('#simNo').value };
+    const out = $('#simOut'), d = clone(data); d.format = K.FORMAT;
+    const rnd = (t) => { const w = {}; for (const [l, o] of Object.entries(d.typen[t].pfad || {})) if (+l <= lv && o.length > 1) w[l] = Math.floor(Math.random() * o.length); return w; };
+    const wins = {}, rounds = {}; let errors = 0, done = 0; const total = ids.length * (ids.length - 1) * n;
+    for (const a of ids) for (const b of ids) {
+      if (a === b) continue;
+      let w = 0, r = 0;
+      for (let i = 0; i < n; i++) {
+        try {
+          const s = K.neu(d, { name: 'A', figs: [{ type_id: a, level: lv, wahlen: rnd(a), name: 'a' }] }, { name: 'B', figs: [{ type_id: b, level: lv, wahlen: rnd(b), name: 'b' }] }, opts);
+          while (!s.over) K.runde(s, K.zufall(s, 'A'), K.zufall(s, 'B'));
+          w += s.winner === 'A' ? 1 : s.winner ? 0 : 0.5; r += s.runde - 1;
+        } catch (e) { errors++; }
+        if (++done % 400 === 0) { out.innerHTML = `<p class="small muted">Rechne … ${Math.round(done / total * 100)} %</p>`; await new Promise((res) => setTimeout(res, 0)); }
+      }
+      wins[a + b] = w / n; rounds[a + b] = r / n;
+    }
+    const color = (p) => `background:hsl(${Math.round(p * 120)} 65% 85%)`;
+    const avg = (a) => { const o = ids.filter((b) => b !== a); return o.reduce((x, b) => x + (wins[a + b] + 1 - wins[b + a]) / 2, 0) / o.length; };
+    const html = `<div class="scroll" style="margin-top:6px"><table class="heat"><thead><tr><th>Level ${lv} · Zeile gewinnt gegen Spalte</th>${ids.map((b) => `<th class="n">${esc(figName(b))}</th>`).join('')}<th class="n">Ø</th></tr></thead><tbody>
+      ${ids.map((a) => `<tr><td><b>${esc(figName(a))}</b></td>${ids.map((b) => a === b ? '<td class="n muted">–</td>' : `<td class="n" style="${color(wins[a + b])}">${Math.round(wins[a + b] * 100)} %</td>`).join('')}<td class="n" style="${color(avg(a))}">${Math.round(avg(a) * 100)} %</td></tr>`).join('')}
+      </tbody></table></div>
+      <p class="small muted" style="margin:6px 0 0">Ø ${fmt(Object.values(rounds).reduce((x, y) => x + y, 0) / Object.values(rounds).length)} Runden pro Kampf${errors ? ` · <span class="eff-low">${errors} Kämpfe mit Fehler – Werte prüfen</span>` : ''}. Ziel: alle Ø-Werte zwischen 40 und 60 %.</p>`;
+    sim = { lv, html }; out.innerHTML = html;
+  }
+
+  // ---------- Tab: Kampfregeln ----------
+  const REGELN = [
+    ['Treffer & Schutz', [['getroffen_faktor', 'Schaden × beim Auftanken / missglücktem Ausweichen', 0.05], ['verteidigung_fehlschlag_faktor', 'Schaden × wenn die Abwehr misslingt', 0.05]]],
+    ['Konter (gelungene Abwehr)', [['konter_treffer', 'nächste Runde Trefferchance + %'], ['konter_noerten', 'Angreifer verliert Nörten']]],
+    ['Auftanken', [['auftanken_getroffen_faktor', 'Ertrag × wenn man getroffen wird', 0.05], ['auftanken_gegen_verteidigen_faktor', 'Ertrag × wenn der Gegner nur verteidigt', 0.05]]],
+    ['Ausweichen', [['ausweichen_pro_tempo', '% pro Tempo-Unterschied'], ['ausweichen_min', 'mindestens %'], ['ausweichen_max', 'höchstens %']]],
+    ['Kampf', [['max_runden', 'Max. Runden pro Figur im Team']]]
+  ];
   function renderRegeln() {
-    const r = data.regeln, std = r.standard_attacke;
-    $('#main').innerHTML = REGELN.map(([title, fields]) => `<section class="card actions"><b>${title}</b><div class="grid">${fields.map(([k, label, step]) =>
-      `<label class="f">${label}<input data-p="regeln.${k}" data-num type="number" step="${step || 1}" inputmode="decimal" value="${r[k]}"></label>`).join('')}</div></section>`).join('')
-      + `<section class="card atk"><b>Standard-Attacke (für alle Figuren mit Häkchen)</b>${attackFields(std, 'regeln.standard_attacke', true)}</section>`;
+    const r = data.regeln;
+    const stufen = (k, label) => `<section class="card actions" style="gap:10px"><b>${label}</b><div class="grid">${r[k].map((x, i) => `
+      <label class="f">Name<input data-p="regeln.${k}.${i}.name" value="${esc(x.name)}" maxlength="12"></label>
+      <label class="f">Grundwert<input data-p="regeln.${k}.${i}.wert" data-num type="number" min="10" max="500" value="${x.wert}"></label>`).join('')}</div></section>`;
+    $('#root').innerHTML = `<div class="main">
+      <p class="small muted" style="margin:0">Vor jedem Kampf wählen die Spieler eine Stufe für LP und Nörten. Jede Figur multipliziert den Grundwert mit ihrem Faktor.</p>
+      ${stufen('kampf_lp', 'Lebenspunkte vor dem Kampf (Kurz / Normal / Lang)')}${stufen('kampf_noerten', 'Nörten vor dem Kampf')}
+      <section class="card actions"><label class="f" style="max-width:260px">Vorauswahl<select data-p="regeln.kampf_standard" data-num>${[0, 1, 2].map((i) => `<option value="${i}" ${i === (r.kampf_standard ?? 1) ? 'selected' : ''}>Stufe ${i + 1}: ${esc(r.kampf_lp[i].name)} / ${esc(r.kampf_noerten[i].name)}</option>`).join('')}</select></label></section>
+      ${REGELN.map(([title, fields]) => `<section class="card actions"><b>${title}</b><div class="grid">${fields.map(([k, label, step]) =>
+        `<label class="f">${label}<input data-p="regeln.${k}" data-num type="number" step="${step || 1}" inputmode="decimal" value="${r[k]}"></label>`).join('')}</div></section>`).join('')}
+      <p class="small muted" style="margin:0">Der Kreislauf bleibt fest: Angriff schlägt Auftanken, Auftanken schlägt Verteidigung, Verteidigung schlägt Angriff. Ausweichen ist die riskante Sonderwahl.</p></div>`;
   }
 
-  // ---------- Versionen ----------
+  // ---------- Tab: Versionen ----------
   async function renderVersionen() {
-    $('#main').innerHTML = `<section class="card actions">
+    $('#root').innerHTML = `<div class="main"><section class="card actions">
         <b>Sichern & Austausch</b>
         <p class="small muted" style="margin:0">Spieldaten als Datei herunterladen, z. B. um sie im Vault als <code>spieldaten.json</code> abzulegen.</p>
-        <div class="row"><button class="btn" data-act="export">Als JSON herunterladen</button><button class="btn" data-act="defaults">Startwerte laden</button></div>
-      </section><section class="card actions"><b>Gespeicherte Versionen</b><div id="vlist"><div class="spinner"></div></div></section>`;
+        <div class="row"><button class="btn" style="width:auto" data-act="export">Als JSON herunterladen</button><button class="btn" style="width:auto" data-act="defaults">Startwerte laden</button></div>
+      </section><section class="card actions"><b>Gespeicherte Versionen</b><div id="vlist" class="actions" style="gap:8px"><div class="spinner"></div></div></section></div>`;
     try { versions = await N.api.gameDataVersions(); } catch (e) { versions = null; }
     const el = $('#vlist'); if (!el) return;
     if (!versions) { el.innerHTML = '<p class="small muted" style="margin:0">Datenbank nicht erreichbar oder SQL-Nachtrag 004 fehlt noch.</p>'; return; }
     if (!versions.length) { el.innerHTML = '<p class="small muted" style="margin:0">Noch keine Version gespeichert.</p>'; return; }
-    el.innerHTML = versions.map((v) => `<div class="ver"><div><b>Version ${v.version}</b>${v.version === base.version ? ' · aktuell' : ''}<br><span class="muted small">${esc(N.fmtDate(v.created_at))}${v.note ? ' · ' + esc(v.note) : ''}</span></div>
-      ${v.version === base.version ? '' : `<button class="mini" data-act="loadv" data-v="${v.version}">Laden</button>`}</div>`).join('');
+    el.innerHTML = versions.map((v) => `<div class="ver"><div><b>Version ${v.version}</b>${v.version === base.version && !base.stale ? ' · aktuell' : ''}<br><span class="muted small">${esc(N.fmtDate(v.created_at))}${v.note ? ' · ' + esc(v.note) : ''}</span></div>
+      ${v.version === base.version && !base.stale ? '' : `<button class="mini" data-act="loadv" data-v="${v.version}">Laden</button>`}</div>`).join('');
   }
 
   function render() {
     document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-    ({ figuren: renderFiguren, uebersicht: renderUebersicht, regeln: renderRegeln, versionen: renderVersionen })[tab]();
+    ({ figuren: renderFiguren, pfad: renderPfad, balance: renderBalance, regeln: renderRegeln, versionen: renderVersionen })[tab]();
+    if (tab === 'figuren') refreshCalc();
     persist();
   }
+  const keepScroll = (fn) => { const y = scrollY; fn(); scrollTo(0, y); };
 
   // ---------- Eingaben ----------
   function setPath(path, value) {
     const keys = path.split('.'); let o = data;
-    for (let i = 0; i < keys.length - 1; i++) o = o[keys[i]];
-    o[keys[keys.length - 1]] = value;
+    for (let i = 0; i < keys.length - 1; i++) { o[keys[i]] ??= {}; o = o[keys[i]]; }
+    const k = keys[keys.length - 1];
+    if (value === '' || value === false || value == null) { if (keys.includes('sonder') || k === 'name' && keys[0] === 'typen' && keys.length === 3) { delete o[k]; return; } }
+    o[k] = value;
   }
-  function getPath(path) { return path.split('.').reduce((o, k) => (o == null ? o : o[k]), data); }
+  const getPath = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), data);
+  const valueOf = (el) => (el.type === 'checkbox' ? el.checked : el.dataset.num !== undefined ? (el.value === '' ? '' : num(el.value)) : el.value);
 
-  $('#main').addEventListener('input', (e) => {
-    const el = e.target;
-    if (el.dataset.up) {
-      const a = getPath(el.dataset.up), k = el.dataset.k, v = el.value.trim();
-      a.stufe10 ||= {};
-      if (v === '') delete a.stufe10[k]; else a.stufe10[k] = k === 'effekt' ? { art: a.effekt.art, wert: num(v) } : num(v);
-      if (!Object.keys(a.stufe10).length) delete a.stufe10;
-      persist(); return;
-    }
-    const p = el.dataset.p; if (!p || el.dataset.rerender !== undefined) return;
-    setPath(p, el.dataset.num !== undefined ? num(el.value) : el.value);
-    const calcPath = p.replace(/\.(name|ab|schaden|treffer|chance|kosten|effekt\.wert)$/, '').replace(/\.effekt$/, '');
-    const c = document.querySelector(`[data-calc="${calcPath}"]`);
-    if (c) c.innerHTML = calcHtml(getPath(calcPath));
-    if (p.endsWith('.name')) { const h = el.closest('.atk')?.querySelector('.atk-head .disp'); if (h) h.textContent = el.value; }
+  const root = $('#root');
+  root.addEventListener('input', (e) => {
+    const el = e.target, p = el.dataset.p;
+    if (!p || el.dataset.rerender !== undefined || el.tagName === 'SELECT' || el.type === 'checkbox') return;
+    let v = valueOf(el);
+    if (v === '' && el.dataset.num !== undefined && !p.includes('.sonder.')) return;
+    setPath(p, v);
+    if (tab === 'figuren') refreshCalc();
+    if (tab === 'pfad') { const txt = el.closest('.opt')?.querySelector('.txt'); if (txt) { const q = p.split('.').slice(0, 5).join('.'); txt.textContent = K.optionText(T(), getPath(q)); } }
+    if (p.endsWith('.name') && p.split('.').length === 3) { const b = root.querySelector(`[data-sel="${sel}"]`); if (b) b.innerHTML = `<span class="id">${esc(sel)}</span>${esc(figName(sel))}`; }
     persist();
   });
-  $('#main').addEventListener('change', (e) => {
-    const el = e.target, p = el.dataset.p;
-    if (!p || el.dataset.rerender === undefined) return;
-    if (el.type === 'checkbox') {
-      const t = data.typen[sel];
-      if (el.checked && t.attacken.length >= 3) { el.checked = false; N.toast('Schon 3 Attacken – erst eine entfernen.', 'err'); return; }
-      setPath(p, el.checked);
-    } else if (p.endsWith('.effekt.art')) {
-      const a = getPath(p.replace(/\.effekt\.art$/, ''));
-      a.effekt = el.value ? { art: el.value, wert: (a.effekt && a.effekt.wert) || 10 } : null;
-      if (a.stufe10) { delete a.stufe10.effekt; if (!Object.keys(a.stufe10).length) delete a.stufe10; }
+  root.addEventListener('change', (e) => {
+    const el = e.target;
+    if (el.dataset.tpl !== undefined) { if (el.value !== '') addAction(el.dataset.tpl, +el.value); return; }
+    if (el.dataset.part) {                             // Pfad: Art der Option geändert
+      const o = getPath(el.dataset.part), art = el.value, t = T();
+      for (const k of Object.keys(o)) delete o[k];
+      Object.assign(o, { art }, art === 'lernt' ? { aktion: (t.aktionen.find((a) => !a.start) || t.aktionen[0] || {}).id } : art === 'verbessern' ? { aktion: (t.aktionen[0] || {}).id, feld: 'chance', wert: 5 } : art === 'optik' ? { text: 'Rahmen' } : { wert: art === 'tempo' ? 1 : 0.05 });
+      keepScroll(render); return;
     }
-    render();
+    if (el.dataset.ziel) {
+      const o = getPath(el.dataset.ziel), [typ, v] = el.value.split(':');
+      delete o.aktion; delete o.kat; if (typ === 'a') o.aktion = v; else o.kat = v;
+      keepScroll(render); return;
+    }
+    const p = el.dataset.p; if (!p) return;
+    if (el.type === 'checkbox' || el.tagName === 'SELECT' || el.dataset.rerender !== undefined) {
+      setPath(p, valueOf(el));
+      if (p.endsWith('.art') && p.includes('.effekte.')) { const fx = getPath(p.replace(/\.art$/, '')); if (K.FX[fx.art].sofort) delete fx.runden; else fx.runden ||= 1; }
+      keepScroll(render);
+    }
   });
-  $('#main').addEventListener('click', async (e) => {
+  root.addEventListener('click', async (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.sel) { sel = b.dataset.sel; render(); return; }
-    const act = b.dataset.act, t = data.typen[sel], i = +b.dataset.i;
-    if (act === 'create') { data.typen[sel] = { lp: 100, tempo: 5, standard: true, attacken: [newAttack(1)] }; render(); }
-    else if (act === 'dropType') {
-      if (!confirm(`Kampfwerte von ${figName(sel)} löschen? (Erst beim Speichern endgültig)`)) return;
-      delete data.typen[sel]; render();
+    if (b.dataset.sel) { sel = b.dataset.sel; selAct = null; render(); return; }
+    if (b.dataset.selact) { selAct = b.dataset.selact; keepScroll(render); $('#aed') && $('#aed').scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); return; }
+    const t = T(), a = t && t.aktionen.find((x) => x.id === selAct);
+    if (b.dataset.kat && a) { a.kat = b.dataset.kat; if (a.kat === 'ausweichen') { a.ausgaenge = [{ anteil: 100, wert: 0 }]; } if (!['angriff', 'auftanken'].includes(a.kat)) a.wuerfe = { art: 'einfach', chance: a.wuerfe.chance }; keepScroll(render); return; }
+    if (b.dataset.wurf && a) { const w = a.wuerfe; w.art = b.dataset.wurf; if (w.art === 'einfach') { delete w.n; delete w.bis; delete w.steigerung; } else w.n = Math.max(w.n || 1, w.art === 'zufall' ? 2 : 3); if (w.art === 'zufall') w.bis = Math.max(w.bis || 0, w.n + 2); else delete w.bis; if (w.art === 'kette') w.steigerung ??= 2; else delete w.steigerung; keepScroll(render); return; }
+    const act = b.dataset.act;
+    if (act === 'create') { data.typen[sel] = { lp_faktor: 1, noerten_faktor: 1, tempo: 5, aktionen: [], pfad: {} }; K.KAT.forEach((k) => addAction(k, 0, true)); render(); }
+    else if (act === 'dropType') { if (confirm(`Kampfwerte von ${figName(sel)} löschen? (Erst beim Speichern endgültig)`)) { delete data.typen[sel]; render(); } }
+    else if (act === 'dup' && a) { const c = clone(a); c.id = slug(a.name + ' 2', t.aktionen); c.name = (a.name + ' 2').slice(0, 24); c.start = false; t.aktionen.splice(t.aktionen.indexOf(a) + 1, 0, c); selAct = c.id; keepScroll(render); }
+    else if (act === 'delAct' && a) {
+      const refs = Object.entries(t.pfad || {}).filter(([, o]) => o.some((x) => x.aktion === a.id)).map(([l]) => l);
+      if (!confirm(`„${a.name}“ löschen?${refs.length ? ` Sie steht im Level-Pfad (Level ${refs.join(', ')}) – diese Einträge werden mit entfernt.` : ''}`)) return;
+      t.aktionen.splice(t.aktionen.indexOf(a), 1);
+      for (const l of refs) { t.pfad[l] = t.pfad[l].filter((x) => x.aktion !== a.id); if (!t.pfad[l].length) delete t.pfad[l]; }
+      selAct = null; keepScroll(render);
     }
-    else if (act === 'add') { t.attacken.push(newAttack(t.attacken.length ? 5 : 1)); render(); }
-    else if (act === 'del') { if (confirm(`„${t.attacken[i].name}“ entfernen?`)) { t.attacken.splice(i, 1); render(); } }
-    else if (act === 'up') { [t.attacken[i - 1], t.attacken[i]] = [t.attacken[i], t.attacken[i - 1]]; render(); }
+    else if (act === 'addOut' && a) { a.ausgaenge ||= [{ anteil: 100, wert: 0 }]; const last = a.ausgaenge[a.ausgaenge.length - 1]; a.ausgaenge.push({ anteil: 10, wert: Math.max(1, last.wert * 2) }); keepScroll(render); }
+    else if (act === 'delOut' && a) { a.ausgaenge.splice(+b.dataset.j, 1); keepScroll(render); }
+    else if (act === 'addFx' && a) { (a.effekte ||= []).push({ wann: 'erfolg', ziel: 'gegner', art: 'chance', wert: -10, runden: 1 }); keepScroll(render); }
+    else if (act === 'delFx' && a) { a.effekte.splice(+b.dataset.j, 1); keepScroll(render); }
+    else if (act === 'addOpt') { const l = b.dataset.l; (t.pfad[l] ||= []).push({ art: 'lp_faktor', wert: 0.05 }); keepScroll(render); }
+    else if (act === 'delOpt') { const l = b.dataset.l; t.pfad[l].splice(+b.dataset.j, 1); if (!t.pfad[l].length) delete t.pfad[l]; keepScroll(render); }
+    else if (act === 'copyPfad') {
+      const from = $('#copyFrom').value; if (!from) return;
+      if (!confirm(`Pfad von ${figName(from)} übernehmen? Der jetzige Pfad wird ersetzt. Aktionen, die es hier nicht gibt, werden zu „LP-Faktor +0,05“.`)) return;
+      const p = clone(data.typen[from].pfad || {}), ids = new Set(t.aktionen.map((x) => x.id));
+      for (const opts of Object.values(p)) opts.forEach((o, j) => { if (o.aktion && !ids.has(o.aktion)) opts[j] = { art: 'lp_faktor', wert: 0.05 }; });
+      t.pfad = p; render();
+    }
+    else if (act === 'sim') { b.disabled = true; try { await runSim(); } finally { b.disabled = false; } }
     else if (act === 'export') {
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'spieldaten.json'; a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      const x = document.createElement('a'); x.href = URL.createObjectURL(blob); x.download = 'spieldaten.json'; x.click();
+      setTimeout(() => URL.revokeObjectURL(x.href), 1000);
     }
     else if (act === 'defaults') {
       if (!confirm('Startwerte aus spieldaten.json in den Editor laden? (Erst beim Speichern gültig)')) return;
       data = await fetch(N.ROOT + 'spieldaten.json', { cache: 'no-store' }).then((r) => r.json()); tab = 'figuren'; render(); N.toast('Startwerte geladen – noch nicht gespeichert');
     }
     else if (act === 'loadv') {
-      if (dirty() && !confirm('Ungespeicherte Änderungen gehen verloren. Trotzdem laden?')) return;
       const g = await N.api.getGameData(+b.dataset.v);
+      if (!g.data || !(g.data.format >= 2)) { N.toast('Diese Version ist im alten Format (Kampfsystem v1) und passt nicht mehr.', 'err'); return; }
+      if (dirty() && !confirm('Ungespeicherte Änderungen gehen verloren. Trotzdem laden?')) return;
       data = clone(g.data); tab = 'figuren'; render(); N.toast(`Version ${g.version} geladen – mit „Speichern“ wird sie zur aktuellen`);
     }
   });
+  function addAction(k, j, silent) {
+    const t = T(), v = j >= 0 ? VORLAGEN[k][j] : null;
+    const name = v ? (j === 0 ? `Neue ${KAT[k].label}` : v[0].replace(/\s*\(.*\)$/, '')) : `Neue ${KAT[k].label}`;
+    const a = { id: slug(name, t.aktionen), kat: k, name: name.slice(0, 24), start: !t.aktionen.some((x) => x.kat === k && x.start),
+      kosten: 0, wuerfe: { art: 'einfach', chance: k === 'ausweichen' ? 50 : 100 }, ausgaenge: [{ anteil: 100, wert: k === 'ausweichen' ? 0 : 10 }], effekte: [], sonder: {}, ...(v ? clone(v[1]) : {}) };
+    a.effekte ||= []; a.sonder ||= {}; if (!a.ausgaenge) a.ausgaenge = [{ anteil: 100, wert: 0 }];
+    t.aktionen.push(a); selAct = a.id;
+    if (!silent) { keepScroll(render); $('#aed') && $('#aed').scrollIntoView({ block: 'start' }); }
+  }
   document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; ls.set(TAB, tab); render(); }));
 
   // ---------- Prüfen & Speichern ----------
@@ -322,25 +672,41 @@
     const out = [];
     for (const [id, t] of Object.entries(data.typen)) {
       const n = figName(id);
-      if (!(t.lp > 0)) out.push(`${n}: LP fehlen`);
+      if (!(t.lp_faktor > 0)) out.push(`${n}: LP-Faktor fehlt`);
+      if (!(t.noerten_faktor > 0)) out.push(`${n}: Nörten-Faktor fehlt`);
       if (!(t.tempo >= 1 && t.tempo <= 10)) out.push(`${n}: Tempo muss 1–10 sein`);
-      if (attackCount(t) < 1 || attackCount(t) > 3) out.push(`${n}: 1–3 Attacken nötig`);
-      if (!(t.standard || t.attacken.some((a) => a.ab <= 1))) out.push(`${n}: braucht eine Attacke ab Level 1`);
-      t.attacken.forEach((a) => {
-        if (!a.name.trim()) out.push(`${n}: Attacke ohne Namen`);
-        if (a.chance % 5 || a.chance < 5 || a.chance > 100) out.push(`${n} / ${a.name}: Trefferchance in 5er-Schritten (5–100)`);
-        if (!(a.treffer >= 1 && a.treffer <= 5)) out.push(`${n} / ${a.name}: 1–5 Treffer`);
+      for (const k of K.KAT) {
+        const st = t.aktionen.filter((a) => a.kat === k && a.start).length;
+        if (k === 'angriff' && !st) out.push(`${n}: braucht einen Angriff ab Start`);
+        if (k === 'auftanken' && !t.aktionen.some((a) => a.kat === k && a.start && !(a.kosten > 0))) out.push(`${n}: braucht ein kostenloses Auftanken ab Start (sonst kann man festhängen)`);
+        if (st > K.MAX_PRO_KAT) out.push(`${n}: mehr als ${K.MAX_PRO_KAT} ${KAT[k].label}-Aktionen ab Start`);
+      }
+      t.aktionen.forEach((a) => {
+        const w = a.wuerfe || {};
+        if (!String(a.name || '').trim()) out.push(`${n}: Aktion ohne Namen`);
+        if (w.chance % 5 || w.chance < 5 || w.chance > 100) out.push(`${n} / ${a.name}: Chance in 5er-Schritten (5–100)`);
+        if (w.art && w.art !== 'einfach' && !(w.n >= 1 && w.n <= 8)) out.push(`${n} / ${a.name}: 1–8 Würfe`);
+        if (w.art === 'zufall' && !(w.bis >= w.n)) out.push(`${n} / ${a.name}: „bis“ muss mindestens „von“ sein`);
+        if (a.kat !== 'ausweichen' && !((a.ausgaenge || []).reduce((x, o) => x + (o.anteil > 0 ? o.anteil : 0), 0) > 0)) out.push(`${n} / ${a.name}: Ausgänge brauchen einen Anteil`);
+        if (a.kat === 'verteidigung' && !(a.sonder || {}).schild && (a.ausgaenge || []).some((o) => o.wert > 100)) out.push(`${n} / ${a.name}: Reduktion höchstens 100 %`);
+        (a.effekte || []).forEach((x) => { if (!K.FX[x.art]) out.push(`${n} / ${a.name}: unbekannter Effekt`); });
       });
+      for (const [l, opts] of Object.entries(t.pfad || {})) opts.forEach((o) => {
+        if (o.aktion && !t.aktionen.some((a) => a.id === o.aktion)) out.push(`${n}: Level ${l} verweist auf eine gelöschte Aktion`);
+      });
+      if (Object.values(t.pfad || {}).some((o) => o.length > 5)) out.push(`${n}: höchstens 5 Optionen pro Level`);
     }
     return out;
   }
-  $('#discard').onclick = () => { if (confirm('Alle ungespeicherten Änderungen verwerfen?')) { data = clone(saved); render(); } };
+  $('#discard').onclick = () => { if (confirm('Alle ungespeicherten Änderungen verwerfen?')) { data = clone(base.stale ? base.data : saved); render(); } };
   $('#save').onclick = () => {
     const errs = problems();
     if (errs.length) { N.sheet(`<h2>Noch nicht ganz</h2><ul style="margin:0;padding-left:20px">${errs.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><button class="btn" data-close>OK</button>`, (el) => el.querySelector('[data-close]').onclick = N.closeSheet); return; }
+    data.format = K.FORMAT;
     const pin = ls.get(PIN_STORE) || '';
     const el = N.sheet(`<h2>Speichern</h2>
       <p>Die neue Version gilt sofort für alle Kämpfe. Alte Versionen bleiben unter „Versionen“ erhalten.</p>
+      <p class="small muted">Hast du im Level-Pfad Optionen umsortiert oder entfernt, zeigen bereits getroffene Wahlen danach evtl. auf eine andere Option. Dann im Tag-Writer die Wahlen der Figur zurücksetzen.</p>
       <label class="field">Notiz (optional)<input id="note" maxlength="120" placeholder="z. B. Skater schneller"></label>
       <label class="field" ${pin ? 'hidden' : ''}>Admin-PIN<input id="pinIn" type="password" inputmode="numeric" autocomplete="off"></label>
       <button class="btn-main" id="go">Version ${base.version + 1} speichern</button>
@@ -352,9 +718,10 @@
       if (!p) { N.toast('Bitte PIN eingeben', 'err'); return; }
       ev.target.disabled = true;
       try {
-        const r = await N.api.saveGameData(data, p, base.version, el.querySelector('#note').value.trim());
+        const note = el.querySelector('#note').value.trim();
+        const r = await N.api.saveGameData(data, p, base.version, note);
         ls.set(PIN_STORE, p);
-        base = { version: r.version, data: clone(data), note: el.querySelector('#note').value.trim() || null, created_at: new Date().toISOString() };
+        base = { version: r.version, data: clone(data), note: note || null, created_at: new Date().toISOString() };
         saved = clone(data); N.closeSheet(); setStatus(); render(); N.toast(`Version ${r.version} gespeichert ✓`);
       } catch (e) {
         ev.target.disabled = false;
@@ -369,15 +736,17 @@
   // ---------- Start ----------
   (async () => {
     try {
-      [figs, base] = await Promise.all([N.types(), N.gameData()]);
+      // Namen direkt aus figuren.json (N.types() enthält schon die Namen aus dem Editor)
+      [figs, base] = await Promise.all([fetch(N.ROOT + 'figuren.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => d.figuren || []), N.gameData()]);
       saved = clone(base.data); data = clone(base.data);
+      if (base.stale) saved = { stale: true };        // alte DB-Version: Startwerte gelten als ungespeichert
       const d = ls.get(DRAFT);
       if (d) {
-        try { const j = JSON.parse(d); if (j.base === base.version) { data = j.data; N.toast('Entwurf wiederhergestellt'); } else ls.set(DRAFT, null); } catch { ls.set(DRAFT, null); }
+        try { const j = JSON.parse(d); if (j.base === base.version && j.data && j.data.format >= 2) { data = j.data; N.toast('Entwurf wiederhergestellt'); } else ls.set(DRAFT, null); } catch { ls.set(DRAFT, null); }
       }
       setStatus(); render();
     } catch (e) {
-      $('#main').innerHTML = `<p class="card">Spieldaten konnten nicht geladen werden: ${esc(N.errMsg(e))}</p>`;
+      $('#root').innerHTML = `<p class="card">Spieldaten konnten nicht geladen werden: ${esc(N.errMsg(e))}</p>`;
     }
   })();
 })();

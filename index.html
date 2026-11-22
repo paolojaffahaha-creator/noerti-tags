@@ -174,8 +174,16 @@
     if (fresh) { box.innerHTML = '<span><b>Auslieferungszustand ✓</b> – noch kein Besitzer, kein Name, Level 1.</span>'; return; }
     box.innerHTML = `
       <span><b>${esc(f.nickname || '(ohne Namen)')}</b> · Lv ${f.level} · ${f.wins}:${f.losses} · ${(f.images || []).length} Foto(s)<br>
-      Besitzer: ${esc(f.owner_name || 'niemand')}</span>
+      Besitzer: ${esc(f.owner_name || 'niemand')}${f.wahlen && Object.keys(f.wahlen).length ? `<br>Level-Wahlen: ${Object.keys(f.wahlen).length}` : ''}</span>
+      ${f.wahlen && Object.keys(f.wahlen).length ? '<button id="admWahl">Nur Level-Wahlen zurücksetzen</button>' : ''}
       <button id="admReset">Auf Auslieferungszustand zurücksetzen</button>`;
+    const wb = $('#admWahl');
+    if (wb) wb.onclick = async (ev) => {
+      if (!pin) { box.insertAdjacentHTML('beforeend', '<span>Erst unten die Admin-PIN speichern.</span>'); return; }
+      ev.target.disabled = true;
+      try { await rpc('reset_wahlen', { p_serial: s, p_pin: pin }); say('ok', `${label(t)}: Level-Wahlen zurückgesetzt – der Besitzer wählt beim nächsten Kampf neu.`); showAdmin(s, t); }
+      catch (e) { ev.target.disabled = false; box.insertAdjacentHTML('beforeend', `<span style="color:var(--err)">${esc(/function|schema cache/i.test(e.message) ? 'SQL-Nachtrag 006 fehlt noch' : e.message)}</span>`); }
+    };
     let armed = false;
     $('#admReset').onclick = async (ev) => {
       if (!pin) { box.insertAdjacentHTML('beforeend', '<span>Erst unten die Admin-PIN speichern.</span>'); return; }

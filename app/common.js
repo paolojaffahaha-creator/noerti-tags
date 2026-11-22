@@ -12,7 +12,11 @@
   const json = (p) => fetch(ROOT + p, { cache: 'no-store' }).then((r) => { if (!r.ok) throw new Error(p + ' fehlt'); return r.json(); });
   let cfgP = null, typesP = null;
   const config = () => (cfgP ||= json('config.json'));
-  const types = () => (typesP ||= json('figuren.json').then((d) => d.figuren || []));
+  // Typ-Namen: ein Name aus dem Editor (Spieldaten) überschreibt figuren.json
+  const types = () => (typesP ||= Promise.all([json('figuren.json'), gameData().catch(() => null)]).then(([d, g]) => {
+    const t = (g && g.data && g.data.typen) || {};
+    return (d.figuren || []).map((x) => (t[x.id] && t[x.id].name ? { ...x, name: t[x.id].name } : x));
+  }));
 
   // ---------- Helfer ----------
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -116,6 +120,7 @@
       getGameData: (v) => rpc('get_game_data', v ? { p_version: v } : {}),
       gameDataVersions: () => rpc('game_data_versions'),
       saveGameData: (data, pin, base, note) => rpc('save_game_data', { p_data: data, p_pin: pin, p_base: base, p_note: note || null }),
+      chooseReward: (serial, level, option) => rpc('choose_reward', { p_serial: serial, p_level: level, p_option: option }),
       reportMatch: (m) => rpc('report_match', { p_client_id: m.id, p_a: m.a, p_b: m.b, p_winner: m.winner, p_rounds: m.rounds, p_reason: m.reason, p_log: m.log, p_game_version: m.version }),
       leaderboard: (n) => rpc('leaderboard', { p_limit: n || 20 })
     };
@@ -141,7 +146,7 @@
       public_id: f.public_id, type_id: f.type_id, nickname: f.nickname, bio: f.bio, images: f.images, xp: f.xp, level: f.level,
       wins: f.wins, losses: f.losses, opponents: f.opponents, owner_since: f.owner_since, updated_at: f.updated_at || 'x',
       owner_name: f.owner === 'me' ? (s.me && s.me.name) : f.owner ? s.names[f.owner] : null,
-      is_mine: !!(s.me && f.owner === 'me')
+      is_mine: !!(s.me && f.owner === 'me'), wahlen: f.wahlen || {}
     });
     const fail = (m) => { throw new Error(m); };
     return {
@@ -186,6 +191,12 @@
         if (base != null && base !== cur) fail(`Inzwischen gespeichert (Version ${cur}). Bitte neu laden.`);
         s.game.push({ version: cur + 1, data, note: note || null, created_at: new Date().toISOString() }); save(s); return { version: cur + 1 };
       },
+      async chooseReward(serial, level, option) {
+        await wait(); const s = load(); const f = s.figures[serial.toUpperCase()]; if (!f) fail('Figur nicht registriert');
+        if (level < 2 || level > f.level) fail(`Level ${level} ist noch nicht erreicht`);
+        f.wahlen ||= {}; if (f.wahlen[level] != null) fail(`Für Level ${level} wurde schon gewählt`);
+        f.wahlen[level] = option; save(s); return view(s, f);
+      },
       async reportMatch(m) {
         await wait(); const s = load(); s.matches ||= {}; s.met ||= [];
         if (s.matches[m.id]) return { again: true, figures: s.matches[m.id] };
@@ -210,8 +221,10 @@
 
   // Spieldaten (Regeln, Typen, Attacken): aktuelle Version aus der Datenbank, sonst die Startwerte aus spieldaten.json
   let gameP = null;
+  // Ältere Versionen (format 1, Kampfsystem v1) passen nicht mehr zur Engine → dann gelten die Startwerte, bis im Editor neu gespeichert wird.
   const gameData = () => (gameP ||= api.getGameData().catch(() => null)
-    .then((g) => g || json('spieldaten.json').then((data) => ({ version: 0, data, note: 'Startwerte', created_at: null }))));
+    .then((g) => (g && g.data && g.data.format >= 2 ? g
+      : json('spieldaten.json').then((data) => ({ version: g ? g.version : 0, data, note: 'Startwerte', created_at: null, stale: !!g })))));
   if (MOCK) document.addEventListener('DOMContentLoaded', () => {
     const b = document.createElement('div'); b.className = 'mockbar';
     b.innerHTML = 'Testmodus mit Beispieldaten – nichts wird gespeichert. <a href="?mock=0">Beenden</a>';
@@ -224,7 +237,7 @@
   const lobby = {
     load() {
       let l = null; try { l = JSON.parse(localStorage.getItem(LOBBY)); } catch {}
-      if (!l || Date.now() - l.at > LOBBY_TTL) l = { at: Date.now(), size: 1, want: null, names: { A: '', B: '' }, A: [], B: [] };
+      if (!l || Date.now() - l.at > LOBBY_TTL) l = { at: Date.now(), size: 1, want: null, names: { A: '', B: '' }, A: [], B: [], lp: null, noerten: null };
       return l;
     },
     save(l) { l.at = Date.now(); try { localStorage.setItem(LOBBY, JSON.stringify(l)); } catch {} },

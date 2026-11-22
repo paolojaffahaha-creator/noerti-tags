@@ -278,6 +278,52 @@
   .reveal2 .choice .who { font: 700 11px var(--body); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .reveal2 .vs { align-self: center; font-size: 16px; }
   .verdict { font: 700 13px var(--body); text-align: center; background: var(--ink); color: var(--white); border-radius: 10px; padding: 5px 10px; }
+
+  /* ---------- Kampfsystem v2 (2026-11-22): Kategorien → Aktionen, Kampf-Einstellungen, Belohnungen ---------- */
+  :root { --k-atk: #E5484D; --k-def: #2F6FE4; --k-eva: #23965A; --k-tank: #E39A0B; }
+  .settings { display: flex; flex-direction: column; gap: 8px; }
+  .setrow { display: grid; grid-template-columns: 96px 1fr; gap: 8px; align-items: center; font: 700 13px var(--body); }
+  .seg3 { display: grid; grid-template-columns: repeat(3, 1fr); border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; }
+  .seg3 button { font: 500 14px var(--body); background: var(--white); color: var(--ink); border: 0; border-right: 2px solid var(--ink); padding: 5px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; min-height: 44px; justify-content: center; }
+  .seg3 button:last-child { border-right: 0; }
+  .seg3 button small { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .seg3 button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
+  .seg3 button[aria-pressed="true"] small { color: var(--marker); }
+  .reward { align-self: flex-start; margin-top: 4px; font: 700 13px var(--body); background: var(--marker); border: 2px solid var(--ink); border-radius: 99px; padding: 3px 10px; cursor: pointer; color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+  .reward.big { font-size: 15px; padding: 8px 14px; align-self: stretch; }
+  .ktiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .ktile { text-align: left; font: 14px var(--body); color: var(--ink); background: var(--white); border: 3px solid var(--ink); border-radius: 16px; padding: 10px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 3px; min-height: 128px; box-shadow: 4px 4px 0 var(--ink); position: relative; min-width: 0; }
+  .ktile::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px; background: var(--kc); border-radius: 12px 12px 0 0; }
+  .ktile .ki { font-size: 28px; line-height: 1; margin-top: 6px; }
+  .ktile b { font: 400 18px var(--disp); color: var(--kc); line-height: 1.1; }
+  .ktile .kn { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .ktile[aria-pressed="true"] { background: var(--marker); }
+  .ktile[aria-pressed="true"] .kn { color: var(--ink); font-weight: 700; }
+  .ktile:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+  .ktile:disabled { cursor: default; background: #F1F2F5; opacity: .6; box-shadow: none; }
+  .ktile .why { font-size: 12px; font-weight: 700; color: var(--err); }
+  .ktile .vsrow { margin-top: auto; }
+  .vsrow .r { background: #E6F4EC; }
+  .swbtn { font: 500 15px var(--body); color: var(--ink); background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 10px 12px; min-height: 48px; cursor: pointer; text-align: left; }
+  .swbtn[aria-pressed="true"] { background: var(--marker); box-shadow: 3px 3px 0 var(--ink); }
+  .swbtn:disabled { opacity: .5; cursor: default; }
+  .back { font: 500 14px var(--body); background: none; border: 0; color: var(--ink); text-decoration: underline; cursor: pointer; padding: 6px 2px; align-self: flex-start; min-height: 40px; }
+  .acard .extra { line-height: 1.3; }
+  .acard .big { padding: 0 3px; min-height: 48px; height: auto; }
+  .acard .big b.sm { font-size: 16px; } .acard .big b.xs { font-size: 12.5px; }
+  .acard .big b { white-space: nowrap; }
+  .wheel { display: flex; width: 100%; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; }
+  .wheel i { font-style: normal; display: flex; flex-direction: column; align-items: center; padding: 6px 2px; background: #FFF3C4; border-right: 2px solid var(--ink); min-width: 0; transition: background .1s; }
+  .wheel i:last-child { border-right: 0; }
+  .wheel i b { font: 400 18px var(--disp); }
+  .wheel i small { font: 700 10px var(--body); color: var(--muted); }
+  .wheel i.cur { background: var(--marker); }
+  .wheel i.res { background: var(--ink); color: var(--white); }
+  .wheel i.res small { color: var(--marker); }
+  .choice-card { border: 3px solid var(--ink); border-radius: 14px; background: var(--white); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; font: inherit; color: inherit; text-align: left; box-shadow: 3px 3px 0 var(--ink); }
+  .choice-card b { font: 400 17px var(--disp); }
+  .choice-card[aria-pressed="true"] { background: var(--marker); }
 </style>
 </head>
 <body>
@@ -317,13 +363,10 @@
     </svg><span>${v}</span></div>`;
   }
   const lpColor = (p) => (p > 0.5 ? 'var(--lp)' : p > 0.2 ? 'var(--lp-mid)' : 'var(--lp-low)');
+  // Effekte, die gerade oder in den nächsten Runden wirken
+  const BAD = (e) => (['chance', 'schaden', 'ausweichen', 'tempo', 'schutz', 'regen', 'tank'].includes(e.art) ? e.wert < 0 : e.art === 'gift');
   function badges(f) {
-    const m = f.mods, b = [];
-    if (m.konter) b.push(`<span>Konter +${m.konter} %</span>`);
-    if (m.boost) b.push(`<span>+${m.boost} % Schaden</span>`);
-    if (m.dodgeNext) b.push(`<span>Ausweichen +${m.dodgeNext} %</span>`);
-    if (m.chanceMalus) b.push(`<span class="bad">unsicher −${m.chanceMalus} %</span>`);
-    if (m.dotNext) b.push(`<span class="bad">Nachschaden ${m.dotNext}</span>`);
+    const b = (f.fx || []).map((e) => `<span class="${BAD(e) ? 'bad' : ''}">${esc((e.quelle === 'Konter' ? 'Konter: ' : '') + K.FX[e.art].text(e.wert))}${e.bis > e.von ? ` · ${e.bis - e.von + 1} R.` : ''}</span>`);
     return b.length ? `<div class="badges">${b.join('')}</div>` : '';
   }
   function fighter(s, side, big) {
@@ -337,15 +380,43 @@
         <span class="lptext">${f.lp} / ${f.lpMax} LP${f.ko ? ' · k.o.' : ''}</span>
         ${badges(f)}
       </div>
-      ${mug(f.noerten, s.regeln.noerten_start, big ? 40 : 30)}
+      ${mug(f.noerten, f.noertenMax, big ? 40 : 30)}
     </div>`;
   }
-  const effText = (e) => !e ? '' : ({ gegner_chance: `Gegner −${e.wert} % Treffer`, nachschaden: `+${e.wert} Nachschaden`, ausweichen: `Ausweichen +${e.wert} %`, heilen: `heilt ${e.wert} LP`, verstaerken: `nächste Attacke +${e.wert} %` })[e.art] || '';
+  // ---------- Aktionen beschreiben ----------
+  const range = (a) => { const o = a.ausgaenge; return o.length > 1 ? `${Math.min(...o.map((x) => x.wert))}–${Math.max(...o.map((x) => x.wert))}` : String(o[0].wert); };
+  const times = (a) => (a.wuerfe.art === 'mehrfach' ? `${a.wuerfe.n}×` : a.wuerfe.art === 'zufall' ? `${a.wuerfe.n}–${a.wuerfe.bis}×` : a.wuerfe.art === 'kette' ? `≤${a.wuerfe.n}×` : '');
+  const hurts = (a) => a.ausgaenge.some((o) => o.wert > 0);
+  function big(a, chance) {        // große Zahl + Einheit auf der Karte
+    if (a.kat === 'angriff') return hurts(a) ? { v: times(a) + range(a), u: 'SCHADEN' } : { v: '✨', u: 'EFFEKT', cls: 'fx' };
+    if (a.kat === 'verteidigung') return a.sonder.schild ? { v: range(a), u: 'SCHLUCKT' } : { v: '−' + range(a) + '%', u: 'SCHUTZ' };
+    if (a.kat === 'ausweichen') return { v: chance + '%', u: 'AUSWEICHEN' };
+    return { v: '+' + times(a) + range(a), u: 'NÖRTEN', cls: 'heal' };
+  }
+  function details(a) {           // kleine Zeilen unter dem Namen
+    const d = [];
+    if (a.ausgaenge.length > 1) d.push('🎡 ' + a.ausgaenge.map((o) => `${o.anteil} %: ${o.wert}`).join(' · '));
+    if (a.wuerfe.art === 'mehrfach') d.push(`${a.wuerfe.n} Würfe, jeder einzeln`);
+    if (a.wuerfe.art === 'zufall') d.push(`${a.wuerfe.n}–${a.wuerfe.bis} Würfe (wird ausgewürfelt)`);
+    if (a.wuerfe.art === 'kette') d.push(`Kette: weiter bis zum ersten Fehlwurf${a.wuerfe.steigerung ? `, +${a.wuerfe.steigerung} je Glied` : ''}`);
+    const so = a.sonder;
+    if (so.durchschlag) d.push(`schlägt ${so.durchschlag} % der Abwehr durch`);
+    if (so.lebensraub) d.push(`heilt ${so.lebensraub} % des Schadens`);
+    if (so.rueckstoss) d.push(`Rückstoß −${so.rueckstoss} LP`);
+    if (so.unausweichlich) d.push('unausweichlich');
+    if (so.zuerst) d.push('immer zuerst dran');
+    if (so.fest) d.push('Tempo zählt nicht');
+    if (so.halb) d.push('misslingt es: nur halber Schaden');
+    if (so.gegenschlag) d.push(`klappt es: ${so.gegenschlag} Gegenschlag`);
+    if (so.lp) d.push(`+${so.lp} LP`);
+    for (const e of a.effekte) d.push(`${e.wann === 'erfolg' ? 'Erfolg' : e.wann === 'fehlschlag' ? 'Fehlschlag' : 'immer'}: ${e.ziel === 'gegner' ? 'Gegner ' : ''}${K.fxText(e)}`);
+    return d;
+  }
   function actLabel(s, side, a) {
     const f = K.aktiv(s, side);
-    if (a.typ === 'angriff') { const x = f.attacken[a.i]; return { t: x.name, d: x.schaden > 0 ? `${x.treffer > 1 ? x.treffer + ' × ' : ''}${Math.round(x.schaden * f.schadenFaktor)} Schaden` : effText(x.effekt) }; }
-    if (a.typ === 'wechseln') return { t: '🔄 Wechsel', d: 'zu ' + s.teams[side].figs[a.i].name };
-    return { verteidigen: { t: '🛡️ Verteidigen', d: 'halber Schaden, Konter' }, ausweichen: { t: '💨 Ausweichen', d: 'alles oder nichts' }, auftanken: { t: '🍺 Auftanken', d: 'Nörten nachfüllen' } }[a.typ];
+    if (a.typ === 'wechseln') return { t: '🔄 Wechsel', d: 'zu ' + s.teams[side].figs[a.i].name, kat: 'wechseln' };
+    const x = f.aktionen[a.i], b = big(x, x.wuerfe.chance);
+    return { t: x.name, d: x.kat === 'ausweichen' ? 'ganz oder gar nicht' : `${b.v} ${b.u.toLowerCase()}`, kat: x.kat };
   }
 
   // ---------- Aufstellung ----------
@@ -355,11 +426,13 @@
     const missing = (e) => !game.data.typen[e.type_id];
     const team = (side) => {
       const list = l[side], ph = (list[0] && list[0].owner_name) || `Team ${side}`;
-      let slots = list.map((e, i) => `<div class="slot">
+      let slots = list.map((e, i) => { const off = offen(e);
+        return `<div class="slot">
           <div class="thumb hatch">${e.img ? `<img src="${esc(e.img)}" alt="">` : esc(e.type_id)}</div>
           <div class="who"><b>${esc(e.name)}</b><span class="small muted">LV ${e.level} · ${esc(typeName(e.type_id))}${e.owner_name ? ' · ' + esc(e.owner_name) : ''}</span>
-            ${missing(e) ? '<div class="warn">Noch keine Kampfwerte – im Editor anlegen</div>' : ''}</div>
-          <button class="x" data-del="${side}${i}" aria-label="${esc(e.name)} entfernen">×</button></div>`).join('');
+            ${missing(e) ? '<div class="warn">Noch keine Kampfwerte – im Editor anlegen</div>' : ''}
+            ${off.length ? `<button class="reward" data-reward="${side}${i}">⭐ ${off.length === 1 ? '1 Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}</div>
+          <button class="x" data-del="${side}${i}" aria-label="${esc(e.name)} entfernen">×</button></div>`; }).join('');
       for (let i = list.length; i < l.size; i++) slots += `<button class="slot empty" data-add="${side}">＋ Figur ${i + 1} hinzufügen</button>`;
       return `<section class="team card t${side}"><span class="tchip">TEAM ${side}</span><span class="count">${list.length} / ${l.size}</span>
         <input class="team-name" data-name="${side}" value="${esc(l.names[side] || '')}" placeholder="${esc(ph)} ✎" maxlength="20" aria-label="Name Team ${side}">${slots}</section>`;
@@ -372,6 +445,7 @@
       <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf. Danach wählt jeder verdeckt seinen Zug – das Handy wird hin und her gereicht.</p></div>
       <div class="steps" aria-hidden="true"><span class="done">① Teamgröße</span><span class="${ready ? 'done' : 'now'}">② Figuren</span><span class="${ready ? 'now' : ''}">③ Kämpfen</span></div>
       <div class="sizes" role="group" aria-label="Teamgröße">${[1, 2, 3].map((n) => `<button data-size="${n}" aria-pressed="${l.size === n}">${n} gegen ${n}</button>`).join('')}</div>
+      ${settingsHtml(l)}
       ${team('A')}<div class="vs">VS</div>${team('B')}
       <a class="small" href="../bestenliste/" style="text-align:center">🏆 Bestenliste</a>
       <div class="sticky actions">${ready ? '' : `<p class="todo">${todo.join(' · ')}</p>`}<button class="btn-main" id="go" ${ready ? '' : 'disabled'}>KAMPF STARTEN</button>
@@ -380,17 +454,70 @@
       const n = +b.dataset.size; l.size = n; l.A = l.A.slice(0, n); l.B = l.B.slice(0, n); lobby.save(l); renderLobby();
     });
     app.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => { l[b.dataset.del[0]].splice(+b.dataset.del.slice(1), 1); lobby.save(l); renderLobby(); });
+    app.querySelectorAll('[data-set]').forEach((b) => b.onclick = () => { l[b.dataset.set] = +b.dataset.i; lobby.save(l); renderLobby(); });
+    app.querySelectorAll('[data-reward]').forEach((b) => b.onclick = () => {
+      const e = l[b.dataset.reward[0]][+b.dataset.reward.slice(1)];
+      rewardSheet(e, (w) => { const l2 = lobby.load(); for (const x of [...l2.A, ...l2.B]) if (x.serial === e.serial) x.wahlen = w; lobby.save(l2); renderLobby(); });
+    });
     app.querySelectorAll('[data-add]').forEach((b) => b.onclick = () => addSheet(b.dataset.add));
     app.querySelectorAll('[data-name]').forEach((i) => i.oninput = () => { l.names[i.dataset.name] = i.value.trim(); lobby.save(l); });
     const c = app.querySelector('#clear'); if (c) c.onclick = () => { lobby.clear(); renderLobby(); };
     app.querySelector('#go').onclick = () => startFight(l);
   }
 
+  // ---------- Kampf-Einstellungen & Belohnungen ----------
+  function settingsHtml(l) {
+    const R = game.data.regeln, std = R.kampf_standard ?? 1;
+    const row = (k, key, label) => `<div class="setrow"><span>${label}</span><div class="seg3" role="group" aria-label="${label}">${R[k].map((x, i) =>
+      `<button data-set="${key}" data-i="${i}" aria-pressed="${(l[key] ?? std) === i}">${esc(x.name)}<small>${x.wert}</small></button>`).join('')}</div></div>`;
+    return `<section class="card settings">${row('kampf_lp', 'lp', 'Lebenspunkte')}${row('kampf_noerten', 'noerten', 'Nörten')}
+      <p class="small muted" style="margin:0">Jede Figur multipliziert diese Werte mit ihrem eigenen Faktor.</p></section>`;
+  }
+  const kampfOpts = (l) => { const R = game.data.regeln, std = R.kampf_standard ?? 1; return { lp: R.kampf_lp[l.lp ?? std].wert, noerten: R.kampf_noerten[l.noerten ?? std].wert }; };
+  function offen(e) { try { return K.ausbau(game.data, e.type_id, e.level, e.wahlen || {}).offen; } catch { return []; } }
+  function optionCard(t, o, i) {
+    let extra = '';
+    if (o.art === 'lernt') { const a = (t.aktionen || []).find((x) => x.id === o.aktion); if (a) { const x = K.aktionBauen(a, []), b = big(x, x.wuerfe.chance); extra = `<span class="small muted">${esc(KAT_UI[x.kat].icon)} ${KAT_UI[x.kat].name} · ${esc(b.v)} ${b.u.toLowerCase()} · ${x.wuerfe.chance < 100 ? x.wuerfe.chance + ' %' : 'sicher'} · ${x.kosten} Nörten</span>${details(x).map((d) => `<span class="small muted">${esc(d)}</span>`).join('')}`; } }
+    return `<button class="choice-card" data-opt="${i}"><b>${esc(K.optionText(t, o))}</b>${extra}</button>`;
+  }
+  // Belohnung wählen (Level-Pfad). Wer die Figur in der Hand hat, wählt – endgültig.
+  function rewardSheet(e, done, changed) {
+    const t = game.data.typen[e.type_id], off = offen(e);
+    if (!t || !off.length) { closeSheet(); done && done(e.wahlen || {}); return; }
+    const lv = off[0], opts = t.pfad[lv];
+    let pick = null;
+    const el = sheet(`<h2>${esc(e.name)}: Belohnung für Level ${lv}</h2>
+      <p class="small muted" style="margin:0">Wähle eine – die Wahl gilt für immer${off.length > 1 ? ` (danach noch ${off.length - 1} weitere)` : ''}.</p>
+      <div class="actions" style="gap:10px">${opts.map((o, i) => optionCard(t, o, i)).join('')}</div>
+      <button class="btn-main" id="take" disabled>BELOHNUNG WÄHLEN</button><button class="btn-text" id="later">Später</button>`);
+    el.querySelectorAll('[data-opt]').forEach((b) => b.onclick = () => {
+      pick = +b.dataset.opt; el.querySelectorAll('[data-opt]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      const take = el.querySelector('#take'); take.disabled = false; take.textContent = K.optionText(t, opts[pick]).toUpperCase() + ' NEHMEN';
+    });
+    el.querySelector('#later').onclick = () => { closeSheet(); if (changed && done) done(e.wahlen); };
+    el.querySelector('#take').onclick = async (ev) => {
+      ev.target.disabled = true;
+      try {
+        const r = await api.chooseReward(e.serial, lv, pick);
+        e.wahlen = (r && r.wahlen) || { ...(e.wahlen || {}), [lv]: pick };
+        toast(`✓ ${K.optionText(t, opts[pick])}`);
+        if (offen(e).length) rewardSheet(e, done, true); else { closeSheet(); done && done(e.wahlen); }
+      } catch (err) {
+        ev.target.disabled = false;
+        const m = errMsg(err);
+        if (/schon gewählt/.test(m)) {      // Aufstellung war veraltet: Wahlen neu laden
+          try { const f = await api.getFigure(e.serial); if (f) { e.wahlen = f.wahlen || {}; toast('Schon gewählt – aktualisiert.'); rewardSheet(e, done, true); return; } } catch {}
+        }
+        toast(/function|schema cache/i.test(m) ? 'SQL-Nachtrag 006 fehlt noch in Supabase' : m, 'err');
+      }
+    };
+  }
+
   async function entryFor(serial) {
     const f = await api.getFigure(serial);
     if (!f) throw new Error('Diese Figur ist nicht registriert.');
     const img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
-    return { serial, public_id: f.public_id, type_id: f.type_id, level: f.level, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name, img };
+    return { serial, public_id: f.public_id, type_id: f.type_id, level: f.level, wahlen: f.wahlen || {}, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name, img };
   }
   function addTo(side, entry) {
     const l = lobby.load(); l.want = side; lobby.save(l);
@@ -437,7 +564,7 @@
         <span><b>${esc(f.nickname || typeName(f.type_id))}</b><br><span class="small muted">LV ${f.level} · ${esc(typeName(f.type_id))}</span></span></button>`).join('');
       box.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => {
         const f = list[+b.dataset.i];
-        addTo(side, { serial: f.serial, public_id: f.public_id, type_id: f.type_id, level: f.level, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name || me.name, img: f._img });
+        addTo(side, { serial: f.serial, public_id: f.public_id, type_id: f.type_id, level: f.level, wahlen: f.wahlen || {}, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name || me.name, img: f._img });
       });
     } catch (e) { box.innerHTML = `<p class="warn">${esc(errMsg(e))}</p>`; }
   }
@@ -445,16 +572,16 @@
   // ---------- Kampf ----------
   function startFight(l) {
     const mk = (side) => ({ name: l.names[side] || (l[side][0] && l[side][0].owner_name) || `Team ${side}`,
-      figs: l[side].map((e) => ({ key: e.public_id, type_id: e.type_id, level: e.level, name: e.name, img: e.img, owner: e.owner_name })) });
+      figs: l[side].map((e) => ({ key: e.public_id, type_id: e.type_id, level: e.level, wahlen: e.wahlen || {}, name: e.name, img: e.img, owner: e.owner_name })) });
     let A = mk('A'), B = mk('B');
     if (A.name === B.name) { A.name += ' (A)'; B.name += ' (B)'; }
-    try { newFight({ A, B }, { A: l.A.map((e) => e.serial), B: l.B.map((e) => e.serial) }); }
+    try { newFight({ A, B, opts: kampfOpts(l) }, { A: l.A.map((e) => e.serial), B: l.B.map((e) => e.serial) }); }
     catch (e) { toast(errMsg(e), 'err'); return; }
     saveF(); render();
   }
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3) | 8).toString(16); }));
   function newFight(setup, serials) {
-    F = { id: uuid(), s: K.neu(game.data, setup.A, setup.B), phase: 'hand', side: 'A', pending: {}, setup, serials, version: game.version, report: null };
+    F = { id: uuid(), s: K.neu(game.data, setup.A, setup.B, setup.opts || {}), phase: 'hand', side: 'A', pending: {}, setup, serials, version: game.version, report: null };
   }
   const other = (x) => (x === 'A' ? 'B' : 'A');
 
@@ -467,7 +594,7 @@
       <p style="margin:0"><b>🙈 ${esc(oName)}</b> schaut weg.<br><span class="muted">${F.side === 'A' ? `Danach wählt ${esc(oName)}, dann wird gleichzeitig aufgedeckt.` : `${esc(oName)} hat schon gewählt – jetzt bist du dran.`}</span></p>
       <button class="btn-main" id="ok">ICH BIN ${esc(name.toUpperCase())}</button></div>
       <button class="btn-text" id="quit">Kampf abbrechen</button>`;
-    app.querySelector('#ok').onclick = () => { F.phase = 'pick'; F.choice = null; saveF(); render(); };
+    app.querySelector('#ok').onclick = () => { F.phase = 'pick'; F.choice = null; F.cat = null; saveF(); render(); };
     app.querySelector('#quit').onclick = quit;
   }
 
@@ -485,7 +612,7 @@
         <div class="nm"><b>${esc(f.name)}</b><span class="lv">LV ${f.level}</span></div>
         <div class="hp"><span class="hp-l">LP</span><div class="lpbar"><div class="lpfill" style="width:${Math.round(p * 100)}%;background:${lpColor(p)}"></div></div></div>
         <div class="ib-row"><span class="lptext">${f.lp} / ${f.lpMax}</span>${t.figs.length > 1 ? `<span class="bench">${t.figs.map((x) => `<span class="${x.ko ? 'ko' : ''}"></span>`).join('')}</span>` : ''}<span class="team-l">${esc(t.name)}</span></div>
-      </div>${mug(f.noerten, s.regeln.noerten_start, 22)}${badges(f)}`;
+      </div>${mug(f.noerten, f.noertenMax, 22)}${badges(f)}`;
   }
   function stage(s, near, bubbles, compact) {
     const spot = (side, pos) => `<div class="ibox ${pos} t${side}" data-side="${side}">${ibox(s, side)}</div>
@@ -493,38 +620,47 @@
         ${bubbles && bubbles[side] ? `<div class="bubble">${esc(bubbles[side])}</div>` : ''}</div>`;
     return `<div class="stage ${compact ? 'compact' : ''}" id="stage">${spot(other(near), 'far')}${spot(near, 'near')}<div class="fx" id="fx"></div></div>`;
   }
-  const bubbleText = (l) => (l.t.match(/^\p{Extended_Pictographic}/u) ? l.t : '⚔️ ' + l.t);
+  const bubbleText = (l) => (l.kat === 'wechseln' ? l.t : `${(KAT_UI[l.kat] || {}).icon || '⚔️'} ${l.t}`);
 
   // ---------- Wer schlägt wen (gemeinsam für Wählen, Aufdecken, Hilfe) ----------
-  const ICON = { angriff: '⚔️', verteidigen: '🛡️', ausweichen: '💨', auftanken: '🍺', wechseln: '🔄' };
-  const NAME = { angriff: 'Angriff', verteidigen: 'Verteidigen', ausweichen: 'Ausweichen', auftanken: 'Auftanken', wechseln: 'Wechseln' };
-  const VS = {   // was diese Wahl schlägt (s) und wogegen sie schwach ist (w)
-    angriff: { s: ['auftanken'], w: ['verteidigen'] },
-    verteidigen: { s: ['angriff'], w: ['auftanken'] },
-    auftanken: { s: ['verteidigen'], w: ['angriff'] },
+  const KAT_UI = {
+    angriff: { icon: '⚔️', name: 'Angriff', c: 'var(--k-atk)', frage: 'zuschlagen' },
+    verteidigung: { icon: '🛡️', name: 'Verteidigung', c: 'var(--k-def)', frage: 'abwehren' },
+    ausweichen: { icon: '💨', name: 'Ausweichen', c: 'var(--k-eva)', frage: 'ausweichen' },
+    auftanken: { icon: '🍺', name: 'Auftanken', c: 'var(--k-tank)', frage: 'Krug füllen' },
+    wechseln: { icon: '🔄', name: 'Wechseln', c: 'var(--ink)' }
+  };
+  const ICON = Object.fromEntries(Object.entries(KAT_UI).map(([k, v]) => [k, v.icon]));
+  const NAME = Object.fromEntries(Object.entries(KAT_UI).map(([k, v]) => [k, v.name]));
+  const VS = {   // was diese Kategorie schlägt (s) und wogegen sie schwach ist (w)
+    angriff: { s: ['auftanken'], w: ['verteidigung'] },
+    verteidigung: { s: ['angriff'], w: ['auftanken'] },
+    auftanken: { s: ['verteidigung'], w: ['angriff'] },
     ausweichen: { s: [], w: [] }
   };
   const vsRow = (typ) => { const v = VS[typ]; if (!v) return '';
+    if (typ === 'ausweichen') return '<div class="vsrow"><span class="r">🎲 riskant gegen ⚔️ Angriff</span></div>';
     return `<div class="vsrow">${v.s.map((x) => `<span class="s">✓ gegen ${ICON[x]} ${NAME[x]}</span>`).join('')}${v.w.map((x) => `<span class="w">✗ gegen ${ICON[x]} ${NAME[x]}</span>`).join('')}</div>`; };
+  const komma = (x) => String(x).replace('.', ',');
   function verdict(R, a, b) {   // kurzer Satz, was beim Aufdecken passiert (aus Sicht der Regeln, ohne Würfel)
-    const k = a + '|' + b, f = String(R.getroffen_faktor).replace('.', ',');
+    const k = a + '|' + b, f = komma(R.getroffen_faktor);
     const t = {
-      'angriff|auftanken': `⚔️ schlägt 🍺 – Angriff trifft mit ×${f}`,
-      'angriff|verteidigen': '🛡️ schlägt ⚔️ – nur halber Schaden, bei Treffer Konter',
+      'angriff|auftanken': `⚔️ schlägt 🍺 – Angriff trifft mit ×${f}, Auftanken bringt nur ×${komma(R.auftanken_getroffen_faktor)}`,
+      'angriff|verteidigung': '🛡️ schlägt ⚔️ – greift die Abwehr, gibt es weniger Schaden und einen Konter',
       'angriff|angriff': '⚔️ gegen ⚔️ – wer schneller ist, trifft zuerst',
       'angriff|ausweichen': '💨 gegen ⚔️ – Würfelduell: ganz oder gar nicht',
-      'verteidigen|auftanken': `🍺 schlägt 🛡️ – Auftanken bringt +${R.auftanken_gegen_verteidigen}`,
+      'verteidigung|auftanken': `🍺 schlägt 🛡️ – Auftanken bringt ×${komma(R.auftanken_gegen_verteidigen_faktor)}`,
       'auftanken|auftanken': 'Beide tanken auf',
-      'verteidigen|verteidigen': 'Beide warten ab – nichts passiert',
+      'verteidigung|verteidigung': 'Beide warten ab – nichts passiert',
       'ausweichen|ausweichen': 'Beide weichen aus – nichts passiert',
-      'ausweichen|verteidigen': 'Niemand greift an – nichts passiert',
+      'ausweichen|verteidigung': 'Niemand greift an – nichts passiert',
       'ausweichen|auftanken': '🍺 tankt in Ruhe, 💨 war umsonst'
     };
     if (a === 'wechseln' || b === 'wechseln') return '🔄 Der Wechsel passiert zuerst';
     return t[k] || t[b + '|' + a] || '';
   }
   function helpSheet() {
-    const R = game.data.regeln, f = String(R.getroffen_faktor).replace('.', ',');
+    const R = game.data.regeln, f = komma(R.getroffen_faktor);
     const node = (x, y, ic, t) => `<g><circle cx="${x}" cy="${y}" r="34" fill="#fff" stroke="var(--ink)" stroke-width="3"/><text x="${x}" y="${y + 2}" font-size="26" text-anchor="middle">${ic}</text><text x="${x}" y="${y + 52}" font-size="13" font-weight="700" text-anchor="middle" fill="var(--ink)" font-family="Rubik, sans-serif">${t}</text></g>`;
     const arrow = (x1, y1, x2, y2, lx, ly) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--okc)" stroke-width="4" marker-end="url(#ah)"/><text x="${lx}" y="${ly}" font-size="11" font-weight="700" text-anchor="middle" fill="var(--okc)" font-family="Rubik, sans-serif">schlägt</text>`;
     sheet(`<h2>Wer schlägt wen?</h2>
@@ -535,10 +671,12 @@
         ${node(150, 42, '⚔️', 'ANGRIFF')}${node(246, 168, '🍺', 'AUFTANKEN')}${node(54, 168, '🛡️', 'VERTEIDIGEN')}
       </svg>
       <div class="rules">
-        <div><span>⚔️</span><span><b>Angriff</b> trifft beim Auftanken mit ×${f}. Gegen Verteidigen nur halber Schaden – und der Gegner bekommt einen Konter.</span></div>
-        <div><span>🛡️</span><span><b>Verteidigen</b> halbiert Schaden. Wird geblockt, gibt es einen <b>Konter</b>: +${R.konter_treffer} % Treffer beim nächsten Angriff, Angreifer verliert ${R.konter_noerten} Nörten.</span></div>
-        <div><span>🍺</span><span><b>Auftanken</b> füllt den Krug (+${R.auftanken}). Nutzt der Gegner die Runde nur zum Verteidigen, gibt es sogar mehr. Wer dabei getroffen wird, bekommt nur +${R.auftanken_getroffen}.</span></div>
-        <div><span>💨</span><span><b>Ausweichen</b> ist die riskante Wahl: Würfelduell gegen einen Angriff – klappt es, geht alles daneben, sonst ×${f} Schaden.</span></div>
+        <div><span>🎯</span><span>Jede Figur hat eigene <b>Aktionen</b> in vier Kategorien. Wer wen schlägt, entscheidet die <b>Kategorie</b> – wie stark, entscheidet die Aktion.</span></div>
+        <div><span>⚔️</span><span><b>Angriff</b> trifft beim Auftanken mit ×${f}. Gegen Verteidigung wird abgewehrt – greift die Abwehr, bekommt der Gegner einen Konter.</span></div>
+        <div><span>🛡️</span><span><b>Verteidigung</b> würfelt, ob die Abwehr greift (z. B. −40 % Schaden oder ein Schild, das Punkte schluckt). Greift sie, gibt es einen <b>Konter</b>: +${R.konter_treffer} % Treffer in der nächsten Runde, Angreifer verliert ${R.konter_noerten} Nörten.</span></div>
+        <div><span>🍺</span><span><b>Auftanken</b> füllt den Krug – wie viel, steht auf der Karte. Verteidigt der Gegner nur, gibt es ×${komma(R.auftanken_gegen_verteidigen_faktor)}. Wird man getroffen, nur ×${komma(R.auftanken_getroffen_faktor)}.</span></div>
+        <div><span>💨</span><span><b>Ausweichen</b> ist die riskante Wahl: Würfelduell gegen einen Angriff (Tempo hilft) – klappt es, geht alles daneben, sonst ×${f} Schaden.</span></div>
+        <div><span>✨</span><span><b>Effekte</b> wirken ab der nächsten Runde und stehen als Plakette im Infokasten.</span></div>
         <div><span>🔄</span><span><b>Wechseln</b> kostet die Runde. Die neue Figur steckt den Angriff dieser Runde ein – bringt aber einen eigenen vollen Krug mit.</span></div>
         <div><span>🎲</span><span><b>Würfel:</b> 75 % heißt beim W20 „6 oder höher“. Die Leiste zeigt grün, welche Zahlen reichen.</span></div>
       </div>
@@ -559,31 +697,47 @@
     return `<i style="width:${pct(lo)}%"></i>${hi > lo ? `<i class="cost" style="left:${pct(lo)}%;width:${pct(hi - lo)}%"></i>` : ''}`;
   }
 
+  // Wählen in zwei Schritten: erst Kategorie (F.cat), dann Aktion daraus
   function renderPick() {
-    const s = F.s, side = F.side, f = K.aktiv(s, side), opp = K.aktiv(s, other(side)), o = K.optionen(s, side), R = s.regeln;
-    const dodge = K.step5(Math.max(R.ausweichen_min, Math.min(R.ausweichen_max, R.ausweichen_basis + (f.tempo - opp.tempo) * R.ausweichen_pro_tempo + f.mods.dodgeNext + f.chanceBonus)));
+    const s = F.s, side = F.side, f = K.aktiv(s, side), o = K.optionen(s, side);
     const sel = (a) => F.choice && F.choice.typ === a.typ && F.choice.i === a.i;
-    const cost = (c) => !c ? null : c.typ === 'angriff' ? f.attacken[c.i].kosten : c.typ === 'verteidigen' ? R.kosten_verteidigen : c.typ === 'ausweichen' ? R.kosten_ausweichen : c.typ === 'auftanken' ? -R.auftanken : 0;
-    const max = R.noerten_start, now = f.noerten, c = cost(F.choice), after = c == null ? now : Math.max(0, Math.min(max, now - c));
-    const pct = (v) => Math.round(v / max * 100);
-
-    const atk = o.attacken.map(({ i, a, ok, chance }) => {
-      const dmg = Math.round(a.schaden * f.schadenFaktor);
-      const big = a.schaden > 0 ? `<span class="big"><b>${a.treffer > 1 ? a.treffer + '×' + dmg : dmg}</b><small>SCHADEN</small></span>`
-        : a.effekt && a.effekt.art === 'heilen' ? `<span class="big heal"><b>+${a.effekt.wert}</b><small>LP</small></span>`
-        : `<span class="big fx"><b>✨</b><small>EFFEKT</small></span>`;
-      const ex = a.effekt ? effText(a.effekt) : '';
-      return `<button class="acard" data-a='{"typ":"angriff","i":${i}}' aria-pressed="${sel({ typ: 'angriff', i })}" ${ok ? '' : 'disabled'}>
-        ${big}<span class="mid"><b>${esc(a.name)}</b>${a.schaden > 0 || chance < 100 ? hitbar(chance) : ''}
-          ${ex ? `<span class="extra">✨ ${esc(ex)}</span>` : ''}${ok ? '' : `<span class="why">Zu wenig Nörten – erst auftanken</span>`}</span>
-        <span class="cost"><span>−${a.kosten}</span><small>🍺</small></span></button>`;
-    }).join('');
-    const sw = F.choice && F.choice.typ === 'wechseln' ? s.teams[side].figs[F.choice.i] : null;
-    const tcard = (typ, attrs, ic, title, costHtml, what, enabled) => `<button class="tcard" ${attrs} aria-pressed="${typ === 'wechseln' ? !!sw : sel({ typ })}" ${enabled ? '' : 'disabled'}>
-        <span class="th"><span class="ic">${ic}</span>${costHtml}</span><b class="tt">${title}</b><span class="what">${what}</span>${vsRow(typ)}</button>`;
-    const cst = (n) => `<span class="cost"><span>−${n}</span><small>🍺</small></span>`;
+    const chosenA = F.choice && F.choice.typ === 'aktion' ? f.aktionen[F.choice.i] : null;
+    const delta = !chosenA ? 0 : chosenA.kat === 'auftanken' ? chosenA.kosten - Math.round(K.erwartung(chosenA).ev) : chosenA.kosten;
+    const max = f.noertenMax, now = f.noerten, after = Math.max(0, Math.min(max, now - delta));
     const chosen = F.choice ? actLabel(s, side, F.choice) : null;
     const first = s.runde === 1 && side === 'A';
+    const sw = F.choice && F.choice.typ === 'wechseln' ? s.teams[side].figs[F.choice.i] : null;
+    const cat = F.cat && (F.cat === 'wechseln' || o.aktionen.some((x) => x.a.kat === F.cat)) ? F.cat : null;
+
+    let body;
+    if (!cat) {   // Schritt 1: Kategorie
+      const tiles = K.KAT.map((k) => {
+        const list = o.aktionen.filter((x) => x.a.kat === k), okN = list.filter((x) => x.ok).length;
+        const pressed = chosenA && chosenA.kat === k;
+        const cheapest = list.length ? Math.min(...list.map((x) => x.a.kosten)) : 0;
+        return `<button class="ktile" data-cat="${k}" style="--kc:${KAT_UI[k].c}" aria-pressed="${!!pressed}" ${okN ? '' : 'disabled'}>
+          <span class="ki">${KAT_UI[k].icon}</span><b>${KAT_UI[k].name}</b>
+          <span class="kn">${pressed ? `✓ ${esc(chosenA.name)}` : `${list.length} ${list.length === 1 ? 'Aktion' : 'Aktionen'}${cheapest ? ` · ab ${cheapest} 🍺` : ''}`}</span>
+          ${okN ? '' : '<span class="why">Zu wenig Nörten</span>'}${vsRow(k)}</button>`;
+      }).join('');
+      body = `<div class="sec-h"><span>WAS SOLL ${esc(f.name.toUpperCase())} TUN?</span><span>Schritt 1 / 2</span></div>
+        <div class="ktiles">${tiles}</div>
+        <button class="swbtn" id="sw" aria-pressed="${!!sw}" ${o.wechseln.length ? '' : 'disabled'}>🔄 ${sw ? `Wechsel zu <b>${esc(sw.name)}</b>` : o.wechseln.length ? `Auswechseln · ${o.wechseln.length} auf der Bank` : 'Auswechseln · niemand auf der Bank'}</button>`;
+    } else {      // Schritt 2: Aktion aus der Kategorie
+      const cards = o.aktionen.filter((x) => x.a.kat === cat).map(({ i, a, ok, chance }) => {
+        const b = big(a, chance), det = details(a);
+        const showBar = a.kat === 'ausweichen' || chance < 100;
+        const tank = a.kat === 'auftanken';
+        return `<button class="acard" data-a='{"typ":"aktion","i":${i}}' aria-pressed="${sel({ typ: 'aktion', i })}" ${ok ? '' : 'disabled'}>
+          <span class="big ${b.cls || ''}"><b class="${b.v.length > 6 ? 'xs' : b.v.length > 3 ? 'sm' : ''}">${esc(b.v)}</b><small>${b.u}</small></span>
+          <span class="mid"><b>${esc(a.name)}</b>${showBar ? hitbar(chance) : '<span class="extra">sicher</span>'}
+            ${det.map((d) => `<span class="extra">${esc(d)}</span>`).join('')}${ok ? '' : `<span class="why">Zu wenig Nörten – erst auftanken</span>`}</span>
+          <span class="cost ${tank && !a.kosten ? 'free' : ''}"><span>${a.kosten ? '−' + a.kosten : tank ? '+' : '0'}</span><small>🍺</small></span></button>`;
+      }).join('');
+      body = `<div class="sec-h"><span>${KAT_UI[cat].icon} ${KAT_UI[cat].name.toUpperCase()}</span><span>Schritt 2 / 2</span></div>
+        <button class="back" id="back">← andere Kategorie</button>
+        ${vsRow(cat)}<div class="actlist">${cards}</div>`;
+    }
 
     app.innerHTML = `<div class="pickhead"><span class="tchip t${side}" style="background:var(--t${side})">TEAM ${side} WÄHLT</span>
         <span class="small muted" style="flex:1;text-align:right">Runde ${s.runde} / ${s.maxRunden}</span>
@@ -591,23 +745,23 @@
       ${stage(s, side, chosen ? { [side]: bubbleText(chosen) } : null, true)}
       <div class="tank" aria-label="Nörten von ${esc(f.name)}: ${now} von ${max}">
         ${mug(after, max, 22)}<span class="meter">${meter(now, after, max)}</span>
-        <b>${after === now ? `${now} Nörten` : `${now} → ${after}`}</b></div>
+        <b>${after === now ? `${now} Nörten` : `${now} → ${after}${delta < 0 ? ' (Ø)' : ''}`}</b></div>
       ${first ? `<p class="small" style="margin:0;text-align:center">Neu hier? <a href="#" id="help2">So funktioniert „Wer schlägt wen“</a></p>` : ''}
-      <div class="sec-h"><span>⚔️ ANGREIFEN – was soll ${esc(f.name.toUpperCase())} tun?</span></div>
-      ${vsRow('angriff')}
-      <div class="actlist">${atk}</div>
-      <div class="sec-h"><span>🧠 TAKTIK</span></div>
-      <div class="tgrid">
-        ${tcard('verteidigen', `data-a='{"typ":"verteidigen"}'`, '🛡️', 'Verteidigen', cst(R.kosten_verteidigen), 'Halber Schaden. Geblockt → Konter.', o.verteidigen)}
-        ${tcard('ausweichen', `data-a='{"typ":"ausweichen"}'`, '💨', 'Ausweichen', cst(R.kosten_ausweichen), `🎲 ${dodge} %: alles daneben – sonst ×${String(R.getroffen_faktor).replace('.', ',')} Schaden.`, o.ausweichen)}
-        ${tcard('auftanken', `data-a='{"typ":"auftanken"}'`, '🍺', 'Auftanken', `<span class="cost free"><span>+${R.auftanken}</span><small>🍺</small></span>`, `Krug füllen. Getroffen nur +${R.auftanken_getroffen}.`, true)}
-        ${tcard('wechseln', 'id="sw"', '🔄', 'Wechseln', `<span class="cost free"><span>0</span><small>🍺</small></span>`, sw ? `Zu <b>${esc(sw.name)}</b> – kostet die Runde.` : o.wechseln.length ? 'Andere Figur rein – kostet die Runde.' : 'Keine Figur auf der Bank.', o.wechseln.length)}
-      </div>
-      <div class="sticky confirm"><button class="btn-main" id="lock" ${F.choice ? '' : 'disabled'}>${chosen ? `${esc(chosen.t.replace(/^\p{Extended_Pictographic}️?\s*/u, '').toUpperCase())} FESTLEGEN<small>${side === 'A' ? `danach ist ${esc(s.teams.B.name)} dran` : 'danach wird aufgedeckt'}</small>` : 'AKTION ANTIPPEN'}</button></div>`;
+      ${body}
+      <div class="sticky confirm"><button class="btn-main" id="lock" ${F.choice ? '' : 'disabled'}>${chosen ? `${esc(chosen.t.replace(/^\p{Extended_Pictographic}️?\s*/u, '').toUpperCase())} FESTLEGEN<small>${side === 'A' ? `danach ist ${esc(s.teams.B.name)} dran` : 'danach wird aufgedeckt'}</small>` : cat ? 'AKTION ANTIPPEN' : 'KATEGORIE ANTIPPEN'}</button></div>`;
+    const rerender = () => { const y = scrollY; renderPick(); scrollTo(0, y); };
     app.querySelector('#help').onclick = helpSheet;
     const h2 = app.querySelector('#help2'); if (h2) h2.onclick = (e) => { e.preventDefault(); helpSheet(); };
-    app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); const y = scrollY; renderPick(); scrollTo(0, y); });
-    app.querySelector('#sw').onclick = () => {
+    app.querySelectorAll('[data-cat]').forEach((b) => b.onclick = () => {
+      F.cat = b.dataset.cat;
+      const ok = o.aktionen.filter((x) => x.a.kat === F.cat && x.ok);
+      if (ok.length === 1) F.choice = { typ: 'aktion', i: ok[0].i };          // nur eine Aktion: gleich vorwählen
+      else if (!(chosenA && chosenA.kat === F.cat)) F.choice = null;
+      saveF(); rerender();
+    });
+    const bk = app.querySelector('#back'); if (bk) bk.onclick = () => { F.cat = null; saveF(); rerender(); };
+    app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); saveF(); rerender(); });
+    const swb = app.querySelector('#sw'); if (swb) swb.onclick = () => {
       const el = sheet(`<h2>Wen einwechseln?</h2><div class="pick-list">${o.wechseln.map((w) => { const b = s.teams[side].figs[w.i];
         return `<button data-i="${w.i}"><span class="thumb hatch">${b.img ? `<img src="${esc(b.img)}" alt="">` : esc(b.type_id)}</span><span><b>${esc(b.name)}</b><br><span class="small muted">${b.lp}/${b.lpMax} LP · ${b.noerten} Nörten</span></span></button>`; }).join('')}</div>
         <p class="small muted" style="margin:0">Der Wechsel passiert zuerst – die neue Figur steckt einen Angriff dieser Runde ein.</p>`);
@@ -615,7 +769,7 @@
     };
     app.querySelector('#lock').onclick = () => {
       if (!K.gueltig(s, side, F.choice)) { toast('Diese Aktion geht gerade nicht.', 'err'); return; }
-      F.pending[side] = F.choice; F.choice = null;
+      F.pending[side] = F.choice; F.choice = null; F.cat = null;
       if (side === 'A') { F.side = 'B'; F.phase = 'hand'; }
       else { resolve(); return; }
       saveF(); render();
@@ -637,7 +791,7 @@
     const d = JSON.parse(JSON.stringify(F.played ? F.s : before));
     const bub = F.played ? null : { A: bubbleText(labels.A), B: bubbleText(labels.B) };
     const acts = F.last.acts || {};
-    const vd = acts.A && acts.B ? verdict(d.regeln, acts.A.typ, acts.B.typ) : '';
+    const vd = acts.A && acts.B ? verdict(d.regeln, labels.A.kat, labels.B.kat) : '';
     const ch = (x) => `<div class="choice t${x}"><span class="who">${esc(d.teams[x].name)}</span><b>${esc(labels[x].t)}</b>${labels[x].d ? `<span class="d">${esc(labels[x].d)}</span>` : ''}</div>`;
     app.innerHTML = `${roundBar({ runde, maxRunden: d.maxRunden }, 'Aufdecken!')}
       <div class="reveal2">${ch('A')}<span class="vs">VS</span>${ch('B')}</div>${vd ? `<div class="verdict">${esc(vd)}</div>` : ''}
@@ -673,7 +827,7 @@
       const fill = el.querySelector('.lpfill'), nw = fill.style.width;
       if (!skip) { fill.style.width = old; requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = nw; })); }
     };
-    const syncMods = () => { for (const x of ['A', 'B']) d.teams[x].figs.forEach((f, i) => { f.mods = JSON.parse(JSON.stringify(F.s.teams[x].figs[i].mods)); }); };
+    const syncMods = () => { for (const x of ['A', 'B']) d.teams[x].figs.forEach((f, i) => { f.fx = JSON.parse(JSON.stringify(F.s.teams[x].figs[i].fx)); }); };
     const who = (side) => K.aktiv(d, side).name;
 
     async function dice(e) {
@@ -695,8 +849,25 @@
       fx.innerHTML = '';
     }
 
+    // Glücksrad: Felder nach Anteil, Zeiger läuft und bleibt auf dem Ergebnis stehen
+    async function wheel(e) {
+      const tot = e.ausgaenge.reduce((x, o) => x + Math.max(0, o.anteil), 0) || 1;
+      fx.innerHTML = `<div class="dicebox"><div class="dlabel">${esc(who(e.side))} dreht das Glücksrad<b>${esc(e.label)}</b></div>
+        <div class="wheel">${e.ausgaenge.map((o, i) => `<i data-i="${i}" style="flex:${Math.max(0.001, o.anteil)}"><b>${o.wert}</b><small>${Math.round(o.anteil / tot * 100)} %</small></i>`).join('')}</div>
+        <div class="dtext">…</div></div>`;
+      const cells = fx.querySelectorAll('.wheel i'), txt = fx.querySelector('.dtext');
+      if (!skip && !REDUCED) for (let k = 0; k < 12 && !skip; k++) {
+        cells.forEach((c, i) => c.classList.toggle('cur', i === k % cells.length));
+        await new Promise((r) => setTimeout(r, 70 + k * 12));
+      }
+      cells.forEach((c, i) => { c.classList.remove('cur'); c.classList.toggle('res', i === e.i); });
+      txt.innerHTML = `Ergebnis: <b>${e.wert}</b>`;
+      await pause(1100);
+      fx.innerHTML = '';
+    }
+
     say(`<b>Aufgedeckt!</b> ${esc(labels.A.t)} gegen ${esc(labels.B.t)}.`, true);
-    for (const x of ['A', 'B']) { const a = F.last.ev && labels[x].t; if (/Verteidigen/.test(a)) spriteEl(x).classList.add('guard'); }
+    for (const x of ['A', 'B']) if (labels[x].kat === 'verteidigung') spriteEl(x).classList.add('guard');
     await pause(1600);
 
     for (const e of ev) {
@@ -715,9 +886,14 @@
         say(esc(e.text), true); anim(e.side, 'lunge'); await pause(900);
       } else if (e.t === 'wurf') {
         if (e.chance < 100) await dice(e);
-        if (e.label === 'Ausweichen') { if (e.ok) { anim(e.side, 'dodge'); stamp('AUSGEWICHEN!', 'good'); } else stamp('ERWISCHT!', 'bad'); }
+        if (e.kat === 'ausweichen') { if (e.ok) { anim(e.side, 'dodge'); stamp('AUSGEWICHEN!', 'good'); } else stamp('ERWISCHT!', 'bad'); }
+        else if (e.kat === 'verteidigung') stamp(e.ok ? 'ABGEWEHRT!' : 'DURCH!', e.ok ? 'good' : 'bad');
+        else if (e.kat === 'auftanken') stamp(e.ok ? 'PROST!' : 'VERSCHÜTTET!', e.ok ? 'good' : 'bad');
         else stamp(e.ok ? 'TREFFER!' : 'DANEBEN!', e.ok ? 'good' : 'bad');
         say(esc(e.text), true); await pause(800);
+      } else if (e.t === 'rad') {
+        await wheel(e);
+        say(`${esc(e.label)}: <b>${e.wert}</b>!`, true); await pause(700);
       } else if (e.t === 'lp') {
         const diff = e.value - f.lp; f.lp = e.value; box(e.side);
         if (diff < 0) { anim(e.side, 'hit'); float(e.side, `−${-diff}`, 'dmg'); } else if (diff > 0) { anim(e.side, 'heal'); float(e.side, `+${diff}`, 'heal'); }
@@ -761,13 +937,13 @@
     app.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { K.ersetzen(s, side, +b.dataset.i); after(); });
   }
 
+  // Was die neuen Level laut Level-Pfad bringen
   function unlocks(typeId, from, to) {
     const t = game.data.typen[typeId], out = [];
     for (let lv = from + 1; lv <= to; lv++) {
-      (t ? t.attacken : []).filter((a) => (a.ab || 1) === lv).forEach((a) => out.push(`Neue Attacke: <b>${esc(a.name)}</b>`));
-      if (lv === 10) (t ? t.attacken : []).filter((a) => a.stufe10).forEach((a) => out.push(`<b>${esc(a.name)}</b> wird stärker`));
-      if (lv === 15) out.push('Besonderer Kartenrahmen');
-      if (lv === 20) out.push('Titel freigeschaltet – Max-Level!');
+      const opts = (t && t.pfad && t.pfad[lv]) || [];
+      if (opts.length === 1) out.push(`Level ${lv}: <b>${esc(K.optionText(t, opts[0]))}</b>`);
+      else if (opts.length > 1) out.push(`Level ${lv}: Wahl – ${opts.map((o) => esc(K.optionText(t, o))).join(' <i>oder</i> ')}`);
     }
     return out;
   }
@@ -775,10 +951,11 @@
     const r = F.report;
     if (!r) return '<div class="card"><div class="spinner" style="margin:10px auto"></div><p class="small muted" style="margin:0;text-align:center">Ergebnis wird gespeichert …</p></div>';
     if (r.error) return `<div class="card actions"><p class="warn" style="margin:0">Ergebnis nicht gespeichert: ${esc(r.error)}</p><button class="btn" id="retry">Nochmal versuchen</button></div>`;
-    return ['A', 'B'].map((side) => `<section class="card actions" style="gap:10px"><b>${esc(F.s.teams[side].name)}</b>${F.s.teams[side].figs.map((f) => {
+    return ['A', 'B'].map((side) => `<section class="card actions" style="gap:10px"><b>${esc(F.s.teams[side].name)}</b>${F.s.teams[side].figs.map((f, fi) => {
       const x = r.figures.find((y) => y.public_id === f.key); if (!x) return '';
       const li = Noerti.levelInfo(x.xp, x.level), up = x.level > x.level_before;
       const ul = up ? unlocks(f.type_id, x.level_before, x.level) : [];
+      const sf = F.setup[side].figs[fi], off = sf ? offen({ type_id: sf.type_id, level: x.level, wahlen: sf.wahlen }) : [];
       return `<div class="actions" style="gap:4px">
         <div class="nm" style="display:flex;gap:8px;align-items:baseline"><span>${f.ko ? '💤' : '💪'}</span><b style="flex:1">${esc(f.name)}</b>
           <span class="disp" style="font-size:15px">${x.rated ? `+${x.xp_gain} XP` : 'keine XP'}</span></div>
@@ -786,7 +963,8 @@
         ${x.rated ? '' : '<span class="small muted">Heute schon 3× gegen diese Gegner gekämpft.</span>'}
         <div class="bar"><div class="xpfill" style="width:${li.pct}%;background:var(--marker)"></div></div>
         <span class="small muted">LV ${x.level} · ${esc(li.text)}</span>
-        ${up ? `<div class="lvup"><b>⬆ LEVEL UP! ${x.level_before} → ${x.level}</b><span>+${(x.level - x.level_before) * game.data.regeln.level_lp_pct} % LP · +${(x.level - x.level_before) * game.data.regeln.level_schaden_pct} % Schaden</span>${ul.map((u) => `<span>✨ ${u}</span>`).join('')}</div>` : ''}
+        ${up ? `<div class="lvup"><b>⬆ LEVEL UP! ${x.level_before} → ${x.level}</b>${ul.map((u) => `<span>✨ ${u}</span>`).join('')}</div>` : ''}
+        ${off.length ? `<button class="reward big" data-rw="${side}${fi}">⭐ ${off.length === 1 ? 'Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}
       </div>`; }).join('')}</section>`).join('');
   }
   async function sendReport() {
@@ -814,6 +992,15 @@
       <div class="actions"><button class="btn-main" id="again" ${F.report && !F.report.error ? '' : 'disabled'}>REVANCHE</button>
         <button class="btn" id="lobby">Neue Aufstellung</button><a class="btn" href="../bestenliste/">Bestenliste</a></div>`;
     const rt = app.querySelector('#retry'); if (rt) rt.onclick = () => { F.report = null; renderEnde(); };
+    app.querySelectorAll('[data-rw]').forEach((b) => b.onclick = () => {
+      const side = b.dataset.rw[0], fi = +b.dataset.rw.slice(1), sf = F.setup[side].figs[fi];
+      const e = { serial: F.serials[side][fi], type_id: sf.type_id, level: sf.level, wahlen: { ...(sf.wahlen || {}) }, name: sf.name };
+      rewardSheet(e, (w) => {
+        sf.wahlen = w;
+        const l = lobby.load(); for (const x of [...l.A, ...l.B]) if (x.serial === e.serial) x.wahlen = w; lobby.save(l);
+        saveF(); renderEnde();
+      });
+    });
     app.querySelector('#again').onclick = () => { newFight(F.setup, F.serials); saveF(); render(); };
     app.querySelector('#lobby').onclick = () => { if (F.report && !F.report.error || confirm('Das Ergebnis ist noch nicht gespeichert. Trotzdem weiter?')) { F = null; saveF(); renderLobby(); } };
     if (!F.report) sendReport();
@@ -834,7 +1021,7 @@
   try { [types, game] = await Promise.all([Noerti.types(), Noerti.gameData()]); }
   catch (e) { app.innerHTML = `<div class="card">Die Arena konnte nicht laden: ${esc(errMsg(e))}</div>`; return; }
   F = loadF();
-  if (F && (!F.s || !F.phase || !F.s.maxRunden || !F.id)) F = null;
+  if (F && (!F.s || !F.phase || !F.s.maxRunden || !F.id || !F.s.opts)) F = null;   // !opts = Kampf aus v1 → verwerfen
   render();
   window.addEventListener('storage', (e) => { if (e.key === 'noerti-arena-lobby' && !F) renderLobby(); });
 })();
