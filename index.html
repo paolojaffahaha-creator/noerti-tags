@@ -436,14 +436,24 @@
     b.textContent = 'Web NFC gibt es hier nicht (nur Chrome auf Android, über HTTPS). Diese Ansicht läuft als Simulation zum Ausprobieren.';
   }
   load();
-  fetch('config.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
+  const cfgP = fetch('config.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
     db = d;
     if (!SIM && pending().length) dbSay(`${pending().length} Figur(en) noch nicht in der Datenbank.`);
   }).catch(() => dbSay('config.json fehlt – Datenbank nicht verbunden.', 'err'));
-  fetch('figuren.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
+  const figP = fetch('figuren.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => {
     cfg = d; types = d.figuren || [];
     cur = nextOpen(0); render();
   }).catch(() => say('err', 'figuren.json konnte nicht geladen werden.'));
+  // Typ-Namen aus der Nörti Werkstatt (Spieldaten) überschreiben figuren.json – gleiche Regel wie app/common.js
+  Promise.all([cfgP, figP]).then(async () => {
+    let g = null; try { g = await rpc('get_game_data', {}); } catch {}
+    let data = g && g.data && g.data.format >= 2 ? g.data : null;
+    if (!data) { try { data = await fetch('spieldaten.json', { cache: 'no-store' }).then((r) => r.json()); } catch {} }
+    const t = (data && data.typen) || {};
+    if (!types.some((x) => t[x.id] && t[x.id].name)) return;
+    types = types.map((x) => (t[x.id] && t[x.id].name ? { ...x, name: t[x.id].name } : x));
+    render();
+  });
 })();
 </script>
 </body>
