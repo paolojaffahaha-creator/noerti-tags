@@ -266,8 +266,13 @@
             gleicher_besitzer: !!(me.owner && f.owner === me.owner), ...a }; }).sort((x, y) => y.zuletzt.localeCompare(x.zuletzt));
         return { freunde, typen: [...new Set(freunde.map((f) => f.type_id))] };
       },
-      async typeImages() { const s = load(); return Object.entries(s.typImg || {}).map(([type_id, x]) => ({ type_id, file: x.file, transparent: x.transparent, updated_at: x.at })); },
-      async typeImageUrl(file) { const s = load(); const x = Object.values(s.typImg || {}).find((y) => y.file === file); return x ? x.url : ''; },
+      // Ohne eigenen Upload im Testmodus: vier mitgelieferte Beispielbilder (mock/NNN.png, Zuordnung zu Typen nur zum Testen)
+      async typeImages() {
+        const s = load(), own = Object.entries(s.typImg || {}).map(([type_id, x]) => ({ type_id, file: x.file, transparent: x.transparent, updated_at: x.at }));
+        const demo = ['001', '002', '003', '005'].filter((t) => !(s.typImg || {})[t]).map((t) => ({ type_id: t, file: `${t}.png`, transparent: true, updated_at: 'demo', demo: true }));
+        return [...own, ...demo];
+      },
+      async typeImageUrl(file, v) { const s = load(); const x = Object.values(s.typImg || {}).find((y) => y.file === file); return x ? x.url : v === 'demo' ? ROOT + 'mock/' + file : ''; },
       async uploadTypeImage(typeId, blob, transparent, pin) {
         await wait(); if (!pin) fail('Falsche PIN');
         const url = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
