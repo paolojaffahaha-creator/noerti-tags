@@ -324,6 +324,10 @@
   .choice-card { border: 3px solid var(--ink); border-radius: 14px; background: var(--white); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; font: inherit; color: inherit; text-align: left; box-shadow: 3px 3px 0 var(--ink); }
   .choice-card b { font: 400 17px var(--disp); }
   .choice-card[aria-pressed="true"] { background: var(--marker); }
+  /* Standardbild freigestellt: steht ohne Kasten auf dem Podest */
+  .sprite.free { background: none; border: 0; box-shadow: none; padding: 0; }
+  .sprite.free img { object-fit: contain; border-radius: 0; filter: drop-shadow(3px 4px 0 rgba(24,23,28,.28)); }
+  .thumb img.std { object-fit: contain; padding: 3px; }
 </style>
 </head>
 <body>
@@ -345,7 +349,7 @@
   const FIGHT = 'noerti-arena-kampf';
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? Math.min(ms, 150) : ms));
-  let types = [], game = null, F = null;   // F = laufender Kampf {s, phase, side, pending, setup, last}
+  let types = [], game = null, F = null, STD = {};   // F = laufender Kampf {s, phase, side, pending, setup, last}
   const typeName = (id) => (types.find((t) => t.id === id) || {}).name || 'Typ ' + id;
 
   const saveF = () => { try { F ? localStorage.setItem(FIGHT, JSON.stringify(F)) : localStorage.removeItem(FIGHT); } catch {} };
@@ -372,7 +376,7 @@
   function fighter(s, side, big) {
     const t = s.teams[side], f = t.figs[t.active], p = f.lp / f.lpMax;
     return `<div class="fighter ${big ? 'big' : ''} ${f.ko ? 'ko' : ''}" data-side="${side}">
-      <div class="thumb hatch">${f.img ? `<img src="${esc(f.img)}" alt="">` : esc(f.type_id)}</div>
+      <div class="thumb hatch">${thumb(f)}</div>
       <div class="info">
         <span class="team-l">${esc(t.name)}${t.figs.length > 1 ? ` · <span class="bench">${t.figs.map((x) => `<span class="${x.ko ? 'ko' : ''}"></span>`).join('')}</span>` : ''}</span>
         <div class="nm"><b>${esc(f.name)}</b><span class="lv">LV ${f.level}</span></div>
@@ -428,7 +432,7 @@
       const list = l[side], ph = (list[0] && list[0].owner_name) || `Team ${side}`;
       let slots = list.map((e, i) => { const off = offen(e);
         return `<div class="slot">
-          <div class="thumb hatch">${e.img ? `<img src="${esc(e.img)}" alt="">` : esc(e.type_id)}</div>
+          <div class="thumb hatch">${thumb(e)}</div>
           <div class="who"><b>${esc(e.name)}</b><span class="small muted">LV ${e.level} · ${esc(typeName(e.type_id))}${e.owner_name ? ' · ' + esc(e.owner_name) : ''}</span>
             ${missing(e) ? '<div class="warn">Noch keine Kampfwerte – im Editor anlegen</div>' : ''}
             ${off.length ? `<button class="reward" data-reward="${side}${i}">⭐ ${off.length === 1 ? '1 Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}</div>
@@ -560,7 +564,7 @@
       const list = (await api.myCollection()).filter((f) => !used.has(f.serial));
       if (!list.length) { box.innerHTML = '<p class="small muted" style="margin:0">Keine weiteren Figuren in deiner Sammlung.</p>'; return; }
       for (const f of list) f._img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
-      box.innerHTML = list.map((f, i) => `<button data-i="${i}"><span class="thumb hatch">${f._img ? `<img src="${esc(f._img)}" alt="">` : esc(f.type_id)}</span>
+      box.innerHTML = list.map((f, i) => `<button data-i="${i}"><span class="thumb hatch">${thumb({ img: f._img, type_id: f.type_id })}</span>
         <span><b>${esc(f.nickname || typeName(f.type_id))}</b><br><span class="small muted">LV ${f.level} · ${esc(typeName(f.type_id))}</span></span></button>`).join('');
       box.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => {
         const f = list[+b.dataset.i];
@@ -602,9 +606,18 @@
   const D20 = `<svg viewBox="0 0 100 100" aria-hidden="true"><polygon class="face" points="50,3 93,27 93,73 50,97 7,73 7,27" fill="#fff" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"/>
     <polygon points="50,24 80,72 20,72" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
     <path d="M50 3 L50 24 M93 27 L80 72 M7 27 L20 72 M93 73 L80 72 M7 73 L20 72 M50 97 L80 72 M50 97 L20 72 M7 27 L50 24 M93 27 L50 24" stroke="var(--ink)" stroke-width="1.6" opacity=".55"/></svg>`;
+  // Kampfbühne: immer das Standardbild (freigestellt steht es frei auf dem Podest), sonst eigenes Foto, sonst Typ-Nummer
   function sprite(f) {
+    const s = STD[f.type_id];
+    if (s) return `<div class="sprite ${s.transparent ? 'free' : ''} ${f.ko ? 'koed' : ''}"><img src="${esc(s.url)}" alt=""></div>`;
     return f.img ? `<div class="sprite ${f.ko ? 'koed' : ''}"><img src="${esc(f.img)}" alt=""></div>`
       : `<div class="sprite noimg ${f.ko ? 'koed' : ''}"><span class="sp-id">${esc(f.type_id)}</span><span class="sp-n">${esc(typeName(f.type_id))}</span></div>`;
+  }
+  // kleine Vorschaubilder: eigenes Foto, sonst Standardbild
+  function thumb(x) {
+    if (x.img) return `<img src="${esc(x.img)}" alt="">`;
+    const s = STD[x.type_id];
+    return s ? `<img class="${s.transparent ? 'std' : ''}" src="${esc(s.url)}" alt="">` : esc(x.type_id);
   }
   function ibox(s, side) {
     const t = s.teams[side], f = t.figs[t.active], p = f.lp / f.lpMax;
@@ -763,7 +776,7 @@
     app.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { F.choice = JSON.parse(b.dataset.a); saveF(); rerender(); });
     const swb = app.querySelector('#sw'); if (swb) swb.onclick = () => {
       const el = sheet(`<h2>Wen einwechseln?</h2><div class="pick-list">${o.wechseln.map((w) => { const b = s.teams[side].figs[w.i];
-        return `<button data-i="${w.i}"><span class="thumb hatch">${b.img ? `<img src="${esc(b.img)}" alt="">` : esc(b.type_id)}</span><span><b>${esc(b.name)}</b><br><span class="small muted">${b.lp}/${b.lpMax} LP · ${b.noerten} Nörten</span></span></button>`; }).join('')}</div>
+        return `<button data-i="${w.i}"><span class="thumb hatch">${thumb(b)}</span><span><b>${esc(b.name)}</b><br><span class="small muted">${b.lp}/${b.lpMax} LP · ${b.noerten} Nörten</span></span></button>`; }).join('')}</div>
         <p class="small muted" style="margin:0">Der Wechsel passiert zuerst – die neue Figur steckt einen Angriff dieser Runde ein.</p>`);
       el.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { F.choice = { typ: 'wechseln', i: +b.dataset.i }; closeSheet(); const y = scrollY; renderPick(); scrollTo(0, y); });
     };
@@ -932,7 +945,7 @@
     const s = F.s, side = F.side, t = s.teams[side];
     app.innerHTML = `<div class="round"><span class="disp">K.O.!</span></div>
       <div class="card ink actions"><h2>${esc(t.name)}: Wer kommt rein?</h2><p class="small muted" style="margin:0">${esc(K.aktiv(s, side).name)} ist k.o. Der Ersatz kostet nichts.</p>
-      <div class="pick-list">${K.bank(s, side).map(({ f, i }) => `<button data-i="${i}"><span class="thumb hatch">${f.img ? `<img src="${esc(f.img)}" alt="">` : esc(f.type_id)}</span>
+      <div class="pick-list">${K.bank(s, side).map(({ f, i }) => `<button data-i="${i}"><span class="thumb hatch">${thumb(f)}</span>
         <span><b>${esc(f.name)}</b><br><span class="small muted">${f.lp}/${f.lpMax} LP · ${f.noerten} Nörten</span></span></button>`).join('')}</div></div>`;
     app.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { K.ersetzen(s, side, +b.dataset.i); after(); });
   }
@@ -1018,7 +1031,7 @@
   }
 
   // ---------- Start ----------
-  try { [types, game] = await Promise.all([Noerti.types(), Noerti.gameData()]); }
+  try { [types, game, STD] = await Promise.all([Noerti.types(), Noerti.gameData(), Noerti.stdImages()]); }
   catch (e) { app.innerHTML = `<div class="card">Die Arena konnte nicht laden: ${esc(errMsg(e))}</div>`; return; }
   F = loadF();
   if (F && (!F.s || !F.phase || !F.s.maxRunden || !F.id || !F.s.opts)) F = null;   // !opts = Kampf aus v1 → verwerfen

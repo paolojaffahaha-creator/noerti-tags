@@ -62,3 +62,7 @@ label.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; 
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } .btn-main:active { transform: none; } }
 .mockbar { font-size: 12px; text-align: center; background: var(--marker); border-bottom: 2px solid var(--ink); padding: 4px; }
+/* Standardbild (freigestellt) ganz zeigen statt beschneiden; Silhouette für unentdeckte Typen */
+img.std { object-fit: contain !important; padding: 6%; filter: drop-shadow(2px 3px 0 rgba(24,23,28,.25)); }
+img.std.photo-std { padding: 0; filter: none; }
+img.sil { object-fit: contain !important; padding: 8%; filter: brightness(0) !important; opacity: .85; }

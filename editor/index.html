@@ -132,6 +132,13 @@
   .ver { display: flex; gap: 10px; align-items: center; }
   .ver div { flex: 1; font-size: 14px; }
   [hidden] { display: none !important; }
+  /* Standardbild */
+  .stdimg { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: start; border-top: 1.5px dashed var(--line); padding-top: 12px; }
+  .stdprev { width: 120px; aspect-ratio: 1; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; display: grid; place-items: center; text-align: center;
+    background: repeating-conic-gradient(#E9EBEF 0 25%, #FFFFFF 0 50%) 0 0 / 16px 16px; }
+  .stdprev.big { width: min(260px, 100%); align-self: center; }
+  .stdprev img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 420px) { .stdimg { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -301,12 +308,71 @@
           <label class="f">Nörten-Faktor<input data-p="typen.${sel}.noerten_faktor" data-num data-live type="number" step="0.05" min="0.3" max="3" inputmode="decimal" value="${t.noerten_faktor ?? 1}"><small data-hint="no">bei „Normal“: ${Math.round(standardWert('kampf_noerten') * (t.noerten_faktor ?? 1))} Nörten</small></label>
           <label class="f">Tempo (1–10)<input data-p="typen.${sel}.tempo" data-num type="number" min="1" max="10" inputmode="numeric" value="${t.tempo}"><small>±${R.ausweichen_pro_tempo} % Ausweichen je Punkt</small></label>
         </div>
+        ${stdBlock()}
         <p class="small muted" style="margin:0">LP und Nörten werden vor dem Kampf gewählt (${R.kampf_lp.map((x) => `${esc(x.name)} ${x.wert}`).join(' / ')} LP · ${R.kampf_noerten.map((x) => `${esc(x.name)} ${x.wert}`).join(' / ')} Nörten) und mit dem Faktor multipliziert.</p>
       </section>
       <div class="cats" id="cats">${catsHtml()}</div>
       <div id="aed">${aedHtml()}</div>`;
     }
     $('#root').innerHTML = `<div class="layout">${sideHtml(ids)}<div class="main">${main}</div></div>`;
+  }
+  // ---------- Standardbild des Typs (wird sofort hochgeladen, nicht über „Speichern“) ----------
+  let stdMap = {};
+  function stdBlock() {
+    const s = stdMap[sel];
+    return `<div class="stdimg">
+      <div class="stdprev">${s ? `<img class="${s.transparent ? 'std' : ''}" src="${esc(s.url)}" alt="Standardbild ${esc(figName(sel))}">` : '<span class="small muted">Noch kein Standardbild</span>'}</div>
+      <div class="actions" style="gap:6px;min-width:0">
+        <b>Standardbild</b>
+        <span class="small muted">Gilt für jede Figur dieses Typs, solange ihr Besitzer kein eigenes Foto hat – und immer auf der Kampfbühne. Am besten freigestellt (transparenter Hintergrund), quadratisch, PNG oder WebP.</span>
+        ${s && !s.transparent ? '<span class="small eff-low">Nicht freigestellt – in der Sammlung erscheint dann statt der Silhouette ein „?“.</span>' : ''}
+        ${s && s.transparent ? '<span class="small eff-high">Freigestellt ✓ (auch als Silhouette für unentdeckte Typen)</span>' : ''}
+        <input type="file" id="stdFile" accept="image/png,image/webp,image/*" hidden>
+        <div class="row"><button class="mini" data-act="stdPick">${s ? 'Bild ersetzen' : 'Bild hochladen'}</button>${s ? '<button class="mini danger" data-act="stdDel">Entfernen</button>' : ''}</div>
+      </div></div>`;
+  }
+  // Bild quadratisch auf max. 800 px bringen, Transparenz erkennen, als WebP (sonst PNG) ≤ 600 KB
+  async function prepStd(file) {
+    const bmp = await createImageBitmap(file);
+    const side = Math.max(bmp.width, bmp.height), sc = Math.min(1, 800 / side), S = Math.max(1, Math.round(side * sc));
+    const c = document.createElement('canvas'); c.width = S; c.height = S;
+    const g = c.getContext('2d'), w = bmp.width * sc, h = bmp.height * sc;
+    g.drawImage(bmp, (S - w) / 2, (S - h) / 2, w, h);
+    const px = g.getImageData(0, 0, S, S).data; let clear = 0;
+    for (let i = 3; i < px.length; i += 16) if (px[i] < 200) clear++;
+    const transparent = clear / (px.length / 16) > 0.03;
+    for (const [type, qs] of [['image/webp', [0.92, 0.82, 0.7]], ['image/png', [1]]]) {
+      for (const q of qs) {
+        const b = await new Promise((r) => c.toBlob(r, type, q));
+        if (b && b.type === type && b.size <= 600 * 1024) return { blob: b, transparent, url: URL.createObjectURL(b) };
+      }
+    }
+    throw new Error('Bild ist zu groß – bitte kleiner exportieren.');
+  }
+  function stdUpload(file) {
+    prepStd(file).then((p) => {
+      const pin = ls.get(PIN_STORE) || '';
+      const el = N.sheet(`<h2>Standardbild für ${esc(figName(sel))}</h2>
+        <div class="stdprev big"><img class="${p.transparent ? 'std' : ''}" src="${esc(p.url)}" alt=""></div>
+        <p class="small ${p.transparent ? 'eff-high' : 'eff-low'}" style="margin:0">${p.transparent ? 'Freigestellt erkannt ✓' : 'Kein transparenter Hintergrund erkannt – funktioniert, aber ohne Silhouette in der Sammlung.'} · ${Math.round(p.blob.size / 1024)} KB</p>
+        <label class="field" ${pin ? 'hidden' : ''}>Admin-PIN<input id="pinIn" type="password" inputmode="numeric" autocomplete="off"></label>
+        <button class="btn-main" id="go">HOCHLADEN</button><button class="btn-text" id="no">Abbrechen</button>`);
+      el.querySelector('#no').onclick = N.closeSheet;
+      el.querySelector('#go').onclick = async (ev) => {
+        const pp = pin || el.querySelector('#pinIn').value.trim();
+        if (!pp) { N.toast('Bitte PIN eingeben', 'err'); return; }
+        ev.target.disabled = true; ev.target.textContent = 'Lädt hoch …';
+        try {
+          await N.api.uploadTypeImage(sel, p.blob, p.transparent, pp);
+          ls.set(PIN_STORE, pp); stdMap = await N.stdImages(true);
+          N.closeSheet(); keepScroll(render); N.toast('Standardbild gespeichert ✓ – gilt sofort');
+        } catch (e) {
+          ev.target.disabled = false; ev.target.textContent = 'HOCHLADEN';
+          const m = N.errMsg(e); if (/PIN/.test(m)) ls.set(PIN_STORE, null);
+          N.toast(/function|schema cache|bucket/i.test(m) ? 'SQL-Nachtrag 007 fehlt noch in Supabase' : m, 'err');
+        }
+      };
+    }).catch((e) => N.toast(N.errMsg(e), 'err'));
   }
   const standardWert = (k) => { const R = data.regeln, l = R[k] || [{ wert: 100 }]; return (l[R.kampf_standard ?? 1] || l[0]).wert; };
 
@@ -589,6 +655,7 @@
   });
   root.addEventListener('change', (e) => {
     const el = e.target;
+    if (el.id === 'stdFile') { const f = el.files && el.files[0]; el.value = ''; if (f) stdUpload(f); return; }
     if (el.dataset.tpl !== undefined) { if (el.value !== '') addAction(el.dataset.tpl, +el.value); return; }
     if (el.dataset.part) {                             // Pfad: Art der Option geändert
       const o = getPath(el.dataset.part), art = el.value, t = T();
@@ -616,6 +683,15 @@
     if (b.dataset.kat && a) { a.kat = b.dataset.kat; if (a.kat === 'ausweichen') { a.ausgaenge = [{ anteil: 100, wert: 0 }]; } if (!['angriff', 'auftanken'].includes(a.kat)) a.wuerfe = { art: 'einfach', chance: a.wuerfe.chance }; keepScroll(render); return; }
     if (b.dataset.wurf && a) { const w = a.wuerfe; w.art = b.dataset.wurf; if (w.art === 'einfach') { delete w.n; delete w.bis; delete w.steigerung; } else w.n = Math.max(w.n || 1, w.art === 'zufall' ? 2 : 3); if (w.art === 'zufall') w.bis = Math.max(w.bis || 0, w.n + 2); else delete w.bis; if (w.art === 'kette') w.steigerung ??= 2; else delete w.steigerung; keepScroll(render); return; }
     const act = b.dataset.act;
+    if (act === 'stdPick') { $('#stdFile').click(); return; }
+    if (act === 'stdDel') {
+      const pin = ls.get(PIN_STORE);
+      if (!pin) { N.toast('Erst einmal mit PIN hochladen oder speichern', 'err'); return; }
+      if (!confirm(`Standardbild von ${figName(sel)} entfernen? Gilt sofort.`)) return;
+      try { await N.api.removeTypeImage(sel, pin); stdMap = await N.stdImages(true); keepScroll(render); N.toast('Standardbild entfernt'); }
+      catch (err) { N.toast(N.errMsg(err), 'err'); }
+      return;
+    }
     if (act === 'create') { data.typen[sel] = { lp_faktor: 1, noerten_faktor: 1, tempo: 5, aktionen: [], pfad: {} }; K.KAT.forEach((k) => addAction(k, 0, true)); render(); }
     else if (act === 'dropType') { if (confirm(`Kampfwerte von ${figName(sel)} löschen? (Erst beim Speichern endgültig)`)) { delete data.typen[sel]; render(); } }
     else if (act === 'dup' && a) { const c = clone(a); c.id = slug(a.name + ' 2', t.aktionen); c.name = (a.name + ' 2').slice(0, 24); c.start = false; t.aktionen.splice(t.aktionen.indexOf(a) + 1, 0, c); selAct = c.id; keepScroll(render); }
@@ -738,6 +814,7 @@
     try {
       // Namen direkt aus figuren.json (N.types() enthält schon die Namen aus dem Editor)
       [figs, base] = await Promise.all([fetch(N.ROOT + 'figuren.json', { cache: 'no-store' }).then((r) => r.json()).then((d) => d.figuren || []), N.gameData()]);
+      stdMap = await N.stdImages();
       saved = clone(base.data); data = clone(base.data);
       if (base.stale) saved = { stale: true };        // alte DB-Version: Startwerte gelten als ungespeichert
       const d = ls.get(DRAFT);

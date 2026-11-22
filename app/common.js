@@ -122,7 +122,35 @@
       saveGameData: (data, pin, base, note) => rpc('save_game_data', { p_data: data, p_pin: pin, p_base: base, p_note: note || null }),
       chooseReward: (serial, level, option) => rpc('choose_reward', { p_serial: serial, p_level: level, p_option: option }),
       reportMatch: (m) => rpc('report_match', { p_client_id: m.id, p_a: m.a, p_b: m.b, p_winner: m.winner, p_rounds: m.rounds, p_reason: m.reason, p_log: m.log, p_game_version: m.version }),
-      leaderboard: (n) => rpc('leaderboard', { p_limit: n || 20 })
+      leaderboard: (n) => rpc('leaderboard', { p_limit: n || 20 }),
+      getFigureById: (pid) => rpc('get_figure_by_id', { p_public_id: pid }),
+      friendBook: (pid) => rpc('friend_book', { p_public_id: pid }),
+      // Standardbilder (Nachtrag 007)
+      typeImages: () => rpc('type_images'),
+      async typeImageUrl(file, v) {
+        const c = await config();
+        return `${c.supabaseUrl}/storage/v1/object/public/typ-bilder/${file}?v=${encodeURIComponent(v || '')}`;
+      },
+      async uploadTypeImage(typeId, blob, transparent, pin) {
+        const c = await sb();
+        let { data: { session } } = await c.auth.getSession();
+        if (!session) { const { error } = await c.auth.signInAnonymously(); if (error) throw error; }
+        await rpc('become_admin', { p_pin: pin });
+        const ext = blob.type === 'image/png' ? 'png' : 'webp', file = `${typeId}.${ext}`;
+        const { error } = await c.storage.from('typ-bilder').upload(file, blob, { upsert: true, contentType: blob.type, cacheControl: '300' });
+        if (error) throw error;
+        const old = ext === 'png' ? `${typeId}.webp` : `${typeId}.png`;
+        await c.storage.from('typ-bilder').remove([old]).catch(() => {});
+        return rpc('set_type_image', { p_type: typeId, p_file: file, p_transparent: !!transparent });
+      },
+      async removeTypeImage(typeId, pin) {
+        const c = await sb();
+        let { data: { session } } = await c.auth.getSession();
+        if (!session) { const { error } = await c.auth.signInAnonymously(); if (error) throw error; }
+        await rpc('become_admin', { p_pin: pin });
+        await c.storage.from('typ-bilder').remove([`${typeId}.webp`, `${typeId}.png`]).catch(() => {});
+        return rpc('remove_type_image', { p_type: typeId });
+      }
     };
   }
 
@@ -137,7 +165,13 @@
         CCCCCCCC: { serial: 'CCCCCCCC', public_id: 'p-c', type_id: '001', owner: null, nickname: null, bio: null, images: [], xp: 0, level: 1, wins: 0, losses: 0, opponents: 0, owner_since: null },
         DDDDDDDD: { serial: 'DDDDDDDD', public_id: 'p-d', type_id: '003', owner: 'me', nickname: 'Schnecki', bio: '', images: [], xp: 1100, level: 6, wins: 12, losses: 3, opponents: 5, owner_since: '2026-11-01T10:00:00Z' },
         EEEEEEEE: { serial: 'EEEEEEEE', public_id: 'p-e', type_id: '004', owner: 'mo', nickname: null, bio: '', images: [], xp: 40, level: 2, wins: 1, losses: 1, opponents: 1, owner_since: '2026-11-10T10:00:00Z' }
-      }, blobs: {}
+      }, blobs: {},
+      // Beispiel-Kämpfe fürs Freundebuch
+      kaempfe: [
+        { at: '2026-11-14T18:00:00Z', winner: 'A', A: ['AAAAAAAA'], B: ['BBBBBBBB'] },
+        { at: '2026-11-16T19:30:00Z', winner: 'B', A: ['AAAAAAAA', 'DDDDDDDD'], B: ['BBBBBBBB', 'EEEEEEEE'] },
+        { at: '2026-11-18T20:10:00Z', winner: null, A: ['DDDDDDDD'], B: ['AAAAAAAA'] }
+      ]
     });
     const load = () => { try { return JSON.parse(sessionStorage.getItem(KEY)) || seed(); } catch { return seed(); } };
     const save = (s) => { try { sessionStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
@@ -211,9 +245,36 @@
           opp.forEach((o) => s.met.push(serial + o));
           out.push({ public_id: f.public_id, side, rated: true, xp_gain: gain, bonus, level_before: before, level: f.level, xp: f.xp });
         }
-        s.matches[m.id] = out; save(s); return { again: false, figures: out };
+        s.matches[m.id] = out; (s.kaempfe ||= []).push({ at: new Date().toISOString(), winner: m.winner, A: m.a, B: m.b }); save(s); return { again: false, figures: out };
       },
-      async leaderboard() { const s = load(); return Object.values(s.figures).map((f) => view(s, f)).sort((a, b) => b.level - a.level || b.xp - a.xp || b.wins - a.wins); }
+      async leaderboard() { const s = load(); return Object.values(s.figures).map((f) => view(s, f)).sort((a, b) => b.level - a.level || b.xp - a.xp || b.wins - a.wins); },
+      async getFigureById(pid) { await wait(); const s = load(); const f = Object.values(s.figures).find((x) => x.public_id === pid); return f ? view(s, f) : null; },
+      async friendBook(pid) {
+        await wait(); const s = load(); const me = Object.values(s.figures).find((x) => x.public_id === pid); if (!me) return null;
+        const agg = {};
+        for (const k of s.kaempfe || []) {
+          const side = k.A.includes(me.serial) ? 'A' : k.B.includes(me.serial) ? 'B' : null; if (!side) continue;
+          for (const o of [...k.A, ...k.B]) {
+            if (o === me.serial) continue;
+            const g = !k[side].includes(o), a = (agg[o] ||= { erstes: k.at, zuletzt: k.at, als_gegner: 0, als_team: 0, siege: 0, niederlagen: 0, unentschieden: 0 });
+            a.erstes = a.erstes < k.at ? a.erstes : k.at; a.zuletzt = a.zuletzt > k.at ? a.zuletzt : k.at;
+            if (g) { a.als_gegner++; if (k.winner == null) a.unentschieden++; else if (k.winner === side) a.siege++; else a.niederlagen++; } else a.als_team++;
+          }
+        }
+        const freunde = Object.entries(agg).map(([serial, a]) => { const f = s.figures[serial], v = view(s, f);
+          return { public_id: f.public_id, type_id: f.type_id, nickname: f.nickname, images: f.images, updated_at: v.updated_at, level: f.level, owner_name: v.owner_name,
+            gleicher_besitzer: !!(me.owner && f.owner === me.owner), ...a }; }).sort((x, y) => y.zuletzt.localeCompare(x.zuletzt));
+        return { freunde, typen: [...new Set(freunde.map((f) => f.type_id))] };
+      },
+      async typeImages() { const s = load(); return Object.entries(s.typImg || {}).map(([type_id, x]) => ({ type_id, file: x.file, transparent: x.transparent, updated_at: x.at })); },
+      async typeImageUrl(file) { const s = load(); const x = Object.values(s.typImg || {}).find((y) => y.file === file); return x ? x.url : ''; },
+      async uploadTypeImage(typeId, blob, transparent, pin) {
+        await wait(); if (!pin) fail('Falsche PIN');
+        const url = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+        const s = load(); (s.typImg ||= {})[typeId] = { file: `${typeId}.${blob.type === 'image/png' ? 'png' : 'webp'}`, transparent: !!transparent, url, at: new Date().toISOString() }; save(s);
+        return this.typeImages();
+      },
+      async removeTypeImage(typeId, pin) { if (!pin) fail('Falsche PIN'); const s = load(); delete (s.typImg || {})[typeId]; save(s); return this.typeImages(); }
     };
   }
 
@@ -230,6 +291,20 @@
     b.innerHTML = 'Testmodus mit Beispieldaten – nichts wird gespeichert. <a href="?mock=0">Beenden</a>';
     document.body.prepend(b);
   });
+
+  // Standardbilder pro Typ (Nachtrag 007): { type_id: { url, transparent } } – fehlt der Nachtrag, einfach leer
+  let stdP = null;
+  const stdImages = (fresh) => ((fresh || !stdP) ? (stdP = api.typeImages().catch(() => [])
+    .then(async (list) => { const m = {}; for (const x of list || []) m[x.type_id] = { url: await api.typeImageUrl(x.file, x.updated_at), transparent: !!x.transparent, file: x.file }; return m; })) : stdP);
+  // Hauptbild einer Figur: eigenes Foto (das erste), sonst das Standardbild des Typs
+  async function figImage(f) {
+    if (f.images && f.images.length) {
+      const url = await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at);
+      if (url) return { url, own: true, transparent: false };
+    }
+    const s = (await stdImages())[f.type_id];
+    return s ? { url: s.url, own: false, transparent: s.transparent } : { url: '', own: false, transparent: false };
+  }
 
   // Arena-Aufstellung: liegt nur in diesem Browser, verfällt nach 30 min ohne Änderung.
   // Die Seriennummer bleibt hier lokal (sie wird später zum Melden des Ergebnisses gebraucht), angezeigt wird sie nie.
@@ -253,5 +328,5 @@
     }
   };
 
-  window.Noerti = { ROOT, MOCK, api, config, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage, gameData, lobby };
+  window.Noerti = { ROOT, MOCK, api, config, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage, gameData, lobby, stdImages, figImage };
 })();

@@ -28,6 +28,36 @@
   .slot .btn { min-height: 40px; padding: 8px; font-size: 14px; }
   .facts { display: flex; gap: 8px; flex-wrap: wrap; }
   .facts span { font-size: 13px; font-weight: 500; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 8px; padding: 4px 10px; }
+  .photo .img.stdbg { background: radial-gradient(circle at 50% 62%, #FFFFFF 0 46%, #EEF0F2 47%); }
+  .photo .cap { position: absolute; right: 18px; bottom: 16px; font: 700 11px var(--body); background: var(--white); border: 1.5px solid var(--ink); border-radius: 99px; padding: 1px 8px; }
+  .photo { position: relative; }
+  .ro { font-size: 13px; text-align: center; background: var(--white); border: 2px dashed var(--muted); border-radius: 10px; padding: 6px 10px; color: var(--muted); }
+
+  /* Freundebuch: liniertes Papier, Freunde als eingeklebte Karten */
+  .book { background: var(--white); border: 3px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); padding: 14px 14px 16px 26px; position: relative;
+    background-image: linear-gradient(90deg, transparent 15px, #F3B6B6 15px 17px, transparent 17px), repeating-linear-gradient(#FFFFFF 0 27px, #DCE6F2 27px 28px);
+    display: flex; flex-direction: column; gap: 12px; }
+  .book h2 { margin: 0; font: 400 26px var(--disp); }
+  .book .sub { font-size: 14px; color: var(--muted); }
+  .book .sub b { color: var(--ink); }
+  .stickers { display: flex; flex-wrap: wrap; gap: 6px; }
+  .stickers span { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--ink); background: var(--white); overflow: hidden; display: grid; place-items: center; font: 400 12px var(--disp); }
+  .stickers span img { width: 100%; height: 100%; object-fit: cover; }
+  .stickers span.no { border-style: dashed; color: var(--dot); background: transparent; }
+  .friend { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; background: var(--white); border: 2px solid var(--ink); border-radius: 12px;
+    padding: 8px; text-decoration: none; color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+  .friend:nth-child(odd) { transform: rotate(-.6deg); } .friend:nth-child(even) { transform: rotate(.5deg); }
+  .friend .pic { width: 64px; height: 64px; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; display: grid; place-items: center; font: 400 16px var(--disp); }
+  .friend .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .friend .nm { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+  .friend .nm b { font: 400 17px var(--disp); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .friend .lv { font-size: 11px; padding: 0 5px; }
+  .friend .meta2 { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .friend .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+  .friend .tags span { font: 700 11px var(--body); border: 1.5px solid var(--ink); border-radius: 99px; padding: 0 7px; background: var(--paper); }
+  .friend .tags .g { background: #FDE9DC; } .friend .tags .t { background: #EDE6FD; } .friend .tags .o { background: var(--marker); }
+  .friend .tags .score { background: var(--ink); color: var(--white); }
+  .book .more { align-self: center; }
 </style>
 </head>
 <body>
@@ -47,17 +77,21 @@
   const q = new URLSearchParams(location.search);
   const typeId = q.get('t') || q.get('id');
   const serial = (q.get('s') || '').toUpperCase();
+  const pubId = q.get('p') || '';            // öffentliche Ansicht (aus dem Freundebuch): nur ansehen
+  const readonly = !serial && !!pubId;
   const app = document.getElementById('app');
   const FILES = ['1.webp', '2.webp'];
-  let fig = null, type = null, slide = 0, urls = {};
+  let fig = null, type = null, slide = 0, urls = {}, std = {}, bookOpen = false;
 
   const allTypes = await types().catch(() => []);
   type = allTypes.find((x) => x.id === typeId) || null;
+  std = await Noerti.stdImages();
 
   async function load() {
-    if (!serial) return renderSimple();
-    try { fig = await api.getFigure(serial); }
+    if (!serial && !pubId) return renderSimple();
+    try { fig = readonly ? await api.getFigureById(pubId) : await api.getFigure(serial); }
     catch (e) { app.innerHTML = `<div class="card">Die Figur konnte nicht geladen werden: ${esc(errMsg(e))}<br><span class="small muted">Ist das Internet an? Sonst später nochmal antippen.</span></div>`; return; }
+    if (!fig && readonly) { app.innerHTML = '<div class="card">Diese Figur gibt es nicht mehr (oder sie wurde zurückgesetzt).</div>'; return; }
     if (!fig) return renderUnregistered();
     if (fig.type_id && fig.type_id !== typeId) type = allTypes.find((x) => x.id === fig.type_id) || type;
     urls = {};
@@ -94,14 +128,18 @@
     const color = { natur: 'var(--natur)', street: 'var(--street)', sound: 'var(--sound)' }[type && type.klasse] || 'var(--ink)';
     const owner = fig.is_mine ? `Gehört <b>dir</b>${fig.owner_since ? ' · in deiner Sammlung seit ' + esc(fmtDate(fig.owner_since)) : ''}`
       : fig.owner_name ? `Gehört <b>${esc(fig.owner_name)}</b>` : 'Gehört noch niemandem';
-    const main = fig.is_mine
+    const main = readonly ? `<p class="ro">Ansicht aus einem Freundebuch – zum Einsammeln oder Kämpfen die Figur selbst ans Handy halten.</p>`
+      : fig.is_mine
       ? `<button class="btn-main" id="edit">TEXT &amp; BILDER BEARBEITEN</button>`
       : `<button class="btn-main" id="collect">${fig.owner_name ? 'ÜBERNEHMEN' : 'ZU MEINER SAMMLUNG'}</button>`;
+    const s = std[fig.type_id];
+    const photo = imgs.length && urls[imgs[slide]]
+      ? `<div class="img hatch"><img src="${esc(urls[imgs[slide]])}" alt="Foto von ${esc(name)}"></div>`
+      : s ? `<div class="img ${s.transparent ? 'stdbg' : 'hatch'}"><img class="${s.transparent ? 'std' : ''}" src="${esc(s.url)}" alt="${esc(type ? type.name : 'Nörti')}"></div><span class="cap">${fig.is_mine ? 'Standardbild – eigenes Foto über „Bearbeiten“' : 'Standardbild'}</span>`
+      : `<div class="img hatch"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span class="small">${fig.is_mine ? 'Noch kein Foto – über „Bearbeiten“ hinzufügen' : 'Noch kein Foto'}</span></div>`;
     app.innerHTML = `
       <div class="photo ink">
-        <div class="img hatch">${imgs.length && urls[imgs[slide]]
-          ? `<img src="${esc(urls[imgs[slide]])}" alt="Foto von ${esc(name)}">`
-          : `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span class="small">${fig.is_mine ? 'Noch kein Foto – über „Bearbeiten“ hinzufügen' : 'Noch kein Foto'}</span>`}</div>
+        ${photo}
         ${imgs.length > 1 ? `<div class="dots">${imgs.map((_, i) => `<button data-i="${i}" aria-label="Foto ${i + 1}" aria-current="${i === slide}"><span></span></button>`).join('')}</div>` : ''}
       </div>
       <section style="display:flex;flex-direction:column;gap:6px">
@@ -115,18 +153,53 @@
       <div class="stats"><span><b>${fig.wins}</b> Siege · <b>${fig.losses}</b> Niederlagen</span><span><b>${fig.opponents}</b> Gegner getroffen</span></div>
       <div class="actions" style="margin-top:8px">
         ${main}
-        <button class="btn" id="arena">In die Arena</button>
-      </div>`;
-    app.querySelector('#arena').onclick = toArena;
+        ${readonly ? '' : '<button class="btn" id="arena">In die Arena</button>'}
+      </div>
+      <section class="book" id="book" aria-label="Freundebuch"><h2>FREUNDEBUCH</h2><div class="spinner" style="margin:10px auto"></div></section>`;
+    const ar = app.querySelector('#arena'); if (ar) ar.onclick = toArena;
+    renderBook();
     app.querySelectorAll('.dots button').forEach((b) => b.onclick = () => { slide = +b.dataset.i; render(); });
     const c = app.querySelector('#collect'); if (c) c.onclick = collect;
     const e = app.querySelector('#edit'); if (e) e.onclick = openEdit;
   }
 
+  // ---------- Freundebuch ----------
+  async function renderBook() {
+    const box = app.querySelector('#book'); if (!box) return;
+    let b;
+    try { b = await api.friendBook(fig.public_id); }
+    catch (e) { box.innerHTML = `<h2>FREUNDEBUCH</h2><p class="small muted" style="margin:0">${/function|schema cache/i.test(errMsg(e)) ? 'Kommt gleich – SQL-Nachtrag 007 fehlt noch.' : 'Gerade nicht erreichbar.'}</p>`; return; }
+    const list = (b && b.freunde) || [], tn = (id) => (allTypes.find((t) => t.id === id) || {}).name || 'Typ ' + id;
+    const met = new Set((b && b.typen) || []), name = fig.nickname || (type ? type.name : 'Nörti');
+    for (const f of list) f._img = await Noerti.figImage(f);
+    const sticker = (t) => { const s = std[t.id];
+      return met.has(t.id) ? `<span title="${esc(t.name)}">${s ? `<img class="${s.transparent ? 'std' : ''}" src="${esc(s.url)}" alt="${esc(t.name)}">` : esc(t.id)}</span>` : `<span class="no" title="noch nicht getroffen">?</span>`; };
+    const card = (f) => {
+      const tags = [];
+      if (f.als_gegner) tags.push(`<span class="g">Gegner${f.als_gegner > 1 ? ' ×' + f.als_gegner : ''}</span>`);
+      if (f.als_team) tags.push(`<span class="t">Teamkollege${f.als_team > 1 ? ' ×' + f.als_team : ''}</span>`);
+      if (f.gleicher_besitzer) tags.push('<span class="o">gleicher Besitzer</span>');
+      if (f.als_gegner) tags.push(`<span class="score" title="Siege : Niederlagen gegeneinander">${f.siege}:${f.niederlagen}${f.unentschieden ? ` · ${f.unentschieden} unent.` : ''}</span>`);
+      const im = f._img;
+      return `<a class="friend" href="../f/?p=${encodeURIComponent(f.public_id)}">
+        <span class="pic hatch">${im.url ? `<img class="${!im.own && im.transparent ? 'std' : ''}" src="${esc(im.url)}" alt="">` : esc(f.type_id)}</span>
+        <span style="min-width:0"><span class="nm"><b>${esc(f.nickname || tn(f.type_id))}</b><span class="lv">LV ${f.level}</span></span>
+          <span class="meta2">${esc(tn(f.type_id))}${f.owner_name ? ' · gehört ' + esc(f.owner_name) : ''} · kennengelernt ${esc(fmtDate(f.erstes))}</span>
+          <span class="tags">${tags.join('')}</span></span></a>`;
+    };
+    const shown = bookOpen ? list : list.slice(0, 8);
+    box.innerHTML = `<h2>FREUNDEBUCH</h2>
+      <span class="sub"><b>${list.length}</b> ${list.length === 1 ? 'Freund' : 'Freunde'} · <b>${met.size} von ${allTypes.length || 12}</b> Typen getroffen</span>
+      <div class="stickers" aria-label="Getroffene Typen">${allTypes.map(sticker).join('')}</div>
+      ${list.length ? shown.map(card).join('') : `<p style="margin:0">${esc(name)} hat noch niemanden kennengelernt. ${readonly ? '' : 'Ab in die <a href="../arena/">Arena</a>!'}</p>`}
+      ${list.length > shown.length ? `<button class="btn more" id="allf" style="width:auto">Alle ${list.length} zeigen</button>` : ''}`;
+    const m = box.querySelector('#allf'); if (m) m.onclick = () => { bookOpen = true; renderBook(); };
+  }
+
   // ---------- Arena ----------
   async function toArena() {
     const img = (fig.images || []).length ? urls[(fig.images || []).slice().sort()[0]] || '' : '';
-    const side = Noerti.lobby.add({ serial, public_id: fig.public_id, type_id: fig.type_id, level: fig.level,
+    const side = Noerti.lobby.add({ serial, public_id: fig.public_id, type_id: fig.type_id, level: fig.level, wahlen: fig.wahlen || {},
       name: fig.nickname || (type ? type.name : 'Nörti'), owner_name: fig.owner_name, img });
     if (!side) { toast('Beide Arena-Teams sind schon voll.', 'err'); return; }
     location.href = '../arena/';
