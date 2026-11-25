@@ -1833,6 +1833,34 @@
     "konter_schaden": 8,
     "pegel_ab_runde": 6,
     "pegel_pct": 15,
-    "pegel_max": 100
+    "pegel_max": 100,
+    "xp_sieg": 30,
+    "xp_niederlage": 10,
+    "xp_unentschieden": 20,
+    "xp_begegnung": 20,
+    "sammlung_faktor": 0.5,
+    "starter_faktor": 2,
+    "starter_geschenk": 90,
+    "xp_kurve": [
+      40,
+      90,
+      150,
+      220,
+      300,
+      390,
+      500,
+      630,
+      780,
+      950,
+      1140,
+      1360,
+      1610,
+      1890,
+      2200,
+      2540,
+      2920,
+      3340,
+      3800
+    ]
   }
 }

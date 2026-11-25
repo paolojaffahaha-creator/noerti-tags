@@ -592,10 +592,17 @@
     ['Auftanken', [['auftanken_getroffen_faktor', 'Ertrag × wenn man getroffen wird', 0.05], ['auftanken_gegen_verteidigen_faktor', 'Ertrag × wenn der Gegner nur verteidigt', 0.05]]],
     ['Ausweichen', [['ausweichen_pro_tempo', '% pro Tempo-Unterschied'], ['ausweichen_min', 'mindestens %'], ['ausweichen_max', 'höchstens %']]],
     ['Kampf', [['max_runden', 'Max. Runden pro Figur im Team']]],
-    ['Pegel (Schaden steigt, damit Kämpfe nicht ewig dauern)', [['pegel_ab_runde', 'ab Runde (0 = aus)'], ['pegel_pct', 'Schaden + % pro Runde'], ['pegel_max', 'höchstens + %']]]
+    ['Pegel (Schaden steigt, damit Kämpfe nicht ewig dauern)', [['pegel_ab_runde', 'ab Runde (0 = aus)'], ['pegel_pct', 'Schaden + % pro Runde'], ['pegel_max', 'höchstens + %']]],
+    ['Erfahrung (XP) – rechnet die Datenbank', [['xp_sieg', 'Sieg'], ['xp_niederlage', 'Niederlage'], ['xp_unentschieden', 'Unentschieden'], ['xp_begegnung', 'Bonus: neuer Freund (nur live)'],
+      ['sammlung_faktor', 'XP × aus der Sammlung (nicht gescannt)', 0.05], ['starter_faktor', 'XP × für den Starter', 0.5], ['starter_geschenk', 'Start-Geschenk für den Starter (XP)']]]
   ];
+  const XP_KURVE_VORGABE = [40, 90, 150, 220, 300, 390, 500, 630, 780, 950, 1140, 1360, 1610, 1890, 2200, 2540, 2920, 3340, 3800];
   function renderRegeln() {
     const r = data.regeln;
+    if (!Array.isArray(r.xp_kurve) || r.xp_kurve.length !== 19) r.xp_kurve = XP_KURVE_VORGABE.slice();
+    const kurve = `<section class="card actions" style="gap:10px"><b>XP-Kurve: XP gesamt für jedes Level</b>
+      <p class="small muted" style="margin:0">Gilt ab dem nächsten Kampf, ein Level sinkt nie. Die Werte müssen von Level zu Level steigen.</p>
+      <div class="grid">${r.xp_kurve.map((x, i) => `<label class="f">Level ${i + 2}<input data-p="regeln.xp_kurve.${i}" data-num type="number" min="1" max="100000" value="${x}"></label>`).join('')}</div></section>`;
     const stufen = (k, label) => `<section class="card actions" style="gap:10px"><b>${label}</b><div class="grid">${r[k].map((x, i) => `
       <label class="f">Name<input data-p="regeln.${k}.${i}.name" value="${esc(x.name)}" maxlength="12"></label>
       <label class="f">Grundwert<input data-p="regeln.${k}.${i}.wert" data-num type="number" min="10" max="500" value="${x.wert}"></label>`).join('')}</div></section>`;
@@ -605,6 +612,7 @@
       <section class="card actions"><label class="f" style="max-width:260px">Vorauswahl<select data-p="regeln.kampf_standard" data-num>${[0, 1, 2].map((i) => `<option value="${i}" ${i === (r.kampf_standard ?? 1) ? 'selected' : ''}>Stufe ${i + 1}: ${esc(r.kampf_lp[i].name)} / ${esc(r.kampf_noerten[i].name)}</option>`).join('')}</select></label></section>
       ${REGELN.map(([title, fields]) => `<section class="card actions"><b>${title}</b><div class="grid">${fields.map(([k, label, step]) =>
         `<label class="f">${label}<input data-p="regeln.${k}" data-num type="number" step="${step || 1}" inputmode="decimal" value="${r[k] ?? 0}"></label>`).join('')}</div></section>`).join('')}
+      ${kurve}
       <p class="small muted" style="margin:0">Der Kreislauf bleibt fest: Angriff schlägt Auftanken, Auftanken schlägt Verteidigung, Verteidigung schlägt Angriff. Ausweichen ist die riskante Sonderwahl.</p></div>`;
   }
 

@@ -289,6 +289,11 @@
   .seg3 button small { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .seg3 button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
   .seg3 button[aria-pressed="true"] small { color: var(--marker); }
+  .spieler { display: flex; align-items: center; gap: 8px; font: 500 14px var(--body); color: var(--ink); background: var(--white); border: 2px dashed var(--ink); border-radius: 99px; padding: 4px 12px; cursor: pointer; align-self: flex-start; }
+  .spieler.set { border-style: solid; font-weight: 700; }
+  .slot .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; } .slot .chips .chip { font-size: 10px; padding: 0 7px; }
+  .xpcalc { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; } .xpcalc b { color: var(--ink); }
+  .bilanz { text-align: center; font: 400 18px var(--disp); }
   .reward { align-self: flex-start; margin-top: 4px; font: 700 13px var(--body); background: var(--marker); border: 2px solid var(--ink); border-radius: 99px; padding: 3px 10px; cursor: pointer; color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
   .reward.big { font-size: 15px; padding: 8px 14px; align-self: stretch; }
   .ktiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -371,9 +376,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../app/common.js"></script>
 <script src="../app/kampf.js"></script>
+<script src="../app/feier.js"></script>
 <script>
 (async () => {
-  const { api, esc, toast, sheet, closeSheet, errMsg, lobby } = Noerti;
+  const { api, esc, toast, sheet, closeSheet, errMsg, lobby, isLive } = Noerti;
+  const liveChips = (e) => `${e.starter ? '<span class="chip stern">⭐ STARTER</span>' : ''}${isLive(e) ? '<span class="chip live">📡 LIVE</span>' : `<span class="chip samm">📋 SAMMLUNG${e.serial && e.live ? ' · neu scannen' : ''}</span>`}`;
   const K = window.NoertiKampf;
   const app = document.getElementById('app');
   const FIGHT = 'noerti-arena-kampf';
@@ -392,13 +399,15 @@
   const buzz = (p) => { try { if (!REDUCED && navigator.vibrate) navigator.vibrate(p); } catch {} };
   // Letzte Aufstellung (für „Wie letztes Mal“) – bleibt 14 Tage, die normale Aufstellung nur 30 min
   const LAST = 'noerti-arena-last', LAST_TTL = 14 * 24 * 3600 * 1000;
-  const saveLast = (l) => { try { localStorage.setItem(LAST, JSON.stringify({ at: Date.now(), size: l.size, names: l.names, A: l.A, B: l.B, lp: l.lp, noerten: l.noerten })); } catch {} };
+  const saveLast = (l) => { try { localStorage.setItem(LAST, JSON.stringify({ at: Date.now(), size: l.size, names: l.names, spieler: l.spieler, A: l.A, B: l.B, lp: l.lp, noerten: l.noerten })); } catch {} };
   const loadLast = () => { try { const x = JSON.parse(localStorage.getItem(LAST)); return x && Date.now() - x.at < LAST_TTL && x.A && x.A.length && x.B && x.B.length ? x : null; } catch { return null; } };
   let showSet = false;   // Kampf-Einstellungen aufgeklappt?
   // Teamname: selbst vergeben, sonst Besitzername – außer beide Teams gehören demselben Besitzer, dann nach Teamfarbe
   const COLOR = { A: 'Team Lila', B: 'Team Orange' };
   function teamName(l, side) {
     if (l.names[side]) return l.names[side];
+    const sp = (l.spieler || {})[side], spo = (l.spieler || {})[side === 'A' ? 'B' : 'A'];
+    if (sp && (!spo || sp.toLowerCase() !== spo.toLowerCase())) return sp;
     const o = (l[side][0] || {}).owner_name, oo = (l[side === 'A' ? 'B' : 'A'][0] || {}).owner_name;
     return o && o !== oo ? o : COLOR[side];
   }
@@ -482,12 +491,14 @@
         return `<div class="slot">
           <div class="thumb hatch">${thumb(e)}</div>
           <div class="who"><b>${esc(e.name)}</b><span class="small muted">LV ${e.level} · ${esc(typeName(e.type_id))}${e.owner_name ? ' · ' + esc(e.owner_name) : ''}</span>
+            <span class="chips">${liveChips(e)}</span>
             ${missing(e) ? '<div class="warn">Noch keine Kampfwerte – im Editor anlegen</div>' : ''}
-            ${off.length ? `<button class="reward" data-reward="${side}${i}">⭐ ${off.length === 1 ? '1 Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}</div>
+            ${off.length && e.serial ? `<button class="reward" data-reward="${side}${i}">⭐ ${off.length === 1 ? '1 Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}</div>
           <button class="x" data-del="${side}${i}" aria-label="${esc(e.name)} entfernen">×</button></div>`; }).join('');
       for (let i = list.length; i < l.size; i++) slots += `<button class="slot empty" data-add="${side}">＋ Figur ${i + 1} hinzufügen</button>`;
       return `<section class="team card t${side}"><span class="tchip">${COLOR[side].toUpperCase()}</span><span class="count">${list.length} / ${l.size}</span>
-        <input class="team-name" data-name="${side}" value="${esc(l.names[side] || '')}" placeholder="${esc(ph)} ✎" maxlength="20" aria-label="Name Team ${side}">${slots}</section>`;
+        <input class="team-name" data-name="${side}" value="${esc(l.names[side] || '')}" placeholder="${esc(ph)} ✎" maxlength="20" aria-label="Name Team ${side}">
+        <button class="spieler ${l.spieler[side] ? 'set' : ''}" data-player="${side}">👤 ${l.spieler[side] ? esc(l.spieler[side]) + ' kämpft' : 'Spieler wählen'}</button>${slots}</section>`;
     };
     const ready = l.A.length === l.size && l.B.length === l.size && ![...l.A, ...l.B].some(missing);
     const todo = ['A', 'B'].filter((x) => l[x].length < l.size).map((x) => `<b>${esc(teamName(l, x))}</b> fehlt noch ${l.size - l[x].length === 1 ? '1 Figur' : (l.size - l[x].length) + ' Figuren'}`);
@@ -496,7 +507,7 @@
     const last = filled ? null : loadLast();
     const lastNames = (side) => last[side].map((e) => esc(e.name)).join(', ');
     app.innerHTML = `
-      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf. Danach wählt jeder verdeckt seinen Zug – das Handy wird hin und her gereicht.</p></div>
+      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf: Figuren scannen (📡 live, doppelte XP) oder aus der Sammlung des Spielers wählen (📋 halbe XP). Danach wählt jeder verdeckt seinen Zug.</p></div>
       ${last ? `<button class="again" id="last"><span class="ic">↺</span><span><b>Wie letztes Mal</b>${lastNames('A')} gegen ${lastNames('B')}</span></button>` : ''}
       <div class="steps" aria-hidden="true"><span class="done">① Teamgröße</span><span class="${ready ? 'done' : 'now'}">② Figuren</span><span class="${ready ? 'now' : ''}">③ Kämpfen</span></div>
       <div class="sizes" role="group" aria-label="Teamgröße">${[1, 2, 3].map((n) => `<button data-size="${n}" aria-pressed="${l.size === n}">${n} gegen ${n}</button>`).join('')}</div>
@@ -514,9 +525,10 @@
     app.querySelectorAll('[data-set]').forEach((b) => b.onclick = () => { l[b.dataset.set] = +b.dataset.i; lobby.save(l); renderLobby(); });
     app.querySelectorAll('[data-reward]').forEach((b) => b.onclick = () => {
       const e = l[b.dataset.reward[0]][+b.dataset.reward.slice(1)];
-      rewardSheet(e, (w) => { const l2 = lobby.load(); for (const x of [...l2.A, ...l2.B]) if (x.serial === e.serial) x.wahlen = w; lobby.save(l2); renderLobby(); });
+      rewardSheet(e, (w) => { const l2 = lobby.load(); for (const x of [...l2.A, ...l2.B]) if (x.public_id === e.public_id) x.wahlen = w; lobby.save(l2); renderLobby(); });
     });
     app.querySelectorAll('[data-add]').forEach((b) => b.onclick = () => addSheet(b.dataset.add));
+    app.querySelectorAll('[data-player]').forEach((b) => b.onclick = () => playerSheet(b.dataset.player));
     app.querySelectorAll('[data-name]').forEach((i) => i.oninput = () => { l.names[i.dataset.name] = i.value.trim(); lobby.save(l); });
     const c = app.querySelector('#clear'); if (c) c.onclick = () => { lobby.clear(); renderLobby(); };
     app.querySelector('#go').onclick = () => startFight(l);
@@ -578,7 +590,33 @@
     const f = await api.getFigure(serial);
     if (!f) throw new Error('Diese Figur ist nicht registriert.');
     const img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
-    return { serial, public_id: f.public_id, type_id: f.type_id, level: f.level, wahlen: f.wahlen || {}, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name, img };
+    return { serial, live: true, liveAt: Date.now(), starter: !!f.starter, public_id: f.public_id, type_id: f.type_id, level: f.level, wahlen: f.wahlen || {}, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name, img };
+  }
+
+  // Spieler einer Seite wählen: Suche nach Namen; ihre Sammlung steht danach beim Hinzufügen zur Auswahl
+  async function playerSheet(side) {
+    const l = lobby.load();
+    let me = null; try { me = await api.me(); } catch {}
+    const el = sheet(`<h2>Wer kämpft für ${esc(teamName(l, side))}?</h2>
+      <label class="field">Spielername<input id="pq" autocomplete="off" placeholder="z. B. Leif" maxlength="16"></label>
+      <div class="pick-list" id="plist"><div class="spinner"></div></div>
+      ${l.spieler[side] ? '<button class="btn-text" id="pnone">Ohne Spieler</button>' : ''}<button class="btn-text" id="pclose">Schließen</button>`);
+    const box = el.querySelector('#plist'), q = el.querySelector('#pq');
+    const pick = (name) => { const l2 = lobby.load(); l2.spieler[side] = name; if (name) { const o = other(side); if ((l2.spieler[o] || '').toLowerCase() === name.toLowerCase()) l2.spieler[o] = null; } lobby.save(l2); closeSheet(); renderLobby(); };
+    let t = null;
+    const search = async () => {
+      try {
+        const list = await api.findPlayers(q.value.trim());
+        box.innerHTML = list.length ? list.map((p) => `<button data-pn="${esc(p.name)}"><span class="thumb" style="background:var(--marker)">${esc(p.name[0].toUpperCase())}</span>
+          <span><b>${esc(p.name)}</b>${me && me.name === p.name ? ' (du)' : ''}<br><span class="small muted">${p.figuren} ${p.figuren === 1 ? 'Figur' : 'Figuren'}</span></span></button>`).join('')
+          : '<p class="small muted" style="margin:0">Niemand gefunden.</p>';
+        box.querySelectorAll('[data-pn]').forEach((b) => b.onclick = () => pick(b.dataset.pn));
+      } catch (e) { box.innerHTML = `<p class="warn">${/function|schema cache/i.test(errMsg(e)) ? 'SQL-Nachtrag 008 fehlt noch in Supabase.' : esc(errMsg(e))}</p>`; }
+    };
+    q.oninput = () => { clearTimeout(t); t = setTimeout(search, 200); };
+    search();
+    const n = el.querySelector('#pnone'); if (n) n.onclick = () => pick(null);
+    el.querySelector('#pclose').onclick = closeSheet;
   }
   function addTo(side, entry) {
     const l = lobby.load(); l.want = side; lobby.save(l);
@@ -592,7 +630,7 @@
     const el = sheet(`<h2>Figur für ${esc(teamName(l, side))}</h2>
       ${nfc ? `<button class="btn-main" id="scan">FIGUR SCANNEN</button><p class="small muted" id="scanHint">Tippen, dann die Figur an die Rückseite des Handys halten.</p>`
             : `<p>Halte die Figur an die Rückseite des Handys. Auf der Figurenseite dann <b>„In die Arena“</b> tippen – sie landet in diesem Team.</p>`}
-      <b>Aus meiner Sammlung</b><div class="pick-list" id="mine"><div class="spinner"></div></div>
+      <b id="collT">Aus der Sammlung</b><div class="pick-list" id="mine"><div class="spinner"></div></div>
       <button class="btn-text" id="close">Schließen</button>`);
     el.querySelector('#close').onclick = closeSheet;
     if (nfc) el.querySelector('#scan').onclick = async () => {
@@ -613,33 +651,38 @@
         };
       } catch (e) { hint.textContent = 'Scannen geht nicht: ' + errMsg(e); }
     };
+    // Sammlung des Spielers dieser Seite – ohne Spieler die eigene. Sammlungsfiguren kämpfen mit halben XP (nicht gescannt).
     const box = el.querySelector('#mine');
     let me = null; try { me = await api.me(); } catch {}
-    if (!me) { box.innerHTML = '<p class="small muted" style="margin:0">Auf diesem Handy ist niemand angemeldet.</p>'; return; }
+    const who = l.spieler[side] || (me && me.name) || null, mine = !!(me && me.name && who && who.toLowerCase() === me.name.toLowerCase());
+    if (!who) { box.innerHTML = '<p class="small muted" style="margin:0">Wähle oben im Team den Spieler – dann steht hier seine Sammlung.</p>'; return; }
+    el.querySelector('#collT').textContent = `Aus der Sammlung von ${mine ? 'dir' : who} (📋 halbe XP)`;
     try {
-      const used = new Set([...l.A, ...l.B].map((e) => e.serial));
-      const list = (await api.myCollection()).filter((f) => !used.has(f.serial));
-      if (!list.length) { box.innerHTML = '<p class="small muted" style="margin:0">Keine weiteren Figuren in deiner Sammlung.</p>'; return; }
+      const used = new Set([...l.A, ...l.B].map((e) => e.public_id));
+      const all = mine ? await api.myCollection() : ((await api.playerCollection(who)) || { figuren: [] }).figuren;
+      const list = all.filter((f) => !used.has(f.public_id));
+      if (!list.length) { box.innerHTML = `<p class="small muted" style="margin:0">Keine weiteren Figuren in der Sammlung von ${esc(mine ? 'dir' : who)}.</p>`; return; }
       for (const f of list) f._img = f.images && f.images.length ? await api.imageUrl(f.public_id, f.images.slice().sort()[0], f.updated_at) : '';
       box.innerHTML = list.map((f, i) => `<button data-i="${i}"><span class="thumb hatch">${thumb({ img: f._img, type_id: f.type_id })}</span>
-        <span><b>${esc(f.nickname || typeName(f.type_id))}</b><br><span class="small muted">LV ${f.level} · ${esc(typeName(f.type_id))}</span></span></button>`).join('');
+        <span><b>${esc(f.nickname || typeName(f.type_id))}</b>${f.starter ? ' ⭐' : ''}<br><span class="small muted">LV ${f.level} · ${esc(typeName(f.type_id))}</span></span></button>`).join('');
       box.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => {
         const f = list[+b.dataset.i];
-        addTo(side, { serial: f.serial, public_id: f.public_id, type_id: f.type_id, level: f.level, wahlen: f.wahlen || {}, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name || me.name, img: f._img });
+        addTo(side, { serial: f.serial || null, live: false, starter: !!f.starter, public_id: f.public_id, type_id: f.type_id, level: f.level, wahlen: f.wahlen || {}, name: f.nickname || typeName(f.type_id), owner_name: f.owner_name || who, img: f._img });
       });
-    } catch (e) { box.innerHTML = `<p class="warn">${esc(errMsg(e))}</p>`; }
+    } catch (e) { box.innerHTML = `<p class="warn">${/function|schema cache/i.test(errMsg(e)) ? 'SQL-Nachtrag 008 fehlt noch in Supabase.' : esc(errMsg(e))}</p>`; }
   }
 
   // „Wie letztes Mal“: Aufstellung zurückholen, Level/Wahlen/Besitzer frisch aus der Datenbank (falls inzwischen gelevelt oder getauscht)
   async function restoreLast(last, btn) {
     btn.disabled = true;
-    const fresh = async (e) => {
-      try { const f = await api.getFigure(e.serial); if (!f) return null;
-        return { ...e, level: f.level, wahlen: f.wahlen || {}, owner_name: f.owner_name, name: f.nickname || typeName(f.type_id) }; }
-      catch { return e; }   // offline: alter Stand
+    const fresh = async (e) => {      // live gilt nicht weiter – wer doppelte XP will, scannt neu
+      const base = { ...e, live: false };
+      try { const f = e.serial ? await api.getFigure(e.serial) : await api.getFigureById(e.public_id); if (!f) return null;
+        return { ...base, level: f.level, wahlen: f.wahlen || {}, owner_name: f.owner_name, starter: !!f.starter, name: f.nickname || typeName(f.type_id) }; }
+      catch { return base; }   // offline: alter Stand
     };
     const l = lobby.load();
-    l.size = last.size; l.names = { ...last.names }; l.lp = last.lp; l.noerten = last.noerten;
+    l.size = last.size; l.names = { ...last.names }; l.lp = last.lp; l.noerten = last.noerten; l.spieler = { ...(last.spieler || { A: null, B: null }) };
     l.A = (await Promise.all(last.A.map(fresh))).filter(Boolean); l.B = (await Promise.all(last.B.map(fresh))).filter(Boolean);
     lobby.save(l); renderLobby();
   }
@@ -651,7 +694,8 @@
     let A = mk('A'), B = mk('B');
     if (A.name === B.name) { A.name += ' (Lila)'; B.name += ' (Orange)'; }
     saveLast(l);
-    try { newFight({ A, B, opts: kampfOpts(l) }, { A: l.A.map((e) => e.serial), B: l.B.map((e) => e.serial) }); }
+    const ent = (e) => ({ s: isLive(e) ? e.serial : null, p: e.public_id, liveAt: e.liveAt || 0, starter: !!e.starter });
+    try { newFight({ A, B, opts: kampfOpts(l), spieler: { ...l.spieler }, entries: { A: l.A.map(ent), B: l.B.map(ent) } }, { A: l.A.map((e) => e.serial || null), B: l.B.map((e) => e.serial || null) }); }
     catch (e) { toast(errMsg(e), 'err'); return; }
     saveF(); render();
   }
@@ -1085,41 +1129,79 @@
     }
     return out;
   }
+  // Einträge zum Melden: live nur, wenn gescannt und der Scan höchstens 2 Stunden alt ist (Revanche zählt mit)
+  function meldeListe(side) {
+    const en = F.setup.entries;
+    if (!en) return F.serials[side].map((s) => ({ s }));            // Kampf aus der Zeit vor Nachtrag 008
+    return en[side].map((e) => (e.s && Date.now() - e.liveAt < Noerti.LIVE_TTL ? { s: e.s } : { p: e.p }));
+  }
+  function xpRechnung(x) {
+    const parts = [];
+    parts.push(`${F.s.winner == null ? 'Unentschieden' : F.s.winner === x.side ? 'Sieg' : 'Niederlage'} <b>${x.base ?? ''}</b>`);
+    if (x.bonus) parts.push(`neuer Freund <b>+${x.bonus}</b>`);
+    if (x.live === false) parts.push('📋 Sammlung <b>½</b>');
+    if (x.starter) parts.push('⭐ Starter <b>×2</b>');
+    return x.base == null ? '' : `<div class="xpcalc">${parts.map((p) => `<span>${p}</span>`).join('')}</div>`;
+  }
   function xpBlock() {
     const r = F.report;
     if (!r) return '<div class="card"><div class="spinner" style="margin:10px auto"></div><p class="small muted" style="margin:0;text-align:center">Ergebnis wird gespeichert …</p></div>';
     if (r.error) return `<div class="card actions"><p class="warn" style="margin:0">Ergebnis nicht gespeichert: ${esc(r.error)}</p><button class="btn" id="retry">Nochmal versuchen</button></div>`;
-    return ['A', 'B'].map((side) => `<section class="card actions" style="gap:10px"><b>${esc(F.s.teams[side].name)}</b>${F.s.teams[side].figs.map((f, fi) => {
+    const b = r.bilanz && F.setup.spieler && F.setup.spieler.A && F.setup.spieler.B
+      ? `<div class="card bilanz">${esc(F.setup.spieler.A)} ${r.bilanz.A} : ${r.bilanz.B} ${esc(F.setup.spieler.B)}${r.bilanz.u ? `<div class="small muted" style="font-family:var(--body)">${r.bilanz.u} × unentschieden</div>` : ''}</div>` : '';
+    return b + ['A', 'B'].map((side) => `<section class="card actions" style="gap:10px"><b>${esc(F.s.teams[side].name)}</b>${F.s.teams[side].figs.map((f, fi) => {
       const x = r.figures.find((y) => y.public_id === f.key); if (!x) return '';
       const li = Noerti.levelInfo(x.xp, x.level), up = x.level > x.level_before;
       const ul = up ? unlocks(f.type_id, x.level_before, x.level) : [];
       const sf = F.setup[side].figs[fi], off = sf ? offen({ type_id: sf.type_id, level: x.level, wahlen: sf.wahlen }) : [];
       return `<div class="actions" style="gap:4px">
-        <div class="nm" style="display:flex;gap:8px;align-items:baseline"><span>${f.ko ? '💤' : '💪'}</span><b style="flex:1">${esc(f.name)}</b>
+        <div class="nm" style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><span>${f.ko ? '💤' : '💪'}</span><b style="flex:1">${esc(f.name)}</b>
+          ${x.starter ? '<span class="chip stern">⭐</span>' : ''}${x.live === false ? '<span class="chip samm">📋</span>' : x.live ? '<span class="chip live">📡 LIVE</span>' : ''}
           <span class="disp" style="font-size:15px">${x.rated ? `+${x.xp_gain} XP` : 'keine XP'}</span></div>
-        ${x.bonus ? `<span class="small muted">inkl. ${x.bonus} XP Begegnungs-Bonus – neuer Gegner!</span>` : ''}
+        ${x.rated ? xpRechnung(x) : ''}
+        ${x.live === false ? '<span class="small muted">Beim nächsten Mal scannen: doppelte XP und ein Eintrag im Freundebuch.</span>' : ''}
         ${x.rated ? '' : '<span class="small muted">Heute schon 3× gegen diese Gegner gekämpft.</span>'}
         <div class="bar"><div class="xpfill" style="width:${li.pct}%;background:var(--marker)"></div></div>
         <span class="small muted">LV ${x.level} · ${esc(li.text)}</span>
         ${up ? `<div class="lvup"><b>⬆ LEVEL UP! ${x.level_before} → ${x.level}</b>${ul.map((u) => `<span>✨ ${u}</span>`).join('')}</div>` : ''}
-        ${off.length ? `<button class="reward big" data-rw="${side}${fi}">⭐ ${off.length === 1 ? 'Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}
+        ${off.length && F.serials[side][fi] ? `<button class="reward big" data-rw="${side}${fi}">⭐ ${off.length === 1 ? 'Belohnung' : off.length + ' Belohnungen'} wählen</button>` : ''}
       </div>`; }).join('')}</section>`).join('');
   }
   async function sendReport() {
     const s = F.s;
     try {
-      const r = await api.reportMatch({ id: F.id, a: F.serials.A, b: F.serials.B, winner: s.winner, rounds: Math.max(1, s.runde - 1), reason: s.grund || 'ko',
-        log: { history: s.history, teams: ['A', 'B'].map((x) => s.teams[x].figs.map((f) => ({ type: f.type_id, level: f.level, lp: f.lp, ko: f.ko }))) }, version: F.version || null });
-      F.report = { figures: r.figures };
+      const m = { id: F.id, a: meldeListe('A'), b: meldeListe('B'), winner: s.winner, rounds: Math.max(1, s.runde - 1), reason: s.grund || 'ko', spieler: F.setup.spieler || null,
+        log: { history: s.history, teams: ['A', 'B'].map((x) => s.teams[x].figs.map((f) => ({ type: f.type_id, level: f.level, lp: f.lp, ko: f.ko }))) }, version: F.version || null };
+      let r;
+      try { r = await api.reportMatch2(m); }
+      catch (e) {   // Nachtrag 008 noch nicht ausgeführt: alte Meldung (nur mit Seriennummern möglich)
+        if (!/function|schema cache/i.test(errMsg(e))) throw e;
+        if ([...F.serials.A, ...F.serials.B].some((x) => !x)) throw new Error('Figuren aus fremden Sammlungen brauchen SQL-Nachtrag 008 in Supabase.');
+        r = await api.reportMatch({ ...m, a: F.serials.A, b: F.serials.B });
+      }
+      F.report = { figures: r.figures, bilanz: r.bilanz || null };
       // neue Level für Revanche und Aufstellung übernehmen
       const lv = Object.fromEntries(r.figures.map((x) => [x.public_id, x.level]));
       for (const side of ['A', 'B']) F.setup[side].figs.forEach((f) => { if (lv[f.key]) f.level = lv[f.key]; });
       const l = lobby.load(); for (const side of ['A', 'B']) l[side].forEach((e) => { if (lv[e.public_id]) e.level = lv[e.public_id]; }); lobby.save(l);
       const la = loadLast(); if (la) { for (const side of ['A', 'B']) la[side].forEach((e) => { if (lv[e.public_id]) e.level = lv[e.public_id]; }); saveLast(la); }
-      if (r.figures.some((x) => x.level > x.level_before)) toast('⬆ Level up!');
     } catch (e) { F.report = { error: errMsg(e) }; }
     saveF();
     if (F.phase === 'ende') renderEnde();
+    if (F.report && F.report.figures && !F.feierGezeigt) { F.feierGezeigt = true; saveF(); await levelFeier(); }
+  }
+  // Nach dem Melden: Level-up-Fenster für jede Figur, die aufgestiegen ist (Wahlen gleich darin, wenn die Seriennummer bekannt ist)
+  async function levelFeier() {
+    for (const side of ['A', 'B']) for (const [fi, f] of F.s.teams[side].figs.entries()) {
+      const x = F.report.figures.find((y) => y.public_id === f.key), sf = F.setup[side].figs[fi], serial = F.serials[side][fi];
+      if (!x || x.level <= x.level_before) continue;
+      await Noerti.feier.kette(x.level_before, x.level, { data: game.data, typeId: f.type_id, img: (STD[f.type_id] || {}).url || f.img || '', name: f.name,
+        gewaehlt: sf.wahlen || {}, onPick: serial ? async (lv, i) => {
+          const res = await api.chooseReward(serial, lv, i); sf.wahlen = (res && res.wahlen) || { ...(sf.wahlen || {}), [lv]: i };
+          const l = lobby.load(); for (const e of [...l.A, ...l.B]) if (e.public_id === f.key) e.wahlen = sf.wahlen; lobby.save(l); saveF();
+        } : null });
+    }
+    if (F && F.phase === 'ende') renderEnde();
   }
 
   function renderEnde() {
@@ -1137,11 +1219,11 @@
       const e = { serial: F.serials[side][fi], type_id: sf.type_id, level: sf.level, wahlen: { ...(sf.wahlen || {}) }, name: sf.name };
       rewardSheet(e, (w) => {
         sf.wahlen = w;
-        const l = lobby.load(); for (const x of [...l.A, ...l.B]) if (x.serial === e.serial) x.wahlen = w; lobby.save(l);
+        const l = lobby.load(); for (const x of [...l.A, ...l.B]) if (x.public_id === sf.key) x.wahlen = w; lobby.save(l);
         saveF(); renderEnde();
       });
     });
-    app.querySelector('#again').onclick = () => { newFight(F.setup, F.serials); saveF(); render(); };
+    app.querySelector('#again').onclick = () => { newFight(F.setup, F.serials); saveF(); render(); };   // Revanche: live bleibt (Scan max. 2 h alt)
     app.querySelector('#lobby').onclick = () => { if (F.report && !F.report.error || confirm('Das Ergebnis ist noch nicht gespeichert. Trotzdem weiter?')) { F = null; saveF(); renderLobby(); } };
     if (!F.report) sendReport();
   }

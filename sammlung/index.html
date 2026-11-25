@@ -38,6 +38,11 @@
   .acct form { display: flex; gap: 8px; }
   .acct input { flex: 1; min-width: 0; font: 16px var(--body); border: 2px solid var(--ink); border-radius: 10px; padding: 10px 12px; }
   .acct .btn { width: auto; flex: none; background: var(--marker); font-weight: 700; }
+  .acct form.col { flex-direction: column; } .acct .pair { display: flex; gap: 8px; } .acct .pair input { width: 50%; }
+  .fc.starter-rahmen { transform: none; }
+  .fc .stern { position: absolute; top: -9px; left: -7px; transform: rotate(-8deg); font-size: 10px; padding: 0 7px; }
+  .starterwahl { display: flex; flex-direction: column; gap: 8px; border-color: #E8A317; }
+  .share { display: flex; gap: 8px; align-items: center; } .share code { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; background: var(--paper); border-radius: 8px; padding: 6px 8px; }
 </style>
 </head>
 <body>
@@ -51,23 +56,54 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../app/common.js"></script>
+<script src="../app/kampf.js"></script>
+<script src="../app/feier.js"></script>
 <script>
 (async () => {
   const { api, types, esc, klasseChip, toast, sheet, closeSheet, errMsg, ROOT } = Noerti;
   const app = document.getElementById('app');
   const SORT_KEY = 'noerti-sort';
   let sort = 'level'; try { sort = localStorage.getItem(SORT_KEY) || 'level'; } catch {}
-  let me = null, list = [], away = [], allTypes = [], std = {};
+  let me = null, list = [], away = [], allTypes = [], std = {}, prof = null;
+  const fremd = new URLSearchParams(location.search).get('name');   // Sammlung eines anderen Spielers ansehen
+  const game = await Noerti.gameData().catch(() => null);
+  api.onRecovery(() => pinSheet(true)).catch(() => {});
 
   async function load() {
     allTypes = await types().catch(() => []);
+    if (fremd) return renderFremd();
     try { me = await api.me(); } catch (e) { me = null; }
     if (!me) return renderNoAccount();
     try { [list, away] = await Promise.all([api.myCollection(), api.myTradedAway()]); }
     catch (e) { app.innerHTML = `<div class="card">Sammlung konnte nicht geladen werden: ${esc(errMsg(e))}</div>`; return; }
     std = await Noerti.stdImages();
     for (const f of list) f._img = await Noerti.figImage(f);
+    try { prof = await api.myProfile(); } catch { prof = null; }
     render();
+  }
+
+  // ---------- Sammlung eines anderen Spielers (nur ansehen) ----------
+  async function renderFremd() {
+    document.getElementById('who').innerHTML = '<a class="pill" href="./">Meine Sammlung</a>';
+    let pc = null;
+    try { pc = await api.playerCollection(fremd); } catch (e) { app.innerHTML = `<div class="card">Gerade nicht erreichbar: ${esc(errMsg(e))}</div>`; return; }
+    if (!pc) { app.innerHTML = `<h1 class="disp">Unbekannt</h1><div class="card">Einen Spieler „${esc(fremd)}“ gibt es nicht.</div>`; return; }
+    std = await Noerti.stdImages();
+    for (const f of pc.figuren) f._img = await Noerti.figImage(f);
+    document.title = `Sammlung von ${pc.name} · Nörti Arena`;
+    const owned = new Set(pc.figuren.map((f) => f.type_id));
+    app.innerHTML = `<section style="display:flex;flex-direction:column;gap:4px"><h1 class="disp">Sammlung von ${esc(pc.name)}</h1>
+        <span class="muted"><b style="color:var(--ink)">${pc.figuren.length}</b> ${pc.figuren.length === 1 ? 'Figur' : 'Figuren'} · <b style="color:var(--ink)">${owned.size} von ${allTypes.length || 12}</b> Typen</span></section>
+      <div class="grid">${pc.figuren.map((f) => card(f, `../f/?p=${encodeURIComponent(f.public_id)}`)).join('')}</div>`;
+  }
+  function card(f, href) {
+    const t = allTypes.find((x) => x.id === f.type_id);
+    return `<a class="fc${f.starter ? ' starter-rahmen' : ''}" href="${esc(href)}">
+        ${f.starter ? '<span class="chip stern">⭐ STARTER</span>' : ''}${f.traded_in ? '<span class="sticker">GETAUSCHT</span>' : ''}
+        <div class="pic ${f._img.url && !f._img.own && f._img.transparent ? 'stdbg' : 'hatch'}">${f._img.url ? `<img class="${!f._img.own && f._img.transparent ? 'std' : ''}" src="${esc(f._img.url)}" alt="">` : 'Foto'}</div>
+        <div class="row"><span class="nm">${esc(f.nickname || (t ? t.name : 'Nörti'))}</span><span class="lv">${f.level}</span></div>
+        <div class="row" style="justify-content:flex-start">${klasseChip(t && t.klasse)}<span class="tp">${esc(t ? t.name : f.type_id)}${f.starter ? ' · ×2 XP' : ''}</span></div>
+      </a>`;
   }
 
   function renderWho() {
@@ -91,9 +127,15 @@
 
   function signInBlock() {
     return `<div class="card acct">
-      <b>Schon eine Sammlung auf einem anderen Handy?</b>
-      <span class="small muted">Wenn du sie mit deiner E-Mail gesichert hast, bekommst du einen Anmelde-Link.</span>
-      <form id="signin"><input id="sie" type="email" autocomplete="email" placeholder="deine@email.de" aria-label="E-Mail" required><button class="btn">Link senden</button></form>
+      <b>Schon eine Sammlung?</b>
+      <span class="small muted">Melde dich mit deinem Spielernamen und deiner PIN an.</span>
+      <form id="pinin" class="col"><div class="pair"><input id="pn" autocomplete="username" placeholder="Name" aria-label="Spielername" required minlength="2" maxlength="16">
+        <input id="pp" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN" aria-label="PIN" required minlength="6"></div>
+        <button class="btn" style="width:100%">Anmelden</button></form>
+      <details><summary class="small">Keine PIN? Anmelde-Link per E-Mail</summary>
+        <form id="signin" style="margin-top:8px"><input id="sie" type="email" autocomplete="email" placeholder="deine@email.de" aria-label="E-Mail" required><button class="btn">Link senden</button></form>
+        <form id="forgot" style="margin-top:8px"><input id="fe" type="email" autocomplete="email" placeholder="deine@email.de" aria-label="E-Mail für neue PIN" required><button class="btn">PIN vergessen</button></form>
+      </details>
     </div>`;
   }
   function bindSignIn() {
@@ -103,6 +145,36 @@
       try { await api.signInEmail(f.querySelector('#sie').value.trim()); toast('Link ist unterwegs – schau in dein Postfach.'); }
       catch (e) { toast(errMsg(e), 'err'); }
     };
+    const p = app.querySelector('#pinin');
+    if (p) p.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const b = p.querySelector('button'); b.disabled = true;
+      try { await api.loginName(p.querySelector('#pn').value.trim(), p.querySelector('#pp').value); toast('Angemeldet ✓'); await load(); }
+      catch (e) { toast(errMsg(e), 'err'); } finally { b.disabled = false; }
+    };
+    const fg = app.querySelector('#forgot');
+    if (fg) fg.onsubmit = async (ev) => {
+      ev.preventDefault();
+      try { await api.resetPin(fg.querySelector('#fe').value.trim()); toast('Link für eine neue PIN ist unterwegs.'); } catch (e) { toast(errMsg(e), 'err'); }
+    };
+  }
+
+  // PIN festlegen (Konto muss mit E-Mail gesichert sein). recovery = über den „PIN vergessen“-Link gekommen
+  function pinSheet(recovery) {
+    sheet(`<h2>${recovery ? 'Neue PIN' : 'PIN festlegen'}</h2>
+      <p>Mit Name + PIN meldest du dich auf jedem Handy an, ohne E-Mail. Mindestens 6 Zeichen, am besten Ziffern.</p>
+      <form id="pf" class="actions">
+        <label class="field">PIN<input id="p1" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="64" required></label>
+        <label class="field">PIN wiederholen<input id="p2" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="64" required></label>
+        <button class="btn-main" type="submit">PIN SPEICHERN</button>
+      </form>`, (el) => {
+      el.querySelector('#pf').onsubmit = async (ev) => {
+        ev.preventDefault();
+        const a = el.querySelector('#p1').value, b = el.querySelector('#p2').value;
+        if (a !== b) { toast('Die beiden PINs sind verschieden.', 'err'); return; }
+        try { await api.setPin(a); closeSheet(); toast('PIN gespeichert ✓ – ab jetzt mit Name + PIN anmelden'); } catch (e) { toast(errMsg(e), 'err'); }
+      };
+    });
   }
 
   function sorted() {
@@ -119,16 +191,7 @@
     const owned = new Set(list.map((f) => f.type_id));
     const known = allTypes.length || 12;
     const missing = allTypes.filter((t) => !owned.has(t.id)).length;
-    const cards = sorted().map((f) => {
-      const t = allTypes.find((x) => x.id === f.type_id);
-      const href = `../f/?t=${encodeURIComponent(f.type_id)}&s=${encodeURIComponent(f.serial)}`;
-      return `<a class="fc" href="${esc(href)}">
-        ${f.traded_in ? '<span class="sticker">GETAUSCHT</span>' : ''}
-        <div class="pic ${f._img.url && !f._img.own && f._img.transparent ? 'stdbg' : 'hatch'}">${f._img.url ? `<img class="${!f._img.own && f._img.transparent ? 'std' : ''}" src="${esc(f._img.url)}" alt="">` : 'Foto'}</div>
-        <div class="row"><span class="nm">${esc(f.nickname || (t ? t.name : 'Nörti'))}</span><span class="lv">${f.level}</span></div>
-        <div class="row" style="justify-content:flex-start">${klasseChip(t && t.klasse)}<span class="tp">${esc(t ? t.name : f.type_id)}</span></div>
-      </a>`;
-    }).join('');
+    const cards = sorted().map((f) => card(f, `../f/?t=${encodeURIComponent(f.type_id)}&s=${encodeURIComponent(f.serial)}`)).join('');
     // Unentdeckte Typen: schwarze Silhouette des freigestellten Standardbilds, sonst „?“ (Typen ohne Silhouette zusammengefasst)
     const miss = allTypes.filter((t) => !owned.has(t.id));
     const sil = miss.filter((t) => std[t.id] && std[t.id].transparent), rest = miss.length - sil.length;
@@ -143,7 +206,11 @@
         <button data-s="level" aria-pressed="${sort === 'level'}">Level</button>
         <button data-s="klasse" aria-pressed="${sort === 'klasse'}">Klasse</button>
         <button data-s="neu" aria-pressed="${sort === 'neu'}">Neu</button></div>` : ''}
-      ${list.length ? '' : `<div class="card">Noch keine Figuren. Halte eine Figur ans Handy und tippe auf <b>Zu meiner Sammlung</b>.</div>`}
+      ${list.length ? '' : `<div class="card">Noch keine Figuren. Halte eine Figur ans Handy und tippe auf <b>Zu meiner Sammlung</b> – deine erste wird dein <b>Starter-Nörti</b>.</div>`}
+      ${prof && prof.starter_waehlen ? `<div class="card ink starterwahl"><span class="chip stern" style="align-self:flex-start">⭐ NEU</span>
+        <b class="disp" style="font-size:20px">Wähle deinen Starter-Nörti</b>
+        <span class="small">Einmal und für immer: Er bekommt doppelte XP, ein Start-Geschenk von ${(game && game.data.regeln.starter_geschenk) || 90} XP und einen goldenen Rahmen.</span>
+        <button class="btn-main" id="pickstarter">STARTER AUSSUCHEN</button></div>` : ''}
       <div class="grid">${cards}${ghosts}</div>
       ${away.length ? `<section class="card away"><b>Getauscht</b><ul>${away.map((a) => {
         const t = allTypes.find((x) => x.id === a.type_id);
@@ -152,16 +219,43 @@
       ${accountBlock()}`;
     app.querySelectorAll('.sort button').forEach((b) => b.onclick = () => { sort = b.dataset.s; try { localStorage.setItem(SORT_KEY, sort); } catch {} render(); });
     bindAccount();
+    const ps = app.querySelector('#pickstarter'); if (ps) ps.onclick = starterWaehlen;
+    const cp = app.querySelector('#copy'); if (cp) cp.onclick = async () => {
+      const t = app.querySelector('#sharelink').textContent;
+      try { await navigator.clipboard.writeText(t); toast('Link kopiert ✓'); } catch { toast(t); }
+    };
+  }
+
+  function starterWaehlen() {
+    const el = sheet(`<h2>Wer wird dein Starter?</h2>
+      <p class="small muted">Die Wahl gilt für immer. Wird er später getauscht, bleibt er „Starter von ${esc(me.name || 'dir')}“, verliert aber die doppelten XP.</p>
+      <div class="pick-list">${sorted().map((f) => { const t = allTypes.find((x) => x.id === f.type_id);
+        return `<button data-p="${esc(f.public_id)}"><span class="thumb hatch">${f._img.url ? `<img class="${!f._img.own && f._img.transparent ? 'std' : ''}" src="${esc(f._img.url)}" alt="">` : esc(f.type_id)}</span>
+          <span><b>${esc(f.nickname || (t ? t.name : 'Nörti'))}</b><br><span class="small muted">Level ${f.level} · ${esc(t ? t.name : f.type_id)}</span></span></button>`; }).join('')}</div>`);
+    el.querySelectorAll('[data-p]').forEach((b) => b.onclick = async () => {
+      const f = list.find((x) => x.public_id === b.dataset.p); closeSheet();
+      try {
+        const r = await api.chooseStarter(f.public_id), tname = (allTypes.find((x) => x.id === f.type_id) || {}).name || 'Nörti';
+        const name = await Noerti.feier.starter({ img: f._img.url, vorschlag: f.nickname || tname, geschenk: r.xp_gain, gewaehlt: true,
+          onName: async (n) => { if (n && n !== f.nickname) await api.updateFigure(f.serial, n, f.bio || '', null); } });
+        if (game && r.level > r.level_before) await Noerti.feier.kette(r.level_before, r.level, { data: game.data, typeId: f.type_id, img: f._img.url, name: name || tname,
+          gewaehlt: r.wahlen || {}, onPick: (l, i) => api.chooseReward(f.serial, l, i) });
+      } catch (e) { toast(errMsg(e), 'err'); }
+      load();
+    });
   }
 
   function accountBlock() {
     if (me.anonymous && me.pendingEmail) return `<div class="card acct"><b>Fast geschafft</b><span class="small">Bestätige den Link, den wir an ${esc(me.pendingEmail)} geschickt haben.</span></div>`;
     if (me.anonymous) return `<div class="card acct">
       <b>Sammlung sichern</b>
-      <span class="small">Verknüpfe eine E-Mail, damit deine Sammlung auch auf dem nächsten Handy da ist. Du bekommst einen Bestätigungs-Link, kein Passwort.</span>
+      <span class="small">Verknüpfe eine E-Mail, damit deine Sammlung auch auf dem nächsten Handy da ist. Danach legst du eine PIN fest und meldest dich überall mit <b>${esc(me.name || 'deinem Namen')}</b> + PIN an.</span>
       <form id="link"><input id="le" type="email" autocomplete="email" placeholder="deine@email.de" aria-label="E-Mail" required><button class="btn">Sichern</button></form>
     </div>`;
-    return `<div class="card acct"><span class="small">Gesichert mit <b>${esc(me.email || '')}</b></span>
+    const link = `${ROOT}sammlung/?name=${encodeURIComponent(me.name || '')}`;
+    return `<div class="card acct"><span class="small">Gesichert mit <b>${esc(me.email || '')}</b> · anmelden mit <b>${esc(me.name || '?')}</b> + PIN</span>
+      <button class="btn" id="pin" style="width:100%;background:var(--white);font-weight:500">PIN festlegen oder ändern</button>
+      ${me.name ? `<span class="small muted">Deine Sammlung zum Zeigen:</span><div class="share"><code id="sharelink">${esc(link)}</code><button class="btn" id="copy">Kopieren</button></div>` : ''}
       <button class="btn-text" id="out" style="align-self:flex-start;padding-left:0">Auf diesem Handy abmelden</button></div>`;
   }
   function bindAccount() {
@@ -172,10 +266,11 @@
       try { await api.linkEmail(email); me.pendingEmail = email; render(); toast('Bestätigungs-Link verschickt.'); }
       catch (e) { toast(errMsg(e), 'err'); }
     };
+    const pb = app.querySelector('#pin'); if (pb) pb.onclick = () => pinSheet(false);
     const o = app.querySelector('#out');
     if (o) o.onclick = () => sheet(`
       <h2>Abmelden?</h2>
-      <p>Deine Sammlung bleibt gespeichert. Du kommst mit einem E-Mail-Link an ${esc(me.email || 'deine Adresse')} wieder hinein.</p>
+      <p>Deine Sammlung bleibt gespeichert. Du kommst mit Name + PIN oder einem E-Mail-Link an ${esc(me.email || 'deine Adresse')} wieder hinein.</p>
       <button class="btn-main" id="yes">ABMELDEN</button><button class="btn-text" id="no">Abbrechen</button>`, (el) => {
         el.querySelector('#no').onclick = closeSheet;
         el.querySelector('#yes').onclick = async () => { await api.signOut(); closeSheet(); load(); };
@@ -186,7 +281,7 @@
     sheet(`
       <h2>Spielername</h2>
       <form id="f" class="actions">
-        <label class="field">Name<input id="n" maxlength="24" value="${esc(me.name || '')}" autocomplete="nickname" required></label>
+        <label class="field">Name (2–16 Zeichen, gibt es nur einmal)<input id="n" minlength="2" maxlength="16" value="${esc(me.name || '')}" autocomplete="nickname" required></label>
         <button class="btn-main" type="submit">SPEICHERN</button>
       </form>`, (el) => {
       el.querySelector('#f').onsubmit = async (ev) => {

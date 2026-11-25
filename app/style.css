@@ -66,3 +66,63 @@ label.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; 
 img.std { object-fit: contain !important; padding: 6%; filter: drop-shadow(2px 3px 0 rgba(24,23,28,.25)); }
 img.std.photo-std { padding: 0; filter: none; }
 img.sil { object-fit: contain !important; padding: 8%; filter: brightness(0) !important; opacity: .85; }
+
+/* ---------- Feier: Level-up-Fenster + Starter-Zeremonie (app/feier.js) ---------- */
+.feier { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; overflow: hidden auto;
+  padding: calc(22px + env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  background: rgba(24,23,28,.95); text-align: center; }
+.feier .strahlen { position: absolute; width: 1100px; height: 1100px; left: 50%; top: 38%; margin: -550px 0 0 -550px; border-radius: 50%;
+  background: repeating-conic-gradient(var(--marker) 0 9deg, transparent 9deg 22.5deg); opacity: .22; animation: spin 14s linear infinite; pointer-events: none; }
+.feier.meilenstein .strahlen { background: repeating-conic-gradient(#E8A317 0 9deg, transparent 9deg 22.5deg); opacity: .34; }
+.feier > *:not(.strahlen):not(.konfetti):not(.kette) { position: relative; }
+.feier .stempel { font: 400 44px/1 var(--disp); color: var(--ink); background: var(--marker); border: 4px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); border-radius: 12px;
+  padding: 6px 16px 8px; transform: rotate(-6deg); animation: f-slam .5s cubic-bezier(.2,1.6,.4,1) both; }
+.feier.meilenstein .stempel { background: #F6C04E; }
+.feier .held { width: 150px; height: 150px; object-fit: contain; animation: f-pop .6s .15s cubic-bezier(.2,1.6,.4,1) both; filter: drop-shadow(0 8px 0 rgba(0,0,0,.4)); }
+.feier .zahlen { display: flex; align-items: center; gap: 12px; font: 400 40px var(--disp); color: var(--white); font-variant-numeric: tabular-nums; }
+.feier .zahlen .neu { color: var(--marker); display: inline-block; animation: f-flip .6s .45s both; }
+.feier .zahlen .pfeil { font-size: 26px; color: #BDB9D0; }
+.feier .wer { color: #E5E2F2; font-size: 15px; margin-top: -4px; }
+.feier .karten { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; }
+.feier .rk { background: var(--white); border: 3px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); padding: 10px 12px; text-align: left;
+  display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center; animation: f-deal .45s both; font: inherit; color: var(--ink); width: 100%; }
+.feier .rk .ri { font: 400 20px var(--disp); background: var(--marker); border: 2px solid var(--ink); border-radius: 10px; height: 40px; display: grid; place-items: center; }
+.feier .rk b { display: block; font-size: 15px; } .feier .rk span span { font-size: 13px; color: var(--muted); }
+.feier button.rk { cursor: pointer; }
+.feier button.rk[aria-pressed="true"] { background: #FFF6D1; outline: 3px solid var(--marker); outline-offset: 2px; }
+.feier .hinweis { color: #E5E2F2; font-size: 13px; }
+.feier .btn-main { max-width: 340px; animation: f-deal .45s .5s both; }
+.feier .konfetti { position: absolute; inset: 0; pointer-events: none; }
+.feier .konfetti i { position: absolute; top: -20px; width: 12px; height: 12px; border: 2px solid var(--ink); border-radius: 50%; background: var(--white); animation: f-fall linear forwards; }
+.feier .konfetti i.sq { border-radius: 2px; background: var(--marker); }
+.feier .kette { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); font-size: 12px; font-weight: 700; background: var(--white); border: 2px solid var(--ink); border-radius: 99px; padding: 2px 10px; }
+.zeremonie { position: fixed; inset: 0; z-index: 40; background: #1E1B2E; color: var(--white); overflow: auto;
+  padding: calc(20px + env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+.zeremonie .inhalt { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.zeremonie .spot { position: relative; width: 180px; height: 180px; display: grid; place-items: center; flex: none; }
+.zeremonie .spot::before { content: ""; position: absolute; inset: -30px; border-radius: 50%; background: radial-gradient(circle, rgba(255,210,63,.55), rgba(255,210,63,0) 65%); animation: f-glow 2.4s ease-in-out infinite; }
+.zeremonie .spot img { position: relative; width: 165px; height: 165px; object-fit: contain; animation: f-hop 2.4s ease-in-out infinite; filter: drop-shadow(0 10px 0 rgba(0,0,0,.35)); }
+.zeremonie h2 { font: 400 27px/1.05 var(--disp); margin: 0; color: var(--marker); text-wrap: balance; }
+.zeremonie p { margin: 0; color: #D9D6E8; }
+.zeremonie .vorteile { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; text-align: left; width: 100%; }
+.zeremonie .vorteile li { display: flex; gap: 10px; align-items: flex-start; background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 10px; font-size: 14px; }
+.zeremonie .vorteile .ic { font: 400 15px var(--disp); color: var(--ink); background: var(--marker); border-radius: 8px; min-width: 38px; text-align: center; padding: 1px 4px; }
+.zeremonie .namefeld { display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: 14px; font-weight: 500; }
+.zeremonie .namefeld input { font: 400 20px var(--disp); color: var(--ink); background: var(--white); border: 3px solid var(--ink); border-radius: 12px; padding: 8px 12px; width: 100%; }
+.chip.stern { background: #E8A317; color: var(--ink); }
+.chip.live { background: #DDF3E5; color: var(--ink); } .chip.samm { background: var(--line); color: var(--ink); }
+.starter-rahmen { box-shadow: 0 0 0 4px #E8A317, 5px 5px 0 4px var(--ink) !important; }
+@keyframes f-slam { from { transform: rotate(-6deg) scale(2.4); opacity: 0; } }
+@keyframes f-pop { from { transform: scale(.2) rotate(-20deg); opacity: 0; } }
+@keyframes f-flip { from { transform: rotateX(90deg); } }
+@keyframes f-deal { from { transform: translateY(24px) rotate(2deg); opacity: 0; } }
+@keyframes f-fall { to { transform: translateY(110vh) rotate(540deg); } }
+@keyframes f-glow { 50% { transform: scale(1.08); opacity: .8; } }
+@keyframes f-hop { 50% { transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { .feier *, .zeremonie *, .zeremonie .spot::before { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+
+/* Auswahllisten (Arena, Sammlung) */
+.thumb { width: 48px; height: 48px; border-radius: 10px; border: 2px solid var(--ink); overflow: hidden; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font: 400 14px var(--disp); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pick-list { display: flex; flex-direction: column; gap: 8px; }
+.pick-list button { display: flex; align-items: center; gap: 10px; text-align: left; font: 15px var(--body); border: 2px solid var(--ink); border-radius: 12px; background: var(--white); padding: 8px; cursor: pointer; color: var(--ink); min-height: 56px; }

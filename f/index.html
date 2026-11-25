@@ -71,6 +71,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../app/common.js"></script>
+<script src="../app/kampf.js"></script>
+<script src="../app/feier.js"></script>
 <script>
 (async () => {
   const { api, types, esc, klasseChip, levelInfo, fmtDate, toast, sheet, closeSheet, errMsg, shrinkImage } = Noerti;
@@ -84,6 +86,7 @@
   let fig = null, type = null, slide = 0, urls = {}, std = {}, bookOpen = false;
 
   const allTypes = await types().catch(() => []);
+  const game = await Noerti.gameData().catch(() => null);
   type = allTypes.find((x) => x.id === typeId) || null;
   std = await Noerti.stdImages();
 
@@ -125,6 +128,7 @@
     document.title = 'Nörti · ' + name;
     const imgs = (fig.images || []).slice().sort();
     const li = levelInfo(fig.xp, fig.level);
+    const offen = !readonly && serial && window.NoertiKampf && game && game.data.typen[fig.type_id] ? NoertiKampf.ausbau(game.data, fig.type_id, fig.level, fig.wahlen || {}).offen : [];
     const color = { natur: 'var(--natur)', street: 'var(--street)', sound: 'var(--sound)' }[type && type.klasse] || 'var(--ink)';
     const owner = fig.is_mine ? `Gehört <b>dir</b>${fig.owner_since ? ' · in deiner Sammlung seit ' + esc(fmtDate(fig.owner_since)) : ''}`
       : fig.owner_name ? `Gehört <b>${esc(fig.owner_name)}</b>` : 'Gehört noch niemandem';
@@ -138,12 +142,13 @@
       : s ? `<div class="img ${s.transparent ? 'stdbg' : 'hatch'}"><img class="${s.transparent ? 'std' : ''}" src="${esc(s.url)}" alt="${esc(type ? type.name : 'Nörti')}"></div><span class="cap">${fig.is_mine ? 'Standardbild – eigenes Foto über „Bearbeiten“' : 'Standardbild'}</span>`
       : `<div class="img hatch"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span class="small">${fig.is_mine ? 'Noch kein Foto – über „Bearbeiten“ hinzufügen' : 'Noch kein Foto'}</span></div>`;
     app.innerHTML = `
-      <div class="photo ink">
+      <div class="photo ink${fig.starter ? ' starter-rahmen' : ''}">
         ${photo}
         ${imgs.length > 1 ? `<div class="dots">${imgs.map((_, i) => `<button data-i="${i}" aria-label="Foto ${i + 1}" aria-current="${i === slide}"><span></span></button>`).join('')}</div>` : ''}
       </div>
       <section style="display:flex;flex-direction:column;gap:6px">
-        <div class="meta">${klasseChip(type && type.klasse)}<span class="small muted">${esc(type ? type.name : 'Typ ' + fig.type_id)}</span><span class="lv">LV ${fig.level}</span></div>
+        <div class="meta">${klasseChip(type && type.klasse)}<span class="small muted">${esc(type ? type.name : 'Typ ' + fig.type_id)}</span><span class="lv">LV ${fig.level}</span>
+          ${fig.starter ? `<span class="chip stern">⭐ STARTER${fig.starter_von ? ' VON ' + esc(fig.starter_von).toUpperCase() : ''} · ×2 XP</span>` : fig.starter_von ? `<span class="chip">⭐ Starter von ${esc(fig.starter_von)}</span>` : ''}</div>
         <h1 class="disp">${esc(name)}</h1>
         <span class="small muted">${owner}</span>
         <div class="bar" style="margin-top:6px"><div style="width:${li.pct}%;background:${color}"></div></div>
@@ -153,6 +158,7 @@
       <div class="stats"><span><b>${fig.wins}</b> Siege · <b>${fig.losses}</b> Niederlagen</span><span><b>${fig.opponents}</b> Gegner getroffen</span></div>
       <div class="actions" style="margin-top:8px">
         ${main}
+        ${offen.length ? `<button class="btn" id="reward">⭐ ${offen.length === 1 ? 'Belohnung' : offen.length + ' Belohnungen'} wählen (Level ${offen.join(', ')})</button>` : ''}
         ${readonly ? '' : '<button class="btn" id="arena">In die Arena</button>'}
       </div>
       <section class="book" id="book" aria-label="Freundebuch"><h2>FREUNDEBUCH</h2><div class="spinner" style="margin:10px auto"></div></section>`;
@@ -161,7 +167,20 @@
     app.querySelectorAll('.dots button').forEach((b) => b.onclick = () => { slide = +b.dataset.i; render(); });
     const c = app.querySelector('#collect'); if (c) c.onclick = collect;
     const e = app.querySelector('#edit'); if (e) e.onclick = openEdit;
+    const rw = app.querySelector('#reward'); if (rw) rw.onclick = () => belohnungenWaehlen(offen);
   }
+
+  // Offene Level-Wahlen im Level-up-Fenster nachholen
+  async function belohnungenWaehlen(levels) {
+    const img = await mainImg();
+    for (const l of levels) {
+      const b = Noerti.feier.belohnung(game.data, fig.type_id, l);
+      await Noerti.feier.levelUp({ img, name: fig.nickname || (type ? type.name : 'Nörti'), to: l, rest: 0, fest: b.fest, wahl: b.wahl,
+        onPick: async (i) => { fig = await api.chooseReward(serial, l, i); } });
+    }
+    await load();
+  }
+  async function mainImg() { try { return (await Noerti.figImage(fig)).url; } catch { return ''; } }
 
   // ---------- Freundebuch ----------
   async function renderBook() {
@@ -199,7 +218,7 @@
   // ---------- Arena ----------
   async function toArena() {
     const img = (fig.images || []).length ? urls[(fig.images || []).slice().sort()[0]] || '' : '';
-    const side = Noerti.lobby.add({ serial, public_id: fig.public_id, type_id: fig.type_id, level: fig.level, wahlen: fig.wahlen || {},
+    const side = Noerti.lobby.add({ serial, live: true, liveAt: Date.now(), starter: !!fig.starter, public_id: fig.public_id, type_id: fig.type_id, level: fig.level, wahlen: fig.wahlen || {},
       name: fig.nickname || (type ? type.name : 'Nörti'), owner_name: fig.owner_name, img });
     if (!side) { toast('Beide Arena-Teams sind schon voll.', 'err'); return; }
     location.href = '../arena/';
@@ -226,16 +245,25 @@
       const me = await api.me();
       if (!me || !me.name) return askName(claimFlow);
       fig = await api.claim(serial);
-      toast('In deiner Sammlung ✓');
+      if (fig.starter_neu) await starterFeier(fig);
+      else toast('In deiner Sammlung ✓');
       await load();
     } catch (e) { toast(errMsg(e), 'err'); }
+  }
+  // Erste Figur = Starter: Zeremonie, Name, dann das Start-Geschenk als Level-ups
+  async function starterFeier(f) {
+    const img = await mainImg(), tname = type ? type.name : 'Nörti';
+    const name = await Noerti.feier.starter({ img, vorschlag: f.nickname || tname, geschenk: f.xp_gain, gewaehlt: false,
+      onName: async (n) => { if (n && n !== f.nickname) fig = await api.updateFigure(serial, n, f.bio || '', null); } });
+    if (game && f.level > f.level_before) await Noerti.feier.kette(f.level_before, f.level, { data: game.data, typeId: f.type_id, img, name: name || tname,
+      gewaehlt: (fig && fig.wahlen) || {}, onPick: async (l, i) => { fig = await api.chooseReward(serial, l, i); } });
   }
   function askName(then) {
     sheet(`
       <h2>Wie heißt du?</h2>
-      <p>Dein Spielername steht bei deinen Figuren als Besitzer. Du kannst ihn später in der Sammlung ändern.</p>
+      <p>Dein Spielername steht bei deinen Figuren als Besitzer, und über ihn finden dich Freunde in der Arena. Jeder Name gibt es nur einmal.</p>
       <form id="f" class="actions">
-        <label class="field">Spielername<input id="n" maxlength="24" autocomplete="nickname" required></label>
+        <label class="field">Spielername<input id="n" minlength="2" maxlength="16" autocomplete="nickname" required></label>
         <button class="btn-main" type="submit">WEITER</button>
       </form>`, (el) => {
       el.querySelector('#f').onsubmit = async (ev) => {
