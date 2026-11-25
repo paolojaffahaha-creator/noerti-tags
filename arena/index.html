@@ -660,20 +660,22 @@
     F = { id: uuid(), s: K.neu(game.data, setup.A, setup.B, setup.opts || {}), phase: 'hand', side: 'A', pending: {}, setup, serials, version: game.version, report: null };
   }
   const other = (x) => (x === 'A' ? 'B' : 'A');
+  // Wer zuerst wählt, wechselt jede Runde: wer zuletzt gewählt hat, hält das Handy schon und fängt an → nur eine Übergabe pro Runde
+  const firstSide = (s) => (s.runde % 2 ? 'A' : 'B');
 
   function renderHand() {
     const name = F.s.teams[F.side].name, oName = F.s.teams[other(F.side)].name;
-    const first = F.side === 'A' && F.s.runde === 1;
-    const canUndo = F.side === 'B' && F.pending.A && F.undo && Date.now() < F.undo;
+    const erster = F.side === firstSide(F.s), first = erster && F.s.runde === 1, behalten = erster && F.s.runde > 1;
+    const canUndo = !erster && F.pending[other(F.side)] && F.undo && Date.now() < F.undo;
     app.innerHTML = `${roundBar(F.s)}
       ${canUndo ? `<div class="undo" id="undobar"><span>${esc(oName)}: Wahl gespeichert</span><button id="undo">↩ Doch anders</button></div>` : ''}
       <div class="hand card ink t${F.side}"><div class="avatar">${esc([...name.replace(/^team\s+/i, '')][0].toUpperCase())}</div>
-      <h1>${first ? 'Los geht’s,' : 'Gib das Handy an'}<br>${esc(name)}</h1>
-      <p style="margin:0"><b>🙈 ${esc(oName)}</b> schaut weg.<br><span class="muted">${F.side === 'A' ? `Danach wählt ${esc(oName)}, dann wird gleichzeitig aufgedeckt.` : `${esc(oName)} hat schon gewählt – jetzt bist du dran.`}</span></p>
+      <h1>${first ? 'Los geht’s,' : behalten ? 'Du wählst zuerst,' : 'Gib das Handy an'}<br>${esc(name)}</h1>
+      <p style="margin:0"><b>🙈 ${esc(oName)}</b> schaut weg.<br><span class="muted">${erster ? `Danach wählt ${esc(oName)}, dann wird gleichzeitig aufgedeckt.` : `${esc(oName)} hat schon gewählt – jetzt bist du dran.`}</span></p>
       <button class="btn-main" id="ok">ICH BIN ${esc(name.toUpperCase())}</button></div>
       <button class="btn-text" id="quit">Kampf abbrechen</button>`;
     if (canUndo) {
-      app.querySelector('#undo').onclick = () => undoPick('A');
+      app.querySelector('#undo').onclick = () => undoPick(other(F.side));
       timer = setTimeout(() => { const b = app.querySelector('#undobar'); if (b) b.remove(); }, F.undo - Date.now());
     }
     app.querySelector('#ok').onclick = () => { F.undo = null; F.phase = 'pick'; F.choice = null; F.cat = null; saveF(); render(); };
@@ -736,7 +738,7 @@
   function verdict(R, a, b) {   // kurzer Satz, was beim Aufdecken passiert (aus Sicht der Regeln, ohne Würfel)
     const k = a + '|' + b, f = komma(R.getroffen_faktor);
     const t = {
-      'angriff|auftanken': `⚔️ schlägt 🍺 – Angriff trifft mit ×${f}, Auftanken bringt nur ×${komma(R.auftanken_getroffen_faktor)}`,
+      'angriff|auftanken': `⚔️ schlägt 🍺 – Angriff trifft mit ×${f}, Auftanken ${R.auftanken_getroffen_faktor > 0 ? `bringt nur ×${komma(R.auftanken_getroffen_faktor)}` : 'wird verschüttet'}`,
       'angriff|verteidigung': '🛡️ schlägt ⚔️ – greift die Abwehr, gibt es weniger Schaden und einen Konter',
       'angriff|angriff': '⚔️ gegen ⚔️ – wer schneller ist, trifft zuerst',
       'angriff|ausweichen': '💨 gegen ⚔️ – Würfelduell: ganz oder gar nicht',
@@ -764,18 +766,20 @@
       <div class="rules">
         <div><span>🎯</span><span>Jede Figur hat eigene <b>Aktionen</b> in vier Kategorien. Wer wen schlägt, entscheidet die <b>Kategorie</b> – wie stark, entscheidet die Aktion.</span></div>
         <div><span>⚔️</span><span><b>Angriff</b> trifft beim Auftanken mit ×${f}. Gegen Verteidigung wird abgewehrt – greift die Abwehr, bekommt der Gegner einen Konter.</span></div>
-        <div><span>🛡️</span><span><b>Verteidigung</b> würfelt, ob die Abwehr greift (z. B. −40 % Schaden oder ein Schild, das Punkte schluckt). Greift sie, gibt es einen <b>Konter</b>: +${R.konter_treffer} % Treffer in der nächsten Runde, Angreifer verliert ${R.konter_noerten} Nörten.</span></div>
-        <div><span>🍺</span><span><b>Auftanken</b> füllt den Krug – wie viel, steht auf der Karte. Verteidigt der Gegner nur, gibt es ×${komma(R.auftanken_gegen_verteidigen_faktor)}. Wird man getroffen, nur ×${komma(R.auftanken_getroffen_faktor)}.</span></div>
+        <div><span>🛡️</span><span><b>Verteidigung</b> würfelt, ob die Abwehr greift (z. B. −40 % Schaden oder ein Schild, das Punkte schluckt). Greift sie, gibt es einen <b>Konter</b>: +${R.konter_treffer} % Treffer in der nächsten Runde, Angreifer verliert ${R.konter_noerten} Nörten${R.konter_schaden > 0 ? ` und sofort ${R.konter_schaden} LP` : ''}.</span></div>
+        <div><span>🍺</span><span><b>Auftanken</b> füllt den Krug – wie viel, steht auf der Karte. Verteidigt der Gegner nur, gibt es ×${komma(R.auftanken_gegen_verteidigen_faktor)}. Wird man getroffen, ${R.auftanken_getroffen_faktor > 0 ? `nur ×${komma(R.auftanken_getroffen_faktor)}` : 'ist alles verschüttet – kein einziger Nörti'}.</span></div>
         <div><span>💨</span><span><b>Ausweichen</b> ist die riskante Wahl: Würfelduell gegen einen Angriff (Tempo hilft) – klappt es, geht alles daneben, sonst ×${f} Schaden.</span></div>
         <div><span>✨</span><span><b>Effekte</b> wirken ab der nächsten Runde und stehen als Plakette im Infokasten.</span></div>
+        <div><span>🤝</span><span><b>Reihenfolge:</b> Wer zuletzt gewählt hat, wählt in der nächsten Runde zuerst – so wandert das Handy nur einmal pro Runde.</span></div>
         <div><span>🔄</span><span><b>Wechseln</b> kostet die Runde. Die neue Figur steckt den Angriff dieser Runde ein – bringt aber einen eigenen vollen Krug mit.</span></div>
+        ${R.pegel_ab_runde > 0 && R.pegel_pct > 0 ? `<div><span>📈</span><span><b>Pegel:</b> ab Runde ${R.pegel_ab_runde} macht jeder Treffer jede Runde +${R.pegel_pct} % mehr Schaden (höchstens +${R.pegel_max ?? 100} %). Ewig abwarten lohnt sich nicht.</span></div>` : ''}
         <div><span>🎲</span><span><b>Würfel:</b> 75 % heißt beim W20 „6 oder höher“. Die Leiste zeigt grün, welche Zahlen reichen.</span></div>
       </div>
       <button class="btn" id="hclose">Verstanden</button>`).querySelector('#hclose').onclick = closeSheet;
   }
 
   function roundBar(s, extra) {
-    return `<div class="roundbar"><div class="round"><span class="disp">RUNDE ${s.runde}</span><span class="small muted">${extra || `von max. ${s.maxRunden}`}</span></div>
+    return `<div class="roundbar"><div class="round"><span class="disp">RUNDE ${s.runde}</span><span class="small muted">${extra || `von max. ${s.maxRunden}`}${K.pegel && K.pegel(s) > 0 ? ` · 📈 Pegel +${K.pegel(s)} % Schaden` : ''}</span></div>
       <div class="bar" aria-hidden="true"><div style="width:${Math.min(100, Math.round((s.runde - 1) / s.maxRunden * 100))}%"></div></div></div>`;
   }
   const hitbar = (chance) => {
@@ -854,7 +858,7 @@
         <b>${after === now ? `${now} Nörten` : `${now} → ${after}${delta < 0 ? ' (Ø)' : ''}`}</b></div>
       ${first ? `<p class="small" style="margin:0;text-align:center">Neu hier? <a href="#" id="help2">So funktioniert „Wer schlägt wen“</a></p>` : ''}
       ${body}
-      ${chosen ? `<div class="sticky confirm"><button class="btn-main" id="lock">${esc(chosen.t.replace(/^\p{Extended_Pictographic}️?\s*/u, '').toUpperCase())} FESTLEGEN<small>${side === 'A' ? `danach ist ${esc(s.teams.B.name)} dran` : 'danach wird aufgedeckt'}</small></button></div>` : ''}`;
+      ${chosen ? `<div class="sticky confirm"><button class="btn-main" id="lock">${esc(chosen.t.replace(/^\p{Extended_Pictographic}️?\s*/u, '').toUpperCase())} FESTLEGEN<small>${side === firstSide(s) ? `danach ist ${esc(s.teams[other(side)].name)} dran` : 'danach wird aufgedeckt'}</small></button></div>` : ''}`;
     const rerender = () => { const y = scrollY; renderPick(); scrollTo(0, y); };
     app.querySelector('#help').onclick = helpSheet;
     const h2 = app.querySelector('#help2'); if (h2) h2.onclick = (e) => { e.preventDefault(); helpSheet(); };
@@ -876,7 +880,7 @@
     const lock = app.querySelector('#lock'); if (lock) lock.onclick = () => {
       if (!K.gueltig(s, side, F.choice)) { toast('Diese Aktion geht gerade nicht.', 'err'); return; }
       F.pending[side] = F.choice; F.choice = null; F.cat = null;
-      if (side === 'A') { F.side = 'B'; F.phase = 'hand'; F.undo = Date.now() + 5000; }   // 5 s „Doch anders“
+      if (side === firstSide(s)) { F.side = other(side); F.phase = 'hand'; F.undo = Date.now() + 5000; }   // 5 s „Doch anders“
       else F.phase = 'count';                                                             // Countdown, dann Aufdecken
       saveF(); render();
     };
@@ -891,7 +895,7 @@
   // Beide haben gewählt: kurzer Countdown (Spannung + letzte Chance zum Ändern), dann aufdecken
   function renderCount() {
     let n = 3;
-    const t = F.s.teams.B.name;
+    const zweiter = other(firstSide(F.s)), t = F.s.teams[zweiter].name;
     app.innerHTML = `${roundBar(F.s, 'Beide haben gewählt')}
       <div class="count3 card ink"><p style="margin:0"><b>Aufdecken in</b></p><div class="num" id="n" aria-live="polite">${n}</div>
         <button class="btn-main" id="now">JETZT AUFDECKEN</button></div>
@@ -899,7 +903,7 @@
     const tick = () => { n--; if (n <= 0) { resolve(); return; } const el = app.querySelector('#n'); el.textContent = n; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; timer = setTimeout(tick, 900 / speed); };
     timer = setTimeout(tick, 900 / speed);
     app.querySelector('#now').onclick = resolve;
-    app.querySelector('#undo').onclick = () => undoPick('B');
+    app.querySelector('#undo').onclick = () => undoPick(zweiter);
   }
 
   function resolve() {
@@ -919,7 +923,7 @@
     const acts = F.last.acts || {};
     const vd = acts.A && acts.B ? verdict(d.regeln, labels.A.kat, labels.B.kat) : '';
     const ch = (x) => `<div class="choice t${x}"><span class="who">${esc(d.teams[x].name)}</span><b>${esc(labels[x].t)}</b>${labels[x].d ? `<span class="d">${esc(labels[x].d)}</span>` : ''}</div>`;
-    app.innerHTML = `${roundBar({ runde, maxRunden: d.maxRunden }, 'Aufdecken!')}
+    app.innerHTML = `${roundBar({ runde, maxRunden: d.maxRunden, regeln: d.regeln, groesse: d.groesse }, 'Aufdecken!')}
       <div class="reveal2">${ch('A')}<span class="vs">VS</span>${ch('B')}</div>${vd ? `<div class="verdict">${esc(vd)}</div>` : ''}
       ${stage(d, 'A', bub).replace('class="stage ', 'class="stage mid ')}
       <div class="dialog" id="dlg" aria-live="polite"></div>
@@ -970,16 +974,16 @@
         <div class="die roll">${D20}<span>?</span></div><div class="strip">${strip}</div>
         <div class="dtext">Grün = geschafft · braucht <b>${e.need}+</b> (${e.chance} %)</div></div>`;
       const die = fx.querySelector('.die'), num = die.querySelector('span'), cells = fx.querySelectorAll('.strip i'), txt = fx.querySelector('.dtext');
-      if (!skip && !REDUCED) for (let k = 0; k < 14 && !skip; k++) {
+      if (!skip && !REDUCED) for (let k = 0; k < 9 && !skip; k++) {
         const n = 1 + Math.floor(Math.random() * 20); num.textContent = n;
         cells.forEach((c) => c.classList.toggle('cur', +c.dataset.n === n));
-        await spin(55 + k * 9);
+        await spin(40 + k * 7);
       }
       cells.forEach((c) => c.classList.remove('cur'));
       die.classList.remove('roll'); die.classList.add('land', e.ok ? 'ok' : 'fail'); num.textContent = e.roll;
       cells[e.roll - 1].classList.add('res');
       txt.innerHTML = `<b>${e.roll}</b> ${e.ok ? '≥' : '<'} ${e.need} → <b>${e.ok ? 'geschafft!' : 'nicht geschafft!'}</b>`;
-      await pause(1300);
+      await pause(950);
       fx.innerHTML = '';
     }
 
@@ -990,13 +994,13 @@
         <div class="wheel">${e.ausgaenge.map((o, i) => `<i data-i="${i}" style="flex:${Math.max(0.001, o.anteil)}"><b>${o.wert}</b><small>${Math.round(o.anteil / tot * 100)} %</small></i>`).join('')}</div>
         <div class="dtext">…</div></div>`;
       const cells = fx.querySelectorAll('.wheel i'), txt = fx.querySelector('.dtext');
-      if (!skip && !REDUCED) for (let k = 0; k < 12 && !skip; k++) {
+      if (!skip && !REDUCED) for (let k = 0; k < 9 && !skip; k++) {
         cells.forEach((c, i) => c.classList.toggle('cur', i === k % cells.length));
-        await spin(70 + k * 12);
+        await spin(50 + k * 9);
       }
       cells.forEach((c, i) => { c.classList.remove('cur'); c.classList.toggle('res', i === e.i); });
       txt.innerHTML = `Ergebnis: <b>${e.wert}</b>`;
-      await pause(1100);
+      await pause(850);
       fx.innerHTML = '';
     }
 
@@ -1024,10 +1028,10 @@
         else if (e.kat === 'verteidigung') stamp(e.ok ? 'ABGEWEHRT!' : 'DURCH!', e.ok ? 'good' : 'bad');
         else if (e.kat === 'auftanken') stamp(e.ok ? 'PROST!' : 'VERSCHÜTTET!', e.ok ? 'good' : 'bad');
         else stamp(e.ok ? 'TREFFER!' : 'DANEBEN!', e.ok ? 'good' : 'bad');
-        say(esc(e.text), true); await pause(800);
+        say(esc(e.text), true); await pause(600);
       } else if (e.t === 'rad') {
         await wheel(e);
-        say(`${esc(e.label)}: <b>${e.wert}</b>!`, true); await pause(700);
+        say(`${esc(e.label)}: <b>${e.wert}</b>!`, true); await pause(550);
       } else if (e.t === 'lp') {
         const diff = e.value - f.lp; f.lp = e.value; box(e.side);
         if (diff < 0) { anim(e.side, 'hit'); float(e.side, `−${-diff}`, 'dmg'); if (!skip) buzz(diff <= -20 ? 90 : 40); } else if (diff > 0) { anim(e.side, 'heal'); float(e.side, `+${diff}`, 'heal'); }
@@ -1058,7 +1062,7 @@
     const s = F.s;
     if (s.over) { F.phase = 'ende'; }
     else if (s.needSwitch.length) { F.phase = 'ersetzen'; F.side = s.needSwitch[0]; }
-    else { F.phase = 'hand'; F.side = 'A'; }
+    else { F.phase = 'hand'; F.side = firstSide(s); }
     saveF(); render();
   }
 

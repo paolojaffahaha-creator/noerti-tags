@@ -406,12 +406,12 @@
         <label class="chk"><input type="checkbox" data-p="${p}.sonder.unausweichlich" ${so.unausweichlich ? 'checked' : ''}> Unausweichlich (Ausweichen klappt nie)</label>
         <label class="chk"><input type="checkbox" data-p="${p}.sonder.zuerst" ${so.zuerst ? 'checked' : ''}> Zuerst dran (vor jedem Tempo)</label>`,
       verteidigung: `<label class="chk"><input type="checkbox" data-p="${p}.sonder.schild" data-rerender ${so.schild ? 'checked' : ''}> Schild: Wert = Punkte, die insgesamt geschluckt werden (statt %)</label>
-        <p class="small muted" style="margin:0">Gelingt der Wurf, gibt es zusätzlich den Konter aus den Kampfregeln (+${data.regeln.konter_treffer} % Treffer, Angreifer −${data.regeln.konter_noerten} Nörten). Misslingt er: Schaden × ${fmt(data.regeln.verteidigung_fehlschlag_faktor, 2)}.</p>`,
+        <p class="small muted" style="margin:0">Gelingt der Wurf, gibt es zusätzlich den Konter aus den Kampfregeln (+${data.regeln.konter_treffer} % Treffer, Angreifer −${data.regeln.konter_noerten} Nörten${data.regeln.konter_schaden > 0 ? ` und −${data.regeln.konter_schaden} LP` : ''}). Misslingt er: Schaden × ${fmt(data.regeln.verteidigung_fehlschlag_faktor, 2)}.</p>`,
       ausweichen: `<label class="chk"><input type="checkbox" data-p="${p}.sonder.fest" ${so.fest ? 'checked' : ''}> Feste Chance (Tempo zählt nicht)</label>
         <label class="chk"><input type="checkbox" data-p="${p}.sonder.halb" ${so.halb ? 'checked' : ''}> Misslingt es: nur halber Schaden statt × ${fmt(data.regeln.getroffen_faktor, 2)}</label>
         <div class="grid"><label class="f">Gegenschlag (Schaden)<input data-p="${p}.sonder.gegenschlag" data-num type="number" min="0" max="50" value="${so.gegenschlag || ''}" placeholder="0"><small>wenn das Ausweichen klappt</small></label></div>`,
       auftanken: `<div class="grid"><label class="f">Heilt zusätzlich LP<input data-p="${p}.sonder.lp" data-num type="number" min="0" max="80" value="${so.lp || ''}" placeholder="0"></label></div>
-        <p class="small muted" style="margin:0">Wird man dabei getroffen: × ${fmt(data.regeln.auftanken_getroffen_faktor, 2)} · verteidigt der Gegner nur: × ${fmt(data.regeln.auftanken_gegen_verteidigen_faktor, 2)}.</p>`
+        <p class="small muted" style="margin:0">Wird man dabei getroffen: ${data.regeln.auftanken_getroffen_faktor > 0 ? `× ${fmt(data.regeln.auftanken_getroffen_faktor, 2)}` : 'alles verschüttet (× 0)'} · verteidigt der Gegner nur: × ${fmt(data.regeln.auftanken_gegen_verteidigen_faktor, 2)}.</p>`
     }[k];
     return `<section class="aed c-${k}">
       <div class="top"><div><span class="small muted">Aktions-Editor · <code>${esc(a.id)}</code></span><h2 id="aeTitle">${esc(a.name)}</h2></div>
@@ -588,10 +588,11 @@
   // ---------- Tab: Kampfregeln ----------
   const REGELN = [
     ['Treffer & Schutz', [['getroffen_faktor', 'Schaden × beim Auftanken / missglücktem Ausweichen', 0.05], ['verteidigung_fehlschlag_faktor', 'Schaden × wenn die Abwehr misslingt', 0.05]]],
-    ['Konter (gelungene Abwehr)', [['konter_treffer', 'nächste Runde Trefferchance + %'], ['konter_noerten', 'Angreifer verliert Nörten']]],
+    ['Konter (gelungene Abwehr)', [['konter_treffer', 'nächste Runde Trefferchance + %'], ['konter_noerten', 'Angreifer verliert Nörten'], ['konter_schaden', 'Angreifer verliert sofort LP']]],
     ['Auftanken', [['auftanken_getroffen_faktor', 'Ertrag × wenn man getroffen wird', 0.05], ['auftanken_gegen_verteidigen_faktor', 'Ertrag × wenn der Gegner nur verteidigt', 0.05]]],
     ['Ausweichen', [['ausweichen_pro_tempo', '% pro Tempo-Unterschied'], ['ausweichen_min', 'mindestens %'], ['ausweichen_max', 'höchstens %']]],
-    ['Kampf', [['max_runden', 'Max. Runden pro Figur im Team']]]
+    ['Kampf', [['max_runden', 'Max. Runden pro Figur im Team']]],
+    ['Pegel (Schaden steigt, damit Kämpfe nicht ewig dauern)', [['pegel_ab_runde', 'ab Runde (0 = aus)'], ['pegel_pct', 'Schaden + % pro Runde'], ['pegel_max', 'höchstens + %']]]
   ];
   function renderRegeln() {
     const r = data.regeln;
@@ -603,7 +604,7 @@
       ${stufen('kampf_lp', 'Lebenspunkte vor dem Kampf (Kurz / Normal / Lang)')}${stufen('kampf_noerten', 'Nörten vor dem Kampf')}
       <section class="card actions"><label class="f" style="max-width:260px">Vorauswahl<select data-p="regeln.kampf_standard" data-num>${[0, 1, 2].map((i) => `<option value="${i}" ${i === (r.kampf_standard ?? 1) ? 'selected' : ''}>Stufe ${i + 1}: ${esc(r.kampf_lp[i].name)} / ${esc(r.kampf_noerten[i].name)}</option>`).join('')}</select></label></section>
       ${REGELN.map(([title, fields]) => `<section class="card actions"><b>${title}</b><div class="grid">${fields.map(([k, label, step]) =>
-        `<label class="f">${label}<input data-p="regeln.${k}" data-num type="number" step="${step || 1}" inputmode="decimal" value="${r[k]}"></label>`).join('')}</div></section>`).join('')}
+        `<label class="f">${label}<input data-p="regeln.${k}" data-num type="number" step="${step || 1}" inputmode="decimal" value="${r[k] ?? 0}"></label>`).join('')}</div></section>`).join('')}
       <p class="small muted" style="margin:0">Der Kreislauf bleibt fest: Angriff schlägt Auftanken, Auftanken schlägt Verteidigung, Verteidigung schlägt Angriff. Ausweichen ist die riskante Sonderwahl.</p></div>`;
   }
 

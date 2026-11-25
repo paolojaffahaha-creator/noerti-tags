@@ -1,201 +1,1838 @@
 {
-  "format": 2,
-  "regeln": {
-    "kampf_lp": [{"name":"Kurz","wert":70},{"name":"Normal","wert":100},{"name":"Lang","wert":140}],
-    "kampf_noerten": [{"name":"Wenig","wert":60},{"name":"Normal","wert":100},{"name":"Viel","wert":150}],
-    "kampf_standard": 1,
-    "getroffen_faktor": 1.25,
-    "verteidigung_fehlschlag_faktor": 1,
-    "auftanken_getroffen_faktor": 0.4,
-    "auftanken_gegen_verteidigen_faktor": 1.4,
-    "konter_treffer": 20,
-    "konter_noerten": 10,
-    "ausweichen_pro_tempo": 5,
-    "ausweichen_min": 25,
-    "ausweichen_max": 75,
-    "max_runden": 15
-  },
   "typen": {
     "001": {
-      "lp_faktor": 1.05,
-      "noerten_faktor": 1,
-      "tempo": 5,
-      "aktionen": [
-        {"id":"pollenwolke","kat":"angriff","name":"Pollenwolke","start":true,"kosten":15,"wuerfe":{"art":"einfach","chance":90},"ausgaenge":[{"anteil":100,"wert":9}],"effekte":[{"wann":"erfolg","ziel":"gegner","art":"chance","wert":-15,"runden":1}],"sonder":{}},
-        {"id":"dornenranke","kat":"angriff","name":"Dornenranke","start":false,"kosten":25,"wuerfe":{"art":"einfach","chance":75},"ausgaenge":[{"anteil":100,"wert":18}],"effekte":[{"wann":"erfolg","ziel":"gegner","art":"gift","wert":5,"runden":2}],"sonder":{}},
-        {"id":"ranken_peitsche","kat":"angriff","name":"Rankenpeitsche","start":false,"kosten":20,"wuerfe":{"art":"kette","chance":70,"n":4,"steigerung":2},"ausgaenge":[{"anteil":100,"wert":5}],"effekte":[],"sonder":{}},
-        {"id":"blaetterdach","kat":"verteidigung","name":"Blätterdach","start":true,"kosten":5,"wuerfe":{"art":"einfach","chance":85},"ausgaenge":[{"anteil":100,"wert":50}],"effekte":[],"sonder":{}},
-        {"id":"wurzeln","kat":"verteidigung","name":"Wurzeln schlagen","start":false,"kosten":10,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":30}],"effekte":[{"wann":"immer","ziel":"selbst","art":"schutz","wert":20,"runden":2}],"sonder":{}},
-        {"id":"im_wind","kat":"ausweichen","name":"Im Wind wiegen","start":true,"kosten":10,"wuerfe":{"art":"einfach","chance":50},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[],"sonder":{}},
-        {"id":"giesskanne","kat":"auftanken","name":"Gießkanne","start":true,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":25}],"effekte":[],"sonder":{}},
-        {"id":"photosynthese","kat":"auftanken","name":"Photosynthese","start":false,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":15}],"effekte":[],"sonder":{"lp":10}}
-      ],
+      "name": "Stinkender Hut",
       "pfad": {
-        "2": [{"art":"lp_faktor","wert":0.05}],
-        "3": [{"art":"lp_faktor","wert":0.05},{"art":"noerten_faktor","wert":0.05}],
-        "4": [{"art":"verbessern","aktion":"pollenwolke","feld":"chance","wert":5}],
-        "5": [{"art":"lernt","aktion":"dornenranke"}],
-        "6": [{"art":"verbessern","aktion":"blaetterdach","feld":"chance","wert":5},{"art":"verbessern","aktion":"giesskanne","feld":"wert","wert":3}],
-        "7": [{"art":"lp_faktor","wert":0.05}],
-        "8": [{"art":"lernt","aktion":"photosynthese"},{"art":"lernt","aktion":"wurzeln"}],
-        "9": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "10": [{"art":"verbessern","aktion":"pollenwolke","feld":"effekt","wert":10}],
-        "11": [{"art":"lp_faktor","wert":0.05}],
-        "12": [{"art":"verbessern","kat":"angriff","feld":"wert","wert":2},{"art":"verbessern","kat":"verteidigung","feld":"chance","wert":5}],
-        "13": [{"art":"noerten_faktor","wert":0.05}],
-        "14": [{"art":"lernt","aktion":"ranken_peitsche"},{"art":"verbessern","aktion":"blaetterdach","feld":"wert","wert":10}],
-        "15": [{"art":"optik","text":"Rahmen Silber"}],
-        "16": [{"art":"lp_faktor","wert":0.05},{"art":"verbessern","kat":"angriff","feld":"chance","wert":5}],
-        "17": [{"art":"verbessern","aktion":"dornenranke","feld":"wert","wert":4}],
-        "18": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "19": [{"art":"lp_faktor","wert":0.05}],
-        "20": [{"art":"optik","text":"Titel „Gartenkönigin“ + Rahmen Gold"}]
-      }
-    },
-    "002": {
-      "lp_faktor": 0.85,
-      "noerten_faktor": 1,
-      "tempo": 8,
-      "aktionen": [
-        {"id":"kickflip","kat":"angriff","name":"Kickflip","start":true,"kosten":20,"wuerfe":{"art":"einfach","chance":75},"ausgaenge":[{"anteil":100,"wert":18}],"effekte":[],"sonder":{}},
-        {"id":"grind","kat":"angriff","name":"Grind","start":false,"kosten":15,"wuerfe":{"art":"einfach","chance":90},"ausgaenge":[{"anteil":100,"wert":12}],"effekte":[{"wann":"erfolg","ziel":"selbst","art":"ausweichen","wert":15,"runden":1}],"sonder":{}},
-        {"id":"trickserie","kat":"angriff","name":"Trickserie","start":false,"kosten":20,"wuerfe":{"art":"kette","chance":70,"n":4,"steigerung":2},"ausgaenge":[{"anteil":100,"wert":6}],"effekte":[],"sonder":{}},
-        {"id":"helm_auf","kat":"verteidigung","name":"Helm auf","start":true,"kosten":5,"wuerfe":{"art":"einfach","chance":80},"ausgaenge":[{"anteil":100,"wert":50}],"effekte":[],"sonder":{}},
-        {"id":"ollie","kat":"ausweichen","name":"Ollie","start":true,"kosten":10,"wuerfe":{"art":"einfach","chance":55},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[{"wann":"erfolg","ziel":"selbst","art":"chance","wert":15,"runden":1}],"sonder":{}},
-        {"id":"salto","kat":"ausweichen","name":"Salto-Kick","start":false,"kosten":12,"wuerfe":{"art":"einfach","chance":40},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[],"sonder":{"gegenschlag":12}},
-        {"id":"energydrink","kat":"auftanken","name":"Energydrink","start":true,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":80,"wert":30},{"anteil":20,"wert":10}],"effekte":[],"sonder":{}},
-        {"id":"dose_ex","kat":"auftanken","name":"Dose auf ex","start":false,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":50,"wert":45},{"anteil":50,"wert":0}],"effekte":[],"sonder":{}}
-      ],
-      "pfad": {
-        "2": [{"art":"lp_faktor","wert":0.05}],
-        "3": [{"art":"lp_faktor","wert":0.05},{"art":"noerten_faktor","wert":0.05}],
-        "4": [{"art":"verbessern","aktion":"kickflip","feld":"wert","wert":2}],
-        "5": [{"art":"lernt","aktion":"grind"}],
-        "6": [{"art":"verbessern","aktion":"helm_auf","feld":"chance","wert":5},{"art":"verbessern","aktion":"energydrink","feld":"wert","wert":3}],
-        "7": [{"art":"lp_faktor","wert":0.05}],
-        "8": [{"art":"lernt","aktion":"salto"},{"art":"lernt","aktion":"trickserie"}],
-        "9": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "10": [{"art":"verbessern","aktion":"kickflip","feld":"wert","wert":2}],
-        "11": [{"art":"lp_faktor","wert":0.05}],
-        "12": [{"art":"verbessern","kat":"angriff","feld":"wert","wert":2},{"art":"verbessern","kat":"verteidigung","feld":"chance","wert":5}],
-        "13": [{"art":"noerten_faktor","wert":0.05}],
-        "14": [{"art":"lernt","aktion":"dose_ex"},{"art":"verbessern","aktion":"kickflip","feld":"chance","wert":5}],
-        "15": [{"art":"optik","text":"Rahmen Silber"}],
-        "16": [{"art":"lp_faktor","wert":0.05},{"art":"verbessern","kat":"angriff","feld":"chance","wert":5}],
-        "17": [{"art":"verbessern","aktion":"ollie","feld":"chance","wert":5}],
-        "18": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "19": [{"art":"lp_faktor","wert":0.05}],
-        "20": [{"art":"optik","text":"Titel „Halfpipe-Legende“ + Rahmen Gold"}]
-      }
-    },
-    "003": {
-      "lp_faktor": 1.1,
-      "noerten_faktor": 1,
-      "tempo": 4,
-      "aktionen": [
-        {"id":"pfotenhiebe","kat":"angriff","name":"Pfotenhiebe","start":true,"kosten":20,"wuerfe":{"art":"mehrfach","chance":65,"n":3},"ausgaenge":[{"anteil":100,"wert":6}],"effekte":[],"sonder":{}},
-        {"id":"wildes_toben","kat":"angriff","name":"Wildes Toben","start":false,"kosten":25,"wuerfe":{"art":"zufall","chance":75,"n":2,"bis":4},"ausgaenge":[{"anteil":100,"wert":6}],"effekte":[],"sonder":{}},
-        {"id":"knabbern","kat":"angriff","name":"Knabbern","start":false,"kosten":15,"wuerfe":{"art":"einfach","chance":85},"ausgaenge":[{"anteil":100,"wert":10}],"effekte":[],"sonder":{"lebensraub":50}},
-        {"id":"klein_machen","kat":"verteidigung","name":"Klein machen","start":true,"kosten":5,"wuerfe":{"art":"einfach","chance":85},"ausgaenge":[{"anteil":100,"wert":40}],"effekte":[],"sonder":{}},
-        {"id":"hund_als_schild","kat":"verteidigung","name":"Hund als Schild","start":false,"kosten":8,"wuerfe":{"art":"einfach","chance":90},"ausgaenge":[{"anteil":100,"wert":18}],"effekte":[],"sonder":{"schild":true}},
-        {"id":"verstecken","kat":"ausweichen","name":"Hinterm Hund verstecken","start":true,"kosten":10,"wuerfe":{"art":"einfach","chance":45},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[],"sonder":{"fest":true}},
-        {"id":"schluck","kat":"auftanken","name":"Schluck","start":true,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":25}],"effekte":[],"sonder":{}},
-        {"id":"kuscheln","kat":"auftanken","name":"Kuscheln","start":false,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":10}],"effekte":[],"sonder":{"lp":15}}
-      ],
-      "pfad": {
-        "2": [{"art":"lp_faktor","wert":0.05}],
-        "3": [{"art":"lp_faktor","wert":0.05},{"art":"noerten_faktor","wert":0.05}],
-        "4": [{"art":"verbessern","aktion":"pfotenhiebe","feld":"chance","wert":5}],
-        "5": [{"art":"lernt","aktion":"kuscheln"}],
-        "6": [{"art":"verbessern","aktion":"klein_machen","feld":"chance","wert":5},{"art":"verbessern","aktion":"schluck","feld":"wert","wert":3}],
-        "7": [{"art":"lp_faktor","wert":0.05}],
-        "8": [{"art":"lernt","aktion":"wildes_toben"},{"art":"lernt","aktion":"hund_als_schild"}],
-        "9": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "10": [{"art":"verbessern","aktion":"pfotenhiebe","feld":"n","wert":1}],
-        "11": [{"art":"lp_faktor","wert":0.05}],
-        "12": [{"art":"verbessern","kat":"angriff","feld":"wert","wert":2},{"art":"verbessern","kat":"verteidigung","feld":"chance","wert":5}],
-        "13": [{"art":"noerten_faktor","wert":0.05}],
-        "14": [{"art":"lernt","aktion":"knabbern"},{"art":"verbessern","aktion":"verstecken","feld":"chance","wert":5}],
-        "15": [{"art":"optik","text":"Rahmen Silber"}],
-        "16": [{"art":"lp_faktor","wert":0.05},{"art":"verbessern","kat":"angriff","feld":"chance","wert":5}],
-        "17": [{"art":"verbessern","aktion":"kuscheln","feld":"wert","wert":5}],
-        "18": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "19": [{"art":"lp_faktor","wert":0.05}],
-        "20": [{"art":"optik","text":"Titel „Rudelführer“ + Rahmen Gold"}]
-      }
-    },
-    "004": {
-      "lp_faktor": 1,
-      "noerten_faktor": 1,
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "pollenwolke"
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "dornenranke"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "blaetterdach"
+          },
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 3,
+            "aktion": "giesskanne"
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "photosynthese"
+          },
+          {
+            "art": "lernt",
+            "aktion": "wurzeln"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "feld": "effekt",
+            "wert": 10,
+            "aktion": "pollenwolke"
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "ranken_peitsche"
+          },
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 10,
+            "aktion": "blaetterdach"
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 4,
+            "aktion": "dornenranke"
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Gartenkönigin“ + Rahmen Gold"
+          }
+        ]
+      },
       "tempo": 6,
       "aktionen": [
-        {"id":"fingerschnipp","kat":"angriff","name":"Fingerschnipp","start":true,"kosten":15,"wuerfe":{"art":"einfach","chance":90},"ausgaenge":[{"anteil":100,"wert":14}],"effekte":[],"sonder":{}},
-        {"id":"doppelfeige","kat":"angriff","name":"Doppelfeige","start":false,"kosten":25,"wuerfe":{"art":"mehrfach","chance":75,"n":2},"ausgaenge":[{"anteil":100,"wert":12}],"effekte":[],"sonder":{}},
-        {"id":"fingertrommel","kat":"angriff","name":"Fingertrommel","start":false,"kosten":20,"wuerfe":{"art":"kette","chance":70,"n":5,"steigerung":2},"ausgaenge":[{"anteil":100,"wert":4}],"effekte":[],"sonder":{}},
-        {"id":"klein_machen","kat":"verteidigung","name":"Klein machen","start":true,"kosten":5,"wuerfe":{"art":"einfach","chance":85},"ausgaenge":[{"anteil":100,"wert":40}],"effekte":[],"sonder":{}},
-        {"id":"auslachen","kat":"verteidigung","name":"Auslachen","start":false,"kosten":10,"wuerfe":{"art":"einfach","chance":35},"ausgaenge":[{"anteil":100,"wert":90}],"effekte":[{"wann":"erfolg","ziel":"gegner","art":"noerten","wert":-10,"runden":1}],"sonder":{}},
-        {"id":"seitschritt","kat":"ausweichen","name":"Seitschritt","start":true,"kosten":10,"wuerfe":{"art":"einfach","chance":50},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[],"sonder":{}},
-        {"id":"wegrollen","kat":"ausweichen","name":"Wegrollen","start":false,"kosten":8,"wuerfe":{"art":"einfach","chance":40},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[],"sonder":{"halb":true}},
-        {"id":"schluck","kat":"auftanken","name":"Schluck","start":true,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":22}],"effekte":[],"sonder":{}},
-        {"id":"exen","kat":"auftanken","name":"Exen","start":false,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":80,"wert":32},{"anteil":20,"wert":0}],"effekte":[],"sonder":{}},
-        {"id":"nippen","kat":"auftanken","name":"Nippen","start":false,"kosten":0,"wuerfe":{"art":"mehrfach","chance":75,"n":4},"ausgaenge":[{"anteil":100,"wert":8}],"effekte":[],"sonder":{}}
+        {
+          "id": "pollenwolke",
+          "kat": "angriff",
+          "name": "Gebrabbel",
+          "start": true,
+          "kosten": 14,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 75
+          },
+          "effekte": [
+            {
+              "art": "chance",
+              "wann": "erfolg",
+              "wert": -22,
+              "ziel": "gegner",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 15,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dornenranke",
+          "kat": "angriff",
+          "name": "Mundgeruch",
+          "start": false,
+          "kosten": 25,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 90
+          },
+          "effekte": [
+            {
+              "art": "gift",
+              "wann": "erfolg",
+              "wert": 5,
+              "ziel": "gegner",
+              "runden": 2
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 5,
+              "anteil": 80
+            },
+            {
+              "wert": 5,
+              "anteil": 80
+            },
+            {
+              "wert": 5,
+              "anteil": 30
+            }
+          ]
+        },
+        {
+          "id": "ranken_peitsche",
+          "kat": "angriff",
+          "name": "Rankenpeitsche",
+          "start": false,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "n": 4,
+            "art": "kette",
+            "chance": 70,
+            "steigerung": 2
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 5,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "blaetterdach",
+          "kat": "verteidigung",
+          "name": "Augen zu",
+          "start": true,
+          "kosten": 5,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 50
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 100,
+              "anteil": 50
+            },
+            {
+              "wert": 70,
+              "anteil": 50
+            }
+          ]
+        },
+        {
+          "id": "wurzeln",
+          "kat": "verteidigung",
+          "name": "Überstülpen",
+          "start": false,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [
+            {
+              "art": "schutz",
+              "wann": "immer",
+              "wert": 20,
+              "ziel": "selbst",
+              "runden": 2
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 80,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "im_wind",
+          "kat": "ausweichen",
+          "name": "Weg wehen",
+          "start": true,
+          "kosten": 10,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 40
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "giesskanne",
+          "kat": "auftanken",
+          "name": "Hutcreme",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 25,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "photosynthese",
+          "kat": "auftanken",
+          "name": "Ohrgesäusel",
+          "start": false,
+          "kosten": 0,
+          "sonder": {
+            "lp": 10
+          },
+          "wuerfe": {
+            "n": 3,
+            "art": "mehrfach",
+            "chance": 70
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 10,
+              "anteil": 100
+            }
+          ]
+        }
       ],
+      "lp_faktor": 0.8,
+      "noerten_faktor": 1
+    },
+    "002": {
+      "name": "Wichtel",
       "pfad": {
-        "2": [{"art":"lp_faktor","wert":0.05}],
-        "3": [{"art":"lp_faktor","wert":0.05},{"art":"noerten_faktor","wert":0.05}],
-        "4": [{"art":"verbessern","aktion":"fingerschnipp","feld":"chance","wert":5}],
-        "5": [{"art":"lernt","aktion":"doppelfeige"}],
-        "6": [{"art":"verbessern","aktion":"klein_machen","feld":"chance","wert":5},{"art":"verbessern","aktion":"schluck","feld":"wert","wert":3}],
-        "7": [{"art":"lp_faktor","wert":0.05}],
-        "8": [{"art":"lernt","aktion":"exen"},{"art":"lernt","aktion":"nippen"}],
-        "9": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "10": [{"art":"lernt","aktion":"auslachen"}],
-        "11": [{"art":"lp_faktor","wert":0.05}],
-        "12": [{"art":"verbessern","kat":"angriff","feld":"wert","wert":2},{"art":"verbessern","kat":"verteidigung","feld":"chance","wert":5}],
-        "13": [{"art":"noerten_faktor","wert":0.05}],
-        "14": [{"art":"lernt","aktion":"fingertrommel"},{"art":"lernt","aktion":"wegrollen"}],
-        "15": [{"art":"optik","text":"Rahmen Silber"}],
-        "16": [{"art":"lp_faktor","wert":0.05},{"art":"verbessern","kat":"angriff","feld":"chance","wert":5}],
-        "17": [{"art":"verbessern","aktion":"doppelfeige","feld":"chance","wert":5}],
-        "18": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "19": [{"art":"lp_faktor","wert":0.05}],
-        "20": [{"art":"optik","text":"Titel „Ur-Nörti“ + Rahmen Gold"}]
-      }
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 2,
+            "aktion": "kickflip"
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "grind"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "helm_auf"
+          },
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 3,
+            "aktion": "energydrink"
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "salto"
+          },
+          {
+            "art": "lernt",
+            "aktion": "trickserie"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 2,
+            "aktion": "kickflip"
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "dose_ex"
+          },
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "kickflip"
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "ollie"
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Halfpipe-Legende“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 8,
+      "aktionen": [
+        {
+          "id": "kickflip",
+          "kat": "angriff",
+          "name": "Kleckerer",
+          "start": true,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 70
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 18,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "grind",
+          "kat": "angriff",
+          "name": "Bommelschwinger",
+          "start": false,
+          "kosten": 15,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 90
+          },
+          "effekte": [
+            {
+              "art": "ausweichen",
+              "wann": "erfolg",
+              "wert": 15,
+              "ziel": "selbst",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 12,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "trickserie",
+          "kat": "angriff",
+          "name": "Trickserie",
+          "start": false,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "n": 4,
+            "art": "kette",
+            "chance": 70,
+            "steigerung": 2
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 6,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "helm_auf",
+          "kat": "verteidigung",
+          "name": "Besinnung",
+          "start": true,
+          "kosten": 5,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 60
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 60,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "ollie",
+          "kat": "ausweichen",
+          "name": "Geschenke holen",
+          "start": true,
+          "kosten": 10,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 55
+          },
+          "effekte": [
+            {
+              "art": "chance",
+              "wann": "erfolg",
+              "wert": 15,
+              "ziel": "selbst",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "salto",
+          "kat": "ausweichen",
+          "name": "Salto-Kick",
+          "start": false,
+          "kosten": 12,
+          "sonder": {
+            "gegenschlag": 12
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 40
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "energydrink",
+          "kat": "auftanken",
+          "name": "Feuerzangenbowle",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 30,
+              "anteil": 40
+            },
+            {
+              "wert": 20,
+              "anteil": 90
+            },
+            {
+              "wert": 25,
+              "anteil": 40
+            }
+          ]
+        },
+        {
+          "id": "dose_ex",
+          "kat": "auftanken",
+          "name": "Dose auf ex",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 45,
+              "anteil": 50
+            },
+            {
+              "wert": 0,
+              "anteil": 50
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 0.85,
+      "noerten_faktor": 1
+    },
+    "003": {
+      "name": "Doggylover",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "pfotenhiebe"
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "kuscheln"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "klein_machen"
+          },
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 3,
+            "aktion": "schluck"
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "wildes_toben"
+          },
+          {
+            "art": "lernt",
+            "aktion": "hund_als_schild"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "feld": "n",
+            "wert": 1,
+            "aktion": "pfotenhiebe"
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "knabbern"
+          },
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "verstecken"
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 5,
+            "aktion": "kuscheln"
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Rudelführer“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 4,
+      "aktionen": [
+        {
+          "id": "pfotenhiebe",
+          "kat": "angriff",
+          "name": "Pfotenhiebe",
+          "start": true,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "n": 3,
+            "art": "mehrfach",
+            "chance": 65
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 6,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "wildes_toben",
+          "kat": "angriff",
+          "name": "Wildes Toben",
+          "start": false,
+          "kosten": 25,
+          "sonder": {},
+          "wuerfe": {
+            "n": 2,
+            "art": "zufall",
+            "bis": 4,
+            "chance": 75
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 6,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "knabbern",
+          "kat": "angriff",
+          "name": "Fass",
+          "start": false,
+          "kosten": 15,
+          "sonder": {
+            "lebensraub": 50
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 60
+          },
+          "effekte": [
+            {
+              "art": "schaden",
+              "wann": "fehlschlag",
+              "wert": 5,
+              "ziel": "selbst",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 25,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "klein_machen",
+          "kat": "verteidigung",
+          "name": "Klein machen",
+          "start": true,
+          "kosten": 5,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 40,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "hund_als_schild",
+          "kat": "verteidigung",
+          "name": "Hund als Schild",
+          "start": false,
+          "kosten": 8,
+          "sonder": {
+            "schild": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 90
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 18,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "verstecken",
+          "kat": "ausweichen",
+          "name": "Hinterm Hund verstecken",
+          "start": true,
+          "kosten": 10,
+          "sonder": {
+            "fest": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 45
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "schluck",
+          "kat": "auftanken",
+          "name": "Dicker Schluck",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 25,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "kuscheln",
+          "kat": "auftanken",
+          "name": "Kuscheln",
+          "start": false,
+          "kosten": 0,
+          "sonder": {
+            "lp": 15
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 10,
+              "anteil": 100
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 1.1,
+      "noerten_faktor": 1
+    },
+    "004": {
+      "name": "Original Nörti",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "fingerschnipp"
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "doppelfeige"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "klein_machen"
+          },
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 3,
+            "aktion": "schluck"
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "exen"
+          },
+          {
+            "art": "lernt",
+            "aktion": "nippen"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "lernt",
+            "aktion": "auslachen"
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "fingertrommel"
+          },
+          {
+            "art": "lernt",
+            "aktion": "wegrollen"
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "doppelfeige"
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Ur-Nörti“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 6,
+      "aktionen": [
+        {
+          "id": "fingerschnipp",
+          "kat": "angriff",
+          "name": "Fingerschnipp",
+          "start": true,
+          "kosten": 15,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 90
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 14,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "doppelfeige",
+          "kat": "angriff",
+          "name": "Doppelfeige",
+          "start": false,
+          "kosten": 25,
+          "sonder": {},
+          "wuerfe": {
+            "n": 2,
+            "art": "mehrfach",
+            "chance": 75
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 12,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "fingertrommel",
+          "kat": "angriff",
+          "name": "Fingertrommel",
+          "start": false,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "n": 5,
+            "art": "kette",
+            "chance": 70,
+            "steigerung": 2
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 4,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "klein_machen",
+          "kat": "verteidigung",
+          "name": "Klein machen",
+          "start": true,
+          "kosten": 5,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 40,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "auslachen",
+          "kat": "verteidigung",
+          "name": "Auslachen",
+          "start": false,
+          "kosten": 10,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 35
+          },
+          "effekte": [
+            {
+              "art": "noerten",
+              "wann": "erfolg",
+              "wert": -10,
+              "ziel": "gegner",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 90,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "seitschritt",
+          "kat": "ausweichen",
+          "name": "Seitschritt",
+          "start": true,
+          "kosten": 10,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 50
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "wegrollen",
+          "kat": "ausweichen",
+          "name": "Wegrollen",
+          "start": false,
+          "kosten": 8,
+          "sonder": {
+            "halb": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 40
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "schluck",
+          "kat": "auftanken",
+          "name": "Schluck",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 22,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "exen",
+          "kat": "auftanken",
+          "name": "Exen",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 32,
+              "anteil": 80
+            },
+            {
+              "wert": 0,
+              "anteil": 20
+            }
+          ]
+        },
+        {
+          "id": "nippen",
+          "kat": "auftanken",
+          "name": "Nippen",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "n": 4,
+            "art": "mehrfach",
+            "chance": 75
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 8,
+              "anteil": 100
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 1,
+      "noerten_faktor": 1
     },
     "005": {
-      "lp_faktor": 1.2,
-      "noerten_faktor": 1,
+      "name": "Edles Nörti",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "bass_drop"
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "lautstaerke_11"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 3,
+            "aktion": "boxenwand"
+          },
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 3,
+            "aktion": "schluck"
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "schallwelle"
+          },
+          {
+            "art": "lernt",
+            "aktion": "pause_taste"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "bass_drop"
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "verbessern",
+            "feld": "wert",
+            "wert": 4,
+            "aktion": "bass_drop"
+          },
+          {
+            "art": "verbessern",
+            "feld": "chance",
+            "wert": 5,
+            "aktion": "boxenwand"
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "feld": "effekt",
+            "wert": 25,
+            "aktion": "lautstaerke_11"
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Bass-Boss“ + Rahmen Gold"
+          }
+        ]
+      },
       "tempo": 3,
       "aktionen": [
-        {"id":"bass_drop","kat":"angriff","name":"Bass-Drop","start":true,"kosten":35,"wuerfe":{"art":"einfach","chance":60},"ausgaenge":[{"anteil":60,"wert":25},{"anteil":30,"wert":35},{"anteil":10,"wert":50}],"effekte":[],"sonder":{}},
-        {"id":"lautstaerke_11","kat":"angriff","name":"Lautstärke 11","start":false,"kosten":15,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[{"wann":"immer","ziel":"selbst","art":"schaden","wert":50,"runden":1}],"sonder":{}},
-        {"id":"schallwelle","kat":"angriff","name":"Schallwelle","start":false,"kosten":12,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":8}],"effekte":[],"sonder":{"unausweichlich":true}},
-        {"id":"boxenwand","kat":"verteidigung","name":"Boxenwand","start":true,"kosten":5,"wuerfe":{"art":"einfach","chance":90},"ausgaenge":[{"anteil":100,"wert":15}],"effekte":[],"sonder":{"schild":true}},
-        {"id":"abtauchen","kat":"ausweichen","name":"Abtauchen","start":true,"kosten":10,"wuerfe":{"art":"einfach","chance":40},"ausgaenge":[{"anteil":100,"wert":0}],"effekte":[],"sonder":{"fest":true,"halb":true}},
-        {"id":"schluck","kat":"auftanken","name":"Schluck","start":true,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":25}],"effekte":[],"sonder":{}},
-        {"id":"pause_taste","kat":"auftanken","name":"Pause-Taste","start":false,"kosten":0,"wuerfe":{"art":"einfach","chance":100},"ausgaenge":[{"anteil":100,"wert":12}],"effekte":[{"wann":"immer","ziel":"selbst","art":"tank","wert":10,"runden":2}],"sonder":{}}
+        {
+          "id": "bass_drop",
+          "kat": "angriff",
+          "name": "Sideeye",
+          "start": true,
+          "kosten": 25,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 60
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 25,
+              "anteil": 60
+            },
+            {
+              "wert": 35,
+              "anteil": 30
+            },
+            {
+              "wert": 15,
+              "anteil": 10
+            }
+          ]
+        },
+        {
+          "id": "lautstaerke_11",
+          "kat": "angriff",
+          "name": "Lautstärke 11",
+          "start": false,
+          "kosten": 15,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [
+            {
+              "art": "schaden",
+              "wann": "immer",
+              "wert": 50,
+              "ziel": "selbst",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "schallwelle",
+          "kat": "angriff",
+          "name": "Schallwelle",
+          "start": false,
+          "kosten": 12,
+          "sonder": {
+            "unausweichlich": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 8,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "boxenwand",
+          "kat": "verteidigung",
+          "name": "Boxenwand",
+          "start": true,
+          "kosten": 5,
+          "sonder": {
+            "schild": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 90
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 15,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "abtauchen",
+          "kat": "ausweichen",
+          "name": "Abtauchen",
+          "start": true,
+          "kosten": 10,
+          "sonder": {
+            "fest": true,
+            "halb": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 40
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "schluck",
+          "kat": "auftanken",
+          "name": "Schluck",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 25,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "pause_taste",
+          "kat": "auftanken",
+          "name": "Pause-Taste",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [
+            {
+              "art": "tank",
+              "wann": "immer",
+              "wert": 10,
+              "ziel": "selbst",
+              "runden": 2
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 12,
+              "anteil": 100
+            }
+          ]
+        }
       ],
-      "pfad": {
-        "2": [{"art":"lp_faktor","wert":0.05}],
-        "3": [{"art":"lp_faktor","wert":0.05},{"art":"noerten_faktor","wert":0.05}],
-        "4": [{"art":"verbessern","aktion":"bass_drop","feld":"chance","wert":5}],
-        "5": [{"art":"lernt","aktion":"lautstaerke_11"}],
-        "6": [{"art":"verbessern","aktion":"boxenwand","feld":"wert","wert":3},{"art":"verbessern","aktion":"schluck","feld":"wert","wert":3}],
-        "7": [{"art":"lp_faktor","wert":0.05}],
-        "8": [{"art":"lernt","aktion":"schallwelle"},{"art":"lernt","aktion":"pause_taste"}],
-        "9": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "10": [{"art":"verbessern","aktion":"bass_drop","feld":"chance","wert":5}],
-        "11": [{"art":"lp_faktor","wert":0.05}],
-        "12": [{"art":"verbessern","kat":"angriff","feld":"wert","wert":2},{"art":"verbessern","kat":"verteidigung","feld":"chance","wert":5}],
-        "13": [{"art":"noerten_faktor","wert":0.05}],
-        "14": [{"art":"verbessern","aktion":"bass_drop","feld":"wert","wert":4},{"art":"verbessern","aktion":"boxenwand","feld":"chance","wert":5}],
-        "15": [{"art":"optik","text":"Rahmen Silber"}],
-        "16": [{"art":"lp_faktor","wert":0.05},{"art":"verbessern","kat":"angriff","feld":"chance","wert":5}],
-        "17": [{"art":"verbessern","aktion":"lautstaerke_11","feld":"effekt","wert":25}],
-        "18": [{"art":"tempo","wert":1},{"art":"noerten_faktor","wert":0.05}],
-        "19": [{"art":"lp_faktor","wert":0.05}],
-        "20": [{"art":"optik","text":"Titel „Bass-Boss“ + Rahmen Gold"}]
-      }
+      "lp_faktor": 1.1,
+      "noerten_faktor": 1
     }
+  },
+  "format": 2,
+  "regeln": {
+    "kampf_lp": [
+      {
+        "name": "Kurz",
+        "wert": 45
+      },
+      {
+        "name": "Normal",
+        "wert": 60
+      },
+      {
+        "name": "Lang",
+        "wert": 90
+      }
+    ],
+    "max_runden": 12,
+    "kampf_noerten": [
+      {
+        "name": "Wenig",
+        "wert": 50
+      },
+      {
+        "name": "Normal",
+        "wert": 70
+      },
+      {
+        "name": "Viel",
+        "wert": 100
+      }
+    ],
+    "ausweichen_max": 75,
+    "ausweichen_min": 25,
+    "kampf_standard": 1,
+    "konter_noerten": 10,
+    "konter_treffer": 20,
+    "getroffen_faktor": 1.5,
+    "ausweichen_pro_tempo": 5,
+    "auftanken_getroffen_faktor": 0,
+    "verteidigung_fehlschlag_faktor": 1,
+    "auftanken_gegen_verteidigen_faktor": 1.4,
+    "konter_schaden": 8,
+    "pegel_ab_runde": 6,
+    "pegel_pct": 15,
+    "pegel_max": 100
   }
 }

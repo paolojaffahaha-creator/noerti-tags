@@ -135,8 +135,18 @@
     const o = { lp: opts.lp ?? standard(data.regeln, 'kampf_lp'), noerten: opts.noerten ?? standard(data.regeln, 'kampf_noerten') };
     const mk = (t) => ({ name: t.name, figs: t.figs.map((f) => figur(data, f, o)), active: 0 });
     const teams = { A: mk(teamA), B: mk(teamB) };
-    const maxRunden = data.regeln.max_runden * Math.max(teams.A.figs.length, teams.B.figs.length);
-    return { regeln: data.regeln, opts: o, maxRunden, runde: 1, teams, over: false, winner: null, needSwitch: [], history: [] };
+    const groesse = Math.max(teams.A.figs.length, teams.B.figs.length);
+    const maxRunden = data.regeln.max_runden * groesse;
+    return { regeln: data.regeln, opts: o, maxRunden, groesse, runde: 1, teams, over: false, winner: null, needSwitch: [], history: [] };
+  }
+
+  // Pegel: ab Runde X (pro Figur im Team) macht jede Runde mehr Schaden, damit Kämpfe nicht ewig dauern.
+  // Regeln: pegel_ab_runde (0 = aus), pegel_pct (+% pro Runde), pegel_max (Deckel in %).
+  function pegel(s, runde = s.runde) {
+    const R = s.regeln || {}, ab = R.pegel_ab_runde || 0;
+    if (!ab || !R.pegel_pct) return 0;
+    const stufe = Math.ceil(runde / (s.groesse || 1)) - ab + 1;
+    return stufe > 0 ? Math.min(stufe * R.pegel_pct, R.pegel_max ?? 100) : 0;
   }
   const aktiv = (s, side) => s.teams[side].figs[s.teams[side].active];
   const bank = (s, side) => s.teams[side].figs.map((f, i) => ({ f, i })).filter(({ f, i }) => !f.ko && i !== s.teams[side].active);
@@ -225,6 +235,8 @@
     }
     const aktion = (side) => (act[side].typ === 'aktion' ? aktiv(s, side).aktionen[act[side].i] : null);
 
+    if (pegel(s) > 0 && pegel(s, s.runde - 1) === 0) push({ t: 'info', text: `Der Pegel steigt! Ab jetzt macht jede Runde mehr Schaden (gerade +${pegel(s)} %).` });
+
     // 1. Kosten zahlen
     for (const side of ['A', 'B']) {
       const a = aktion(side), f = aktiv(s, side);
@@ -293,7 +305,7 @@
       } else if (d && d.kat === 'auftanken') factor = R.getroffen_faktor;
 
       const schutz = clamp(mod(s, fy, 'schutz'), 0, 100);
-      const boost = 1 + mod(s, fx, 'schaden') / 100;
+      const boost = 1 + (mod(s, fx, 'schaden') + pegel(s)) / 100;
       const n = anzahl(a, rng);
       if (a.wuerfe.art === 'zufall') push({ t: 'info', side: X, text: `${a.name}: ${n} Würfe!` });
       let hits = 0, total = 0;
@@ -325,6 +337,10 @@
         fx.noerten = Math.max(0, fx.noerten - R.konter_noerten);
         push({ t: 'konter', side: Y, text: `Konter! ${fy.name} trifft nächste Runde +${R.konter_treffer} %, ${fx.name} verliert ${R.konter_noerten} Nörten.` });
         nVal(X, fx, '');
+        if (R.konter_schaden > 0 && !fx.ko) {                  // Konter schlägt sofort zurück
+          fx.lp = Math.max(0, fx.lp - R.konter_schaden);
+          lpVal(X, fx, `${fy.name} schlägt zurück: ${fx.name} verliert ${R.konter_schaden} LP.`, R.konter_schaden);
+        }
       }
       ko(Y, fy); ko(X, fx);
     }
@@ -429,6 +445,6 @@
     return { ev, max, nichts, avg, chance: a.wuerfe.chance, proNoerti: a.kosten > 0 ? ev / a.kosten : null };
   }
 
-  const api = { FORMAT, KAT, MAX_PRO_KAT, FX, fxText, ausbau, optionText, aktionBauen, figur, neu, optionen, gueltig, runde, ersetzen, aktiv, bank, zufall, need, step5, erwartung, ausweichChance, mod };
+  const api = { FORMAT, KAT, MAX_PRO_KAT, FX, fxText, ausbau, optionText, aktionBauen, figur, neu, optionen, gueltig, runde, ersetzen, aktiv, bank, zufall, need, step5, erwartung, ausweichChance, mod, pegel };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NoertiKampf = api;
 })(typeof window !== 'undefined' ? window : globalThis);
