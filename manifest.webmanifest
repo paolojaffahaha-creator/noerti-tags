@@ -1,0 +1,26 @@
+{
+  "id": "./arena/",
+  "name": "Nörti Arena",
+  "short_name": "Nörti Arena",
+  "description": "Sammle deine Nörti-Figuren per NFC und lass sie in der Arena gegeneinander kämpfen.",
+  "lang": "de",
+  "start_url": "./arena/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EEF0F2",
+  "theme_color": "#FFD23F",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "app/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "app/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "app/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "app/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Arena", "short_name": "Arena", "url": "./arena/", "icons": [{ "src": "app/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Meine Sammlung", "short_name": "Sammlung", "url": "./sammlung/", "icons": [{ "src": "app/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Bestenliste", "short_name": "Bestenliste", "url": "./bestenliste/", "icons": [{ "src": "app/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "So geht's", "short_name": "Anleitung", "url": "./anleitung/", "icons": [{ "src": "app/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
