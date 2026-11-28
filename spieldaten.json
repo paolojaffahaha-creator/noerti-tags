@@ -22,9 +22,9 @@
         "4": [
           {
             "art": "verbessern",
+            "aktion": "pollenwolke",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "pollenwolke"
+            "wert": 5
           }
         ],
         "5": [
@@ -36,15 +36,15 @@
         "6": [
           {
             "art": "verbessern",
+            "aktion": "blaetterdach",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "blaetterdach"
+            "wert": 5
           },
           {
             "art": "verbessern",
+            "aktion": "giesskanne",
             "feld": "wert",
-            "wert": 3,
-            "aktion": "giesskanne"
+            "wert": 3
           }
         ],
         "7": [
@@ -56,11 +56,11 @@
         "8": [
           {
             "art": "lernt",
-            "aktion": "photosynthese"
+            "aktion": "wurzeln"
           },
           {
             "art": "lernt",
-            "aktion": "wurzeln"
+            "aktion": "photosynthese"
           }
         ],
         "9": [
@@ -76,9 +76,9 @@
         "10": [
           {
             "art": "verbessern",
+            "aktion": "pollenwolke",
             "feld": "effekt",
-            "wert": 10,
-            "aktion": "pollenwolke"
+            "wert": 10
           }
         ],
         "11": [
@@ -114,9 +114,9 @@
           },
           {
             "art": "verbessern",
-            "feld": "wert",
-            "wert": 10,
-            "aktion": "blaetterdach"
+            "aktion": "dornenranke",
+            "feld": "effekt",
+            "wert": 2
           }
         ],
         "15": [
@@ -140,9 +140,9 @@
         "17": [
           {
             "art": "verbessern",
+            "aktion": "dornenranke",
             "feld": "wert",
-            "wert": 4,
-            "aktion": "dornenranke"
+            "wert": 4
           }
         ],
         "18": [
@@ -164,7 +164,7 @@
         "20": [
           {
             "art": "optik",
-            "text": "Titel „Gartenkönigin“ + Rahmen Gold"
+            "text": "Titel „Stinkstiefel“ + Rahmen Gold"
           }
         ]
       },
@@ -179,20 +179,20 @@
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 75
+            "chance": 80
           },
           "effekte": [
             {
               "art": "chance",
-              "wann": "erfolg",
-              "wert": -22,
+              "wert": -20,
               "ziel": "gegner",
+              "wann": "erfolg",
               "runden": 1
             }
           ],
           "ausgaenge": [
             {
-              "wert": 15,
+              "wert": 13,
               "anteil": 100
             }
           ]
@@ -202,48 +202,40 @@
           "kat": "angriff",
           "name": "Mundgeruch",
           "start": false,
-          "kosten": 25,
+          "kosten": 16,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 90
+            "chance": 85
           },
           "effekte": [
             {
               "art": "gift",
-              "wann": "erfolg",
               "wert": 5,
               "ziel": "gegner",
-              "runden": 2
+              "wann": "erfolg",
+              "runden": 3
             }
           ],
           "ausgaenge": [
             {
-              "wert": 5,
-              "anteil": 80
-            },
-            {
-              "wert": 5,
-              "anteil": 80
-            },
-            {
-              "wert": 5,
-              "anteil": 30
+              "wert": 6,
+              "anteil": 100
             }
           ]
         },
         {
           "id": "ranken_peitsche",
           "kat": "angriff",
-          "name": "Rankenpeitsche",
+          "name": "Krempenwirbel",
           "start": false,
-          "kosten": 20,
+          "kosten": 18,
           "sonder": {},
           "wuerfe": {
-            "n": 4,
             "art": "kette",
             "chance": 70,
-            "steigerung": 2
+            "n": 4,
+            "steigerung": 3
           },
           "effekte": [],
           "ausgaenge": [
@@ -258,11 +250,11 @@
           "kat": "verteidigung",
           "name": "Augen zu",
           "start": true,
-          "kosten": 5,
+          "kosten": 8,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 50
+            "chance": 60
           },
           "effekte": [],
           "ausgaenge": [
@@ -271,7 +263,7 @@
               "anteil": 50
             },
             {
-              "wert": 70,
+              "wert": 60,
               "anteil": 50
             }
           ]
@@ -281,7 +273,7 @@
           "kat": "verteidigung",
           "name": "Überstülpen",
           "start": false,
-          "kosten": 20,
+          "kosten": 12,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
@@ -290,15 +282,15 @@
           "effekte": [
             {
               "art": "schutz",
-              "wann": "immer",
-              "wert": 20,
+              "wert": 25,
               "ziel": "selbst",
+              "wann": "immer",
               "runden": 2
             }
           ],
           "ausgaenge": [
             {
-              "wert": 80,
+              "wert": 60,
               "anteil": 100
             }
           ]
@@ -308,13 +300,28 @@
           "kat": "ausweichen",
           "name": "Weg wehen",
           "start": true,
-          "kosten": 10,
+          "kosten": 6,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 40
+            "chance": 45
           },
-          "effekte": [],
+          "effekte": [
+            {
+              "art": "chance",
+              "wert": -15,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
           "ausgaenge": [
             {
               "wert": 0,
@@ -344,28 +351,28 @@
         {
           "id": "photosynthese",
           "kat": "auftanken",
-          "name": "Ohrgesäusel",
+          "name": "Lüften",
           "start": false,
           "kosten": 0,
           "sonder": {
-            "lp": 10
+            "lp": 8
           },
           "wuerfe": {
-            "n": 3,
             "art": "mehrfach",
-            "chance": 70
+            "chance": 70,
+            "n": 3
           },
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 10,
+              "wert": 9,
               "anteil": 100
             }
           ]
         }
       ],
-      "lp_faktor": 0.8,
-      "noerten_faktor": 1
+      "lp_faktor": 0.95,
+      "noerten_faktor": 1.05
     },
     "002": {
       "name": "Wichtel",
@@ -389,9 +396,9 @@
         "4": [
           {
             "art": "verbessern",
-            "feld": "wert",
-            "wert": 2,
-            "aktion": "kickflip"
+            "aktion": "kickflip",
+            "feld": "chance",
+            "wert": 5
           }
         ],
         "5": [
@@ -403,15 +410,15 @@
         "6": [
           {
             "art": "verbessern",
+            "aktion": "helm_auf",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "helm_auf"
+            "wert": 5
           },
           {
             "art": "verbessern",
+            "aktion": "energydrink",
             "feld": "wert",
-            "wert": 3,
-            "aktion": "energydrink"
+            "wert": 3
           }
         ],
         "7": [
@@ -427,7 +434,7 @@
           },
           {
             "art": "lernt",
-            "aktion": "trickserie"
+            "aktion": "dose_ex"
           }
         ],
         "9": [
@@ -443,9 +450,9 @@
         "10": [
           {
             "art": "verbessern",
-            "feld": "wert",
-            "wert": 2,
-            "aktion": "kickflip"
+            "aktion": "ollie",
+            "feld": "chance",
+            "wert": 5
           }
         ],
         "11": [
@@ -477,13 +484,13 @@
         "14": [
           {
             "art": "lernt",
-            "aktion": "dose_ex"
+            "aktion": "trickserie"
           },
           {
             "art": "verbessern",
-            "feld": "chance",
-            "wert": 5,
-            "aktion": "kickflip"
+            "aktion": "kickflip",
+            "feld": "wert",
+            "wert": 4
           }
         ],
         "15": [
@@ -507,9 +514,9 @@
         "17": [
           {
             "art": "verbessern",
-            "feld": "chance",
-            "wert": 5,
-            "aktion": "ollie"
+            "aktion": "grind",
+            "feld": "wert",
+            "wert": 3
           }
         ],
         "18": [
@@ -531,7 +538,7 @@
         "20": [
           {
             "art": "optik",
-            "text": "Titel „Halfpipe-Legende“ + Rahmen Gold"
+            "text": "Titel „Oberwichtel“ + Rahmen Gold"
           }
         ]
       },
@@ -542,11 +549,11 @@
           "kat": "angriff",
           "name": "Kleckerer",
           "start": true,
-          "kosten": 20,
+          "kosten": 18,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 70
+            "chance": 75
           },
           "effekte": [],
           "ausgaenge": [
@@ -561,8 +568,10 @@
           "kat": "angriff",
           "name": "Bommelschwinger",
           "start": false,
-          "kosten": 15,
-          "sonder": {},
+          "kosten": 12,
+          "sonder": {
+            "zuerst": true
+          },
           "wuerfe": {
             "art": "einfach",
             "chance": 90
@@ -570,15 +579,15 @@
           "effekte": [
             {
               "art": "ausweichen",
-              "wann": "erfolg",
               "wert": 15,
               "ziel": "selbst",
+              "wann": "erfolg",
               "runden": 1
             }
           ],
           "ausgaenge": [
             {
-              "wert": 12,
+              "wert": 11,
               "anteil": 100
             }
           ]
@@ -586,20 +595,20 @@
         {
           "id": "trickserie",
           "kat": "angriff",
-          "name": "Trickserie",
+          "name": "Lichterkette",
           "start": false,
-          "kosten": 20,
+          "kosten": 18,
           "sonder": {},
           "wuerfe": {
-            "n": 4,
             "art": "kette",
             "chance": 70,
+            "n": 5,
             "steigerung": 2
           },
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 6,
+              "wert": 4,
               "anteil": 100
             }
           ]
@@ -609,11 +618,11 @@
           "kat": "verteidigung",
           "name": "Besinnung",
           "start": true,
-          "kosten": 5,
+          "kosten": 8,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 60
+            "chance": 65
           },
           "effekte": [],
           "ausgaenge": [
@@ -628,7 +637,7 @@
           "kat": "ausweichen",
           "name": "Geschenke holen",
           "start": true,
-          "kosten": 10,
+          "kosten": 6,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
@@ -637,9 +646,16 @@
           "effekte": [
             {
               "art": "chance",
-              "wann": "erfolg",
               "wert": 15,
               "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
               "runden": 1
             }
           ],
@@ -653,15 +669,15 @@
         {
           "id": "salto",
           "kat": "ausweichen",
-          "name": "Salto-Kick",
+          "name": "Kaminrutsche",
           "start": false,
-          "kosten": 12,
+          "kosten": 8,
           "sonder": {
             "gegenschlag": 12
           },
           "wuerfe": {
             "art": "einfach",
-            "chance": 40
+            "chance": 50
           },
           "effekte": [],
           "ausgaenge": [
@@ -685,26 +701,28 @@
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 30,
-              "anteil": 40
-            },
-            {
-              "wert": 20,
-              "anteil": 90
+              "wert": 15,
+              "anteil": 35
             },
             {
               "wert": 25,
               "anteil": 40
+            },
+            {
+              "wert": 40,
+              "anteil": 25
             }
           ]
         },
         {
           "id": "dose_ex",
           "kat": "auftanken",
-          "name": "Dose auf ex",
+          "name": "Plätzchenteller",
           "start": false,
           "kosten": 0,
-          "sonder": {},
+          "sonder": {
+            "lp": 10
+          },
           "wuerfe": {
             "art": "einfach",
             "chance": 100
@@ -712,17 +730,13 @@
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 45,
-              "anteil": 50
-            },
-            {
-              "wert": 0,
-              "anteil": 50
+              "wert": 15,
+              "anteil": 100
             }
           ]
         }
       ],
-      "lp_faktor": 0.85,
+      "lp_faktor": 0.9,
       "noerten_faktor": 1
     },
     "003": {
@@ -747,29 +761,29 @@
         "4": [
           {
             "art": "verbessern",
+            "aktion": "pfotenhiebe",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "pfotenhiebe"
+            "wert": 5
           }
         ],
         "5": [
           {
             "art": "lernt",
-            "aktion": "kuscheln"
+            "aktion": "wildes_toben"
           }
         ],
         "6": [
           {
             "art": "verbessern",
+            "aktion": "hund_als_schild",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "klein_machen"
+            "wert": 5
           },
           {
             "art": "verbessern",
+            "aktion": "schluck",
             "feld": "wert",
-            "wert": 3,
-            "aktion": "schluck"
+            "wert": 3
           }
         ],
         "7": [
@@ -781,11 +795,11 @@
         "8": [
           {
             "art": "lernt",
-            "aktion": "wildes_toben"
+            "aktion": "knurren"
           },
           {
             "art": "lernt",
-            "aktion": "hund_als_schild"
+            "aktion": "kuscheln"
           }
         ],
         "9": [
@@ -801,9 +815,9 @@
         "10": [
           {
             "art": "verbessern",
+            "aktion": "pfotenhiebe",
             "feld": "n",
-            "wert": 1,
-            "aktion": "pfotenhiebe"
+            "wert": 1
           }
         ],
         "11": [
@@ -839,9 +853,9 @@
           },
           {
             "art": "verbessern",
-            "feld": "chance",
-            "wert": 5,
-            "aktion": "verstecken"
+            "aktion": "hund_als_schild",
+            "feld": "wert",
+            "wert": 5
           }
         ],
         "15": [
@@ -865,9 +879,9 @@
         "17": [
           {
             "art": "verbessern",
+            "aktion": "wildes_toben",
             "feld": "wert",
-            "wert": 5,
-            "aktion": "kuscheln"
+            "wert": 2
           }
         ],
         "18": [
@@ -900,12 +914,12 @@
           "kat": "angriff",
           "name": "Pfotenhiebe",
           "start": true,
-          "kosten": 20,
+          "kosten": 18,
           "sonder": {},
           "wuerfe": {
-            "n": 3,
             "art": "mehrfach",
-            "chance": 65
+            "chance": 65,
+            "n": 3
           },
           "effekte": [],
           "ausgaenge": [
@@ -920,13 +934,13 @@
           "kat": "angriff",
           "name": "Wildes Toben",
           "start": false,
-          "kosten": 25,
+          "kosten": 20,
           "sonder": {},
           "wuerfe": {
-            "n": 2,
             "art": "zufall",
-            "bis": 4,
-            "chance": 75
+            "chance": 75,
+            "n": 2,
+            "bis": 4
           },
           "effekte": [],
           "ausgaenge": [
@@ -939,9 +953,9 @@
         {
           "id": "knabbern",
           "kat": "angriff",
-          "name": "Fass",
+          "name": "Fass!",
           "start": false,
-          "kosten": 15,
+          "kosten": 16,
           "sonder": {
             "lebensraub": 50
           },
@@ -949,37 +963,10 @@
             "art": "einfach",
             "chance": 60
           },
-          "effekte": [
-            {
-              "art": "schaden",
-              "wann": "fehlschlag",
-              "wert": 5,
-              "ziel": "selbst",
-              "runden": 1
-            }
-          ],
-          "ausgaenge": [
-            {
-              "wert": 25,
-              "anteil": 100
-            }
-          ]
-        },
-        {
-          "id": "klein_machen",
-          "kat": "verteidigung",
-          "name": "Klein machen",
-          "start": true,
-          "kosten": 5,
-          "sonder": {},
-          "wuerfe": {
-            "art": "einfach",
-            "chance": 85
-          },
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 40,
+              "wert": 22,
               "anteil": 100
             }
           ]
@@ -988,8 +975,8 @@
           "id": "hund_als_schild",
           "kat": "verteidigung",
           "name": "Hund als Schild",
-          "start": false,
-          "kosten": 8,
+          "start": true,
+          "kosten": 9,
           "sonder": {
             "schild": true
           },
@@ -1000,7 +987,34 @@
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 18,
+              "wert": 15,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "knurren",
+          "kat": "verteidigung",
+          "name": "Knurren",
+          "start": false,
+          "kosten": 8,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [
+            {
+              "art": "chance",
+              "wert": -15,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 50,
               "anteil": 100
             }
           ]
@@ -1010,7 +1024,7 @@
           "kat": "ausweichen",
           "name": "Hinterm Hund verstecken",
           "start": true,
-          "kosten": 10,
+          "kosten": 6,
           "sonder": {
             "fest": true
           },
@@ -1018,7 +1032,22 @@
             "art": "einfach",
             "chance": 45
           },
-          "effekte": [],
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "chance",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
           "ausgaenge": [
             {
               "wert": 0,
@@ -1067,7 +1096,7 @@
           ]
         }
       ],
-      "lp_faktor": 1.1,
+      "lp_faktor": 1.15,
       "noerten_faktor": 1
     },
     "004": {
@@ -1092,9 +1121,9 @@
         "4": [
           {
             "art": "verbessern",
-            "feld": "chance",
-            "wert": 5,
-            "aktion": "fingerschnipp"
+            "aktion": "fingerschnipp",
+            "feld": "wert",
+            "wert": 2
           }
         ],
         "5": [
@@ -1106,15 +1135,15 @@
         "6": [
           {
             "art": "verbessern",
+            "aktion": "klein_machen",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "klein_machen"
+            "wert": 5
           },
           {
             "art": "verbessern",
+            "aktion": "schluck",
             "feld": "wert",
-            "wert": 3,
-            "aktion": "schluck"
+            "wert": 3
           }
         ],
         "7": [
@@ -1126,7 +1155,7 @@
         "8": [
           {
             "art": "lernt",
-            "aktion": "exen"
+            "aktion": "auslachen"
           },
           {
             "art": "lernt",
@@ -1146,7 +1175,7 @@
         "10": [
           {
             "art": "lernt",
-            "aktion": "auslachen"
+            "aktion": "exen"
           }
         ],
         "11": [
@@ -1206,9 +1235,9 @@
         "17": [
           {
             "art": "verbessern",
+            "aktion": "doppelfeige",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "doppelfeige"
+            "wert": 5
           }
         ],
         "18": [
@@ -1230,7 +1259,7 @@
         "20": [
           {
             "art": "optik",
-            "text": "Titel „Ur-Nörti“ + Rahmen Gold"
+            "text": "Titel „Feigenkönig“ + Rahmen Gold"
           }
         ]
       },
@@ -1260,12 +1289,12 @@
           "kat": "angriff",
           "name": "Doppelfeige",
           "start": false,
-          "kosten": 25,
+          "kosten": 24,
           "sonder": {},
           "wuerfe": {
-            "n": 2,
             "art": "mehrfach",
-            "chance": 75
+            "chance": 75,
+            "n": 2
           },
           "effekte": [],
           "ausgaenge": [
@@ -1283,9 +1312,9 @@
           "kosten": 20,
           "sonder": {},
           "wuerfe": {
-            "n": 5,
             "art": "kette",
             "chance": 70,
+            "n": 5,
             "steigerung": 2
           },
           "effekte": [],
@@ -1301,7 +1330,7 @@
           "kat": "verteidigung",
           "name": "Klein machen",
           "start": true,
-          "kosten": 5,
+          "kosten": 8,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
@@ -1320,18 +1349,18 @@
           "kat": "verteidigung",
           "name": "Auslachen",
           "start": false,
-          "kosten": 10,
+          "kosten": 12,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
-            "chance": 35
+            "chance": 45
           },
           "effekte": [
             {
               "art": "noerten",
-              "wann": "erfolg",
-              "wert": -10,
+              "wert": -12,
               "ziel": "gegner",
+              "wann": "erfolg",
               "runden": 1
             }
           ],
@@ -1347,13 +1376,28 @@
           "kat": "ausweichen",
           "name": "Seitschritt",
           "start": true,
-          "kosten": 10,
+          "kosten": 6,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
             "chance": 50
           },
-          "effekte": [],
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "chance",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
           "ausgaenge": [
             {
               "wert": 0,
@@ -1366,15 +1410,23 @@
           "kat": "ausweichen",
           "name": "Wegrollen",
           "start": false,
-          "kosten": 8,
+          "kosten": 4,
           "sonder": {
             "halb": true
           },
           "wuerfe": {
             "art": "einfach",
-            "chance": 40
+            "chance": 50
           },
-          "effekte": [],
+          "effekte": [
+            {
+              "art": "chance",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
           "ausgaenge": [
             {
               "wert": 0,
@@ -1415,7 +1467,7 @@
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 32,
+              "wert": 34,
               "anteil": 80
             },
             {
@@ -1432,14 +1484,14 @@
           "kosten": 0,
           "sonder": {},
           "wuerfe": {
-            "n": 4,
             "art": "mehrfach",
-            "chance": 75
+            "chance": 75,
+            "n": 4
           },
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 8,
+              "wert": 9,
               "anteil": 100
             }
           ]
@@ -1470,29 +1522,29 @@
         "4": [
           {
             "art": "verbessern",
+            "aktion": "abtauchen",
             "feld": "chance",
-            "wert": 5,
-            "aktion": "bass_drop"
+            "wert": 5
           }
         ],
         "5": [
           {
             "art": "lernt",
-            "aktion": "lautstaerke_11"
+            "aktion": "schallwelle"
           }
         ],
         "6": [
           {
             "art": "verbessern",
-            "feld": "wert",
-            "wert": 3,
-            "aktion": "boxenwand"
+            "aktion": "boxenwand",
+            "feld": "chance",
+            "wert": 5
           },
           {
             "art": "verbessern",
+            "aktion": "schluck",
             "feld": "wert",
-            "wert": 3,
-            "aktion": "schluck"
+            "wert": 3
           }
         ],
         "7": [
@@ -1504,7 +1556,7 @@
         "8": [
           {
             "art": "lernt",
-            "aktion": "schallwelle"
+            "aktion": "lautstaerke_11"
           },
           {
             "art": "lernt",
@@ -1524,9 +1576,9 @@
         "10": [
           {
             "art": "verbessern",
-            "feld": "chance",
-            "wert": 5,
-            "aktion": "bass_drop"
+            "aktion": "boxenwand",
+            "feld": "wert",
+            "wert": 4
           }
         ],
         "11": [
@@ -1558,15 +1610,15 @@
         "14": [
           {
             "art": "verbessern",
+            "aktion": "bass_drop",
             "feld": "wert",
-            "wert": 4,
-            "aktion": "bass_drop"
+            "wert": 5
           },
           {
             "art": "verbessern",
-            "feld": "chance",
-            "wert": 5,
-            "aktion": "boxenwand"
+            "aktion": "boxenwand",
+            "feld": "wert",
+            "wert": 6
           }
         ],
         "15": [
@@ -1590,9 +1642,9 @@
         "17": [
           {
             "art": "verbessern",
-            "feld": "effekt",
-            "wert": 25,
-            "aktion": "lautstaerke_11"
+            "aktion": "schallwelle",
+            "feld": "wert",
+            "wert": 3
           }
         ],
         "18": [
@@ -1614,7 +1666,7 @@
         "20": [
           {
             "art": "optik",
-            "text": "Titel „Bass-Boss“ + Rahmen Gold"
+            "text": "Titel „Seine Durchlaucht“ + Rahmen Gold"
           }
         ]
       },
@@ -1625,7 +1677,7 @@
           "kat": "angriff",
           "name": "Sideeye",
           "start": true,
-          "kosten": 25,
+          "kosten": 22,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
@@ -1634,25 +1686,25 @@
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 25,
-              "anteil": 60
-            },
-            {
-              "wert": 35,
-              "anteil": 30
-            },
-            {
               "wert": 15,
-              "anteil": 10
+              "anteil": 15
+            },
+            {
+              "wert": 25,
+              "anteil": 55
+            },
+            {
+              "wert": 40,
+              "anteil": 30
             }
           ]
         },
         {
           "id": "lautstaerke_11",
           "kat": "angriff",
-          "name": "Lautstärke 11",
+          "name": "Monokel einklemmen",
           "start": false,
-          "kosten": 15,
+          "kosten": 10,
           "sonder": {},
           "wuerfe": {
             "art": "einfach",
@@ -1661,15 +1713,22 @@
           "effekte": [
             {
               "art": "schaden",
-              "wann": "immer",
-              "wert": 50,
+              "wert": 40,
               "ziel": "selbst",
+              "wann": "immer",
+              "runden": 1
+            },
+            {
+              "art": "chance",
+              "wert": 10,
+              "ziel": "selbst",
+              "wann": "immer",
               "runden": 1
             }
           ],
           "ausgaenge": [
             {
-              "wert": 0,
+              "wert": 8,
               "anteil": 100
             }
           ]
@@ -1677,7 +1736,7 @@
         {
           "id": "schallwelle",
           "kat": "angriff",
-          "name": "Schallwelle",
+          "name": "Herablassender Blick",
           "start": false,
           "kosten": 12,
           "sonder": {
@@ -1690,7 +1749,7 @@
           "effekte": [],
           "ausgaenge": [
             {
-              "wert": 8,
+              "wert": 7,
               "anteil": 100
             }
           ]
@@ -1698,9 +1757,9 @@
         {
           "id": "boxenwand",
           "kat": "verteidigung",
-          "name": "Boxenwand",
+          "name": "Zylinder lupfen",
           "start": true,
-          "kosten": 5,
+          "kosten": 8,
           "sonder": {
             "schild": true
           },
@@ -1719,9 +1778,9 @@
         {
           "id": "abtauchen",
           "kat": "ausweichen",
-          "name": "Abtauchen",
+          "name": "Vornehm zurücklehnen",
           "start": true,
-          "kosten": 10,
+          "kosten": 6,
           "sonder": {
             "fest": true,
             "halb": true
@@ -1730,7 +1789,22 @@
             "art": "einfach",
             "chance": 40
           },
-          "effekte": [],
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "chance",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
           "ausgaenge": [
             {
               "wert": 0,
@@ -1741,7 +1815,7 @@
         {
           "id": "schluck",
           "kat": "auftanken",
-          "name": "Schluck",
+          "name": "Sekt nippen",
           "start": true,
           "kosten": 0,
           "sonder": {},
@@ -1760,7 +1834,7 @@
         {
           "id": "pause_taste",
           "kat": "auftanken",
-          "name": "Pause-Taste",
+          "name": "Teestunde",
           "start": false,
           "kosten": 0,
           "sonder": {},
@@ -1771,15 +1845,1535 @@
           "effekte": [
             {
               "art": "tank",
-              "wann": "immer",
-              "wert": 10,
+              "wert": 6,
               "ziel": "selbst",
+              "wann": "immer",
               "runden": 2
             }
           ],
           "ausgaenge": [
             {
-              "wert": 12,
+              "wert": 6,
+              "anteil": 100
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 1.1,
+      "noerten_faktor": 1
+    },
+    "006": {
+      "name": "Dj Nörti",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "aktion": "dj_beat",
+            "feld": "wert",
+            "wert": 1
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "dj_scratch"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "aktion": "dj_kopfhoerer",
+            "feld": "chance",
+            "wert": 5
+          },
+          {
+            "art": "verbessern",
+            "aktion": "dj_mate",
+            "feld": "wert",
+            "wert": 3
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "dj_leiser"
+          },
+          {
+            "art": "lernt",
+            "aktion": "dj_zugabe"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "aktion": "dj_scratch",
+            "feld": "wert",
+            "wert": 2
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "dj_drop"
+          },
+          {
+            "art": "verbessern",
+            "aktion": "dj_mate",
+            "feld": "wert",
+            "wert": 4
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "aktion": "dj_beat",
+            "feld": "wert",
+            "wert": 2
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Headliner“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 6,
+      "aktionen": [
+        {
+          "id": "dj_beat",
+          "kat": "angriff",
+          "name": "Beat droppen",
+          "start": true,
+          "kosten": 16,
+          "sonder": {},
+          "wuerfe": {
+            "art": "kette",
+            "chance": 65,
+            "n": 4,
+            "steigerung": 3
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 5,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dj_scratch",
+          "kat": "angriff",
+          "name": "Scratch",
+          "start": false,
+          "kosten": 14,
+          "sonder": {},
+          "wuerfe": {
+            "art": "mehrfach",
+            "chance": 80,
+            "n": 2
+          },
+          "effekte": [
+            {
+              "art": "tempo",
+              "wert": -1,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 2
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 7,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dj_drop",
+          "kat": "angriff",
+          "name": "Der Drop",
+          "start": false,
+          "kosten": 24,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 90
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 25
+            },
+            {
+              "wert": 20,
+              "anteil": 50
+            },
+            {
+              "wert": 45,
+              "anteil": 25
+            }
+          ]
+        },
+        {
+          "id": "dj_kopfhoerer",
+          "kat": "verteidigung",
+          "name": "Kopfhörer auf",
+          "start": true,
+          "kosten": 8,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 50,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dj_leiser",
+          "kat": "verteidigung",
+          "name": "Regler runter",
+          "start": false,
+          "kosten": 10,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 70
+          },
+          "effekte": [
+            {
+              "art": "schaden",
+              "wert": -30,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 35,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dj_moonwalk",
+          "kat": "ausweichen",
+          "name": "Moonwalk",
+          "start": true,
+          "kosten": 6,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 50
+          },
+          "effekte": [
+            {
+              "art": "tempo",
+              "wert": 2,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 2
+            },
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dj_mate",
+          "kat": "auftanken",
+          "name": "Mate exen",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 24,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "dj_zugabe",
+          "kat": "auftanken",
+          "name": "Zugabe!",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [
+            {
+              "art": "tank",
+              "wert": 6,
+              "ziel": "selbst",
+              "wann": "immer",
+              "runden": 3
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 6,
+              "anteil": 100
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 0.9,
+      "noerten_faktor": 1.05
+    },
+    "007": {
+      "name": "Super Nörti",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "aktion": "sn_superschlag",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "sn_ueberschall"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "aktion": "sn_cape",
+            "feld": "chance",
+            "wert": 5
+          },
+          {
+            "art": "verbessern",
+            "aktion": "sn_fruehstueck",
+            "feld": "wert",
+            "wert": 3
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "sn_stahl"
+          },
+          {
+            "art": "lernt",
+            "aktion": "sn_kraft"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "aktion": "sn_superschlag",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "sn_laser"
+          },
+          {
+            "art": "lernt",
+            "aktion": "sn_sturzflug"
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "aktion": "sn_ueberschall",
+            "feld": "wert",
+            "wert": 3
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Retter der Feigen“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 7,
+      "aktionen": [
+        {
+          "id": "sn_superschlag",
+          "kat": "angriff",
+          "name": "Superschlag",
+          "start": true,
+          "kosten": 20,
+          "sonder": {
+            "rueckstoss": 2
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 70
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 21,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_ueberschall",
+          "kat": "angriff",
+          "name": "Überschall-Feige",
+          "start": false,
+          "kosten": 14,
+          "sonder": {
+            "zuerst": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 14,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_laser",
+          "kat": "angriff",
+          "name": "Laserblick",
+          "start": false,
+          "kosten": 16,
+          "sonder": {
+            "durchschlag": 60
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 15,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_cape",
+          "kat": "verteidigung",
+          "name": "Cape-Wirbel",
+          "start": true,
+          "kosten": 8,
+          "sonder": {
+            "schild": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 14,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_stahl",
+          "kat": "verteidigung",
+          "name": "Unzerstörbar",
+          "start": false,
+          "kosten": 10,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 70
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 75,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_abheben",
+          "kat": "ausweichen",
+          "name": "Abheben",
+          "start": true,
+          "kosten": 6,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 50
+          },
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "chance",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_sturzflug",
+          "kat": "ausweichen",
+          "name": "Sturzflug",
+          "start": false,
+          "kosten": 8,
+          "sonder": {
+            "gegenschlag": 12
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 45
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_fruehstueck",
+          "kat": "auftanken",
+          "name": "Heldenfrühstück",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 25,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "sn_kraft",
+          "kat": "auftanken",
+          "name": "Kräfte sammeln",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [
+            {
+              "art": "schaden",
+              "wert": 25,
+              "ziel": "selbst",
+              "wann": "immer",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 14,
+              "anteil": 100
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 1,
+      "noerten_faktor": 0.95
+    },
+    "008": {
+      "name": "Glücks Nörti",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "aktion": "gl_klee",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "gl_vierblatt"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "aktion": "gl_teddy",
+            "feld": "chance",
+            "wert": 5
+          },
+          {
+            "art": "verbessern",
+            "aktion": "gl_keks",
+            "feld": "wert",
+            "wert": 3
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "gl_toitoi"
+          },
+          {
+            "art": "lernt",
+            "aktion": "gl_nickerchen"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "aktion": "gl_klee",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "gl_hufeisen"
+          },
+          {
+            "art": "verbessern",
+            "aktion": "gl_vierblatt",
+            "feld": "n",
+            "wert": 1
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "aktion": "gl_teddy",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Glückspilz“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 5,
+      "aktionen": [
+        {
+          "id": "gl_klee",
+          "kat": "angriff",
+          "name": "Kleeblatt-Wurf",
+          "start": true,
+          "kosten": 16,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 4,
+              "anteil": 30
+            },
+            {
+              "wert": 14,
+              "anteil": 45
+            },
+            {
+              "wert": 28,
+              "anteil": 20
+            },
+            {
+              "wert": 50,
+              "anteil": 5
+            }
+          ]
+        },
+        {
+          "id": "gl_vierblatt",
+          "kat": "angriff",
+          "name": "Vierblättrig",
+          "start": false,
+          "kosten": 20,
+          "sonder": {},
+          "wuerfe": {
+            "art": "zufall",
+            "chance": 75,
+            "n": 1,
+            "bis": 4
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 7,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "gl_hufeisen",
+          "kat": "angriff",
+          "name": "Hufeisen",
+          "start": false,
+          "kosten": 16,
+          "sonder": {
+            "durchschlag": 50
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 16,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "gl_teddy",
+          "kat": "verteidigung",
+          "name": "Teddy drücken",
+          "start": true,
+          "kosten": 8,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 20,
+              "anteil": 30
+            },
+            {
+              "wert": 50,
+              "anteil": 40
+            },
+            {
+              "wert": 90,
+              "anteil": 30
+            }
+          ]
+        },
+        {
+          "id": "gl_glueck",
+          "kat": "ausweichen",
+          "name": "Glück gehabt",
+          "start": true,
+          "kosten": 6,
+          "sonder": {
+            "fest": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 50
+          },
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "chance",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "gl_toitoi",
+          "kat": "ausweichen",
+          "name": "Toi, toi, toi",
+          "start": false,
+          "kosten": 6,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 50
+          },
+          "effekte": [
+            {
+              "art": "chance",
+              "wert": 25,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            },
+            {
+              "art": "schaden",
+              "wert": 20,
+              "ziel": "selbst",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "gl_keks",
+          "kat": "auftanken",
+          "name": "Glückskeks",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 10,
+              "anteil": 30
+            },
+            {
+              "wert": 25,
+              "anteil": 45
+            },
+            {
+              "wert": 45,
+              "anteil": 25
+            }
+          ]
+        },
+        {
+          "id": "gl_nickerchen",
+          "kat": "auftanken",
+          "name": "Teddy-Nickerchen",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [
+            {
+              "art": "regen",
+              "wert": 5,
+              "ziel": "selbst",
+              "wann": "immer",
+              "runden": 2
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 10,
+              "anteil": 100
+            }
+          ]
+        }
+      ],
+      "lp_faktor": 1,
+      "noerten_faktor": 1
+    },
+    "009": {
+      "name": "Piratennörti",
+      "pfad": {
+        "2": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "3": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "4": [
+          {
+            "art": "verbessern",
+            "aktion": "pi_saebel",
+            "feld": "wert",
+            "wert": 1
+          }
+        ],
+        "5": [
+          {
+            "art": "lernt",
+            "aktion": "pi_pluendern"
+          }
+        ],
+        "6": [
+          {
+            "art": "verbessern",
+            "aktion": "pi_holzbein",
+            "feld": "chance",
+            "wert": 5
+          },
+          {
+            "art": "verbessern",
+            "aktion": "pi_rum",
+            "feld": "wert",
+            "wert": 3
+          }
+        ],
+        "7": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "8": [
+          {
+            "art": "lernt",
+            "aktion": "pi_fass"
+          },
+          {
+            "art": "lernt",
+            "aktion": "pi_schatz"
+          }
+        ],
+        "9": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "10": [
+          {
+            "art": "verbessern",
+            "aktion": "pi_saebel",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "11": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "12": [
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "wert",
+            "wert": 2
+          },
+          {
+            "art": "verbessern",
+            "kat": "verteidigung",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "13": [
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "14": [
+          {
+            "art": "lernt",
+            "aktion": "pi_kanone"
+          },
+          {
+            "art": "verbessern",
+            "aktion": "pi_pluendern",
+            "feld": "effekt",
+            "wert": 5
+          }
+        ],
+        "15": [
+          {
+            "art": "optik",
+            "text": "Rahmen Silber"
+          }
+        ],
+        "16": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          },
+          {
+            "art": "verbessern",
+            "kat": "angriff",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "17": [
+          {
+            "art": "verbessern",
+            "aktion": "pi_kanone",
+            "feld": "chance",
+            "wert": 5
+          }
+        ],
+        "18": [
+          {
+            "art": "tempo",
+            "wert": 1
+          },
+          {
+            "art": "noerten_faktor",
+            "wert": 0.05
+          }
+        ],
+        "19": [
+          {
+            "art": "lp_faktor",
+            "wert": 0.05
+          }
+        ],
+        "20": [
+          {
+            "art": "optik",
+            "text": "Titel „Schrecken der sieben Feigen“ + Rahmen Gold"
+          }
+        ]
+      },
+      "tempo": 4,
+      "aktionen": [
+        {
+          "id": "pi_saebel",
+          "kat": "angriff",
+          "name": "Säbelhieb",
+          "start": true,
+          "kosten": 18,
+          "sonder": {},
+          "wuerfe": {
+            "art": "mehrfach",
+            "chance": 75,
+            "n": 2
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 9,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "pi_pluendern",
+          "kat": "angriff",
+          "name": "Plündern",
+          "start": false,
+          "kosten": 12,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 80
+          },
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -8,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 8,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "pi_kanone",
+          "kat": "angriff",
+          "name": "Kanonenschuss",
+          "start": false,
+          "kosten": 26,
+          "sonder": {
+            "durchschlag": 30
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 75
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 20
+            },
+            {
+              "wert": 25,
+              "anteil": 50
+            },
+            {
+              "wert": 45,
+              "anteil": 30
+            }
+          ]
+        },
+        {
+          "id": "pi_holzbein",
+          "kat": "verteidigung",
+          "name": "Holzbein-Parade",
+          "start": true,
+          "kosten": 8,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 45,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "pi_fass",
+          "kat": "verteidigung",
+          "name": "Hinters Fass",
+          "start": false,
+          "kosten": 10,
+          "sonder": {
+            "schild": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 85
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 20,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "pi_bord",
+          "kat": "ausweichen",
+          "name": "Über Bord",
+          "start": true,
+          "kosten": 5,
+          "sonder": {
+            "fest": true,
+            "halb": true
+          },
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 40
+          },
+          "effekte": [
+            {
+              "art": "noerten",
+              "wert": -10,
+              "ziel": "gegner",
+              "wann": "erfolg",
+              "runden": 1
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 0,
+              "anteil": 100
+            }
+          ]
+        },
+        {
+          "id": "pi_rum",
+          "kat": "auftanken",
+          "name": "Buddel Rum",
+          "start": true,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [],
+          "ausgaenge": [
+            {
+              "wert": 40,
+              "anteil": 65
+            },
+            {
+              "wert": 0,
+              "anteil": 35
+            }
+          ]
+        },
+        {
+          "id": "pi_schatz",
+          "kat": "auftanken",
+          "name": "Schatzkarte",
+          "start": false,
+          "kosten": 0,
+          "sonder": {},
+          "wuerfe": {
+            "art": "einfach",
+            "chance": 100
+          },
+          "effekte": [
+            {
+              "art": "tank",
+              "wert": 6,
+              "ziel": "selbst",
+              "wann": "immer",
+              "runden": 3
+            }
+          ],
+          "ausgaenge": [
+            {
+              "wert": 6,
               "anteil": 100
             }
           ]
@@ -1791,6 +3385,7 @@
   },
   "format": 2,
   "regeln": {
+    "xp_sieg": 30,
     "kampf_lp": [
       {
         "name": "Kurz",
@@ -1805,42 +3400,6 @@
         "wert": 90
       }
     ],
-    "max_runden": 12,
-    "kampf_noerten": [
-      {
-        "name": "Wenig",
-        "wert": 50
-      },
-      {
-        "name": "Normal",
-        "wert": 70
-      },
-      {
-        "name": "Viel",
-        "wert": 100
-      }
-    ],
-    "ausweichen_max": 75,
-    "ausweichen_min": 25,
-    "kampf_standard": 1,
-    "konter_noerten": 10,
-    "konter_treffer": 20,
-    "getroffen_faktor": 1.5,
-    "ausweichen_pro_tempo": 5,
-    "auftanken_getroffen_faktor": 0,
-    "verteidigung_fehlschlag_faktor": 1,
-    "auftanken_gegen_verteidigen_faktor": 1.4,
-    "konter_schaden": 8,
-    "pegel_ab_runde": 6,
-    "pegel_pct": 15,
-    "pegel_max": 100,
-    "xp_sieg": 30,
-    "xp_niederlage": 10,
-    "xp_unentschieden": 20,
-    "xp_begegnung": 20,
-    "sammlung_faktor": 0.5,
-    "starter_faktor": 2,
-    "starter_geschenk": 90,
     "xp_kurve": [
       40,
       90,
@@ -1861,6 +3420,41 @@
       2920,
       3340,
       3800
-    ]
+    ],
+    "pegel_max": 100,
+    "pegel_pct": 15,
+    "max_runden": 12,
+    "xp_begegnung": 20,
+    "kampf_noerten": [
+      {
+        "name": "Wenig",
+        "wert": 50
+      },
+      {
+        "name": "Normal",
+        "wert": 70
+      },
+      {
+        "name": "Viel",
+        "wert": 100
+      }
+    ],
+    "xp_niederlage": 10,
+    "ausweichen_max": 75,
+    "ausweichen_min": 25,
+    "kampf_standard": 1,
+    "konter_noerten": 10,
+    "konter_schaden": 8,
+    "konter_treffer": 20,
+    "pegel_ab_runde": 4,
+    "starter_faktor": 2,
+    "sammlung_faktor": 0.5,
+    "getroffen_faktor": 1.5,
+    "starter_geschenk": 90,
+    "xp_unentschieden": 20,
+    "ausweichen_pro_tempo": 5,
+    "auftanken_getroffen_faktor": 0,
+    "verteidigung_fehlschlag_faktor": 1,
+    "auftanken_gegen_verteidigen_faktor": 1.4
   }
 }
