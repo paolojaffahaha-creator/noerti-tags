@@ -369,7 +369,7 @@
 <div class="wrap">
   <header class="top">
     <a class="logo" href="./">NÖRTI ARENA</a>
-    <a class="pill" href="../sammlung/">Meine Sammlung</a>
+    <nav class="navr"><a class="pill qpill" href="../anleitung/" aria-label="Spielanleitung: So geht's" title="So geht's">?</a><a class="pill" href="../sammlung/">Meine Sammlung</a></nav>
   </header>
   <main id="app" class="actions" style="gap:14px"><div class="spinner" aria-label="Lädt"></div></main>
 </div>
@@ -507,7 +507,7 @@
     const last = filled ? null : loadLast();
     const lastNames = (side) => last[side].map((e) => esc(e.name)).join(', ');
     app.innerHTML = `
-      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf: Figuren scannen (📡 live, doppelte XP) oder aus der Sammlung des Spielers wählen (📋 halbe XP). Danach wählt jeder verdeckt seinen Zug.</p></div>
+      <div><h1>ARENA</h1><p class="muted" style="margin:4px 0 0">Stellt eure Teams auf: Figuren scannen (📡 live, volle XP) oder aus der Sammlung eines Spielers holen (📋 halbe XP). Dann wählt jeder verdeckt seinen Zug, und es wird gleichzeitig aufgedeckt.</p><p class="small" style="margin:6px 0 0">Erster Kampf? <a href="../anleitung/#kampf">So läuft ein Kampf →</a></p></div>
       ${last ? `<button class="again" id="last"><span class="ic">↺</span><span><b>Wie letztes Mal</b>${lastNames('A')} gegen ${lastNames('B')}</span></button>` : ''}
       <div class="steps" aria-hidden="true"><span class="done">① Teamgröße</span><span class="${ready ? 'done' : 'now'}">② Figuren</span><span class="${ready ? 'now' : ''}">③ Kämpfen</span></div>
       <div class="sizes" role="group" aria-label="Teamgröße">${[1, 2, 3].map((n) => `<button data-size="${n}" aria-pressed="${l.size === n}">${n} gegen ${n}</button>`).join('')}</div>
@@ -808,18 +808,20 @@
         ${node(150, 42, '⚔️', 'ANGRIFF')}${node(246, 168, '🍺', 'AUFTANKEN')}${node(54, 168, '🛡️', 'VERTEIDIGEN')}
       </svg>
       <div class="rules">
+        <div><span>🍺</span><span><b>Nörten</b> sind die Ausdauer im Krug: Fast jede Aktion kostet welche, nur Auftanken füllt nach. Fehlen sie, ist die Aktion ausgegraut.</span></div>
         <div><span>🎯</span><span>Jede Figur hat eigene <b>Aktionen</b> in vier Kategorien. Wer wen schlägt, entscheidet die <b>Kategorie</b> – wie stark, entscheidet die Aktion.</span></div>
         <div><span>⚔️</span><span><b>Angriff</b> trifft beim Auftanken mit ×${f}. Gegen Verteidigung wird abgewehrt – greift die Abwehr, bekommt der Gegner einen Konter.</span></div>
         <div><span>🛡️</span><span><b>Verteidigung</b> würfelt, ob die Abwehr greift (z. B. −40 % Schaden oder ein Schild, das Punkte schluckt). Greift sie, gibt es einen <b>Konter</b>: +${R.konter_treffer} % Treffer in der nächsten Runde, Angreifer verliert ${R.konter_noerten} Nörten${R.konter_schaden > 0 ? ` und sofort ${R.konter_schaden} LP` : ''}.</span></div>
         <div><span>🍺</span><span><b>Auftanken</b> füllt den Krug – wie viel, steht auf der Karte. Verteidigt der Gegner nur, gibt es ×${komma(R.auftanken_gegen_verteidigen_faktor)}. Wird man getroffen, ${R.auftanken_getroffen_faktor > 0 ? `nur ×${komma(R.auftanken_getroffen_faktor)}` : 'ist alles verschüttet – kein einziger Nörti'}.</span></div>
-        <div><span>💨</span><span><b>Ausweichen</b> ist die riskante Wahl: Würfelduell gegen einen Angriff (Tempo hilft) – klappt es, geht alles daneben, sonst ×${f} Schaden.</span></div>
+        <div><span>💨</span><span><b>Ausweichen</b> ist die riskante Wahl: Würfelduell gegen einen Angriff (Tempo hilft). Klappt es, geht alles daneben, und bei vielen Figuren <b>stolpert</b> der Angreifer (steht auf der Karte unter „Erfolg“). Sonst gibt es ×${f} Schaden.</span></div>
         <div><span>✨</span><span><b>Effekte</b> wirken ab der nächsten Runde und stehen als Plakette im Infokasten.</span></div>
         <div><span>🤝</span><span><b>Reihenfolge:</b> Wer zuletzt gewählt hat, wählt in der nächsten Runde zuerst – so wandert das Handy nur einmal pro Runde.</span></div>
         <div><span>🔄</span><span><b>Wechseln</b> kostet die Runde. Die neue Figur steckt den Angriff dieser Runde ein – bringt aber einen eigenen vollen Krug mit.</span></div>
         ${R.pegel_ab_runde > 0 && R.pegel_pct > 0 ? `<div><span>📈</span><span><b>Pegel:</b> ab Runde ${R.pegel_ab_runde} macht jeder Treffer jede Runde +${R.pegel_pct} % mehr Schaden (höchstens +${R.pegel_max ?? 100} %). Ewig abwarten lohnt sich nicht.</span></div>` : ''}
         <div><span>🎲</span><span><b>Würfel:</b> 75 % heißt beim W20 „6 oder höher“. Die Leiste zeigt grün, welche Zahlen reichen.</span></div>
       </div>
-      <button class="btn" id="hclose">Verstanden</button>`).querySelector('#hclose').onclick = closeSheet;
+      <a class="btn" href="../anleitung/" target="_blank" rel="noopener">Ganze Spielanleitung öffnen</a>
+      <button class="btn-main" id="hclose">VERSTANDEN</button>`).querySelector('#hclose').onclick = closeSheet;
   }
 
   function roundBar(s, extra) {

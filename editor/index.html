@@ -308,6 +308,7 @@
           <label class="f">Nörten-Faktor<input data-p="typen.${sel}.noerten_faktor" data-num data-live type="number" step="0.05" min="0.3" max="3" inputmode="decimal" value="${t.noerten_faktor ?? 1}"><small data-hint="no">bei „Normal“: ${Math.round(standardWert('kampf_noerten') * (t.noerten_faktor ?? 1))} Nörten</small></label>
           <label class="f">Tempo (1–10)<input data-p="typen.${sel}.tempo" data-num type="number" min="1" max="10" inputmode="numeric" value="${t.tempo}"><small>±${R.ausweichen_pro_tempo} % Ausweichen je Punkt</small></label>
         </div>
+        <label class="f">Rolle (für die Spielanleitung)<input data-p="typen.${sel}.rolle" value="${esc(t.rolle || '')}" placeholder="z. B. Störer – schwächt den Gegner" maxlength="90"><small>Ein kurzer Satz, wie die Figur spielt. Steht unter „So geht's“ → Die Figuren.</small></label>
         ${stdBlock()}
         <p class="small muted" style="margin:0">LP und Nörten werden vor dem Kampf gewählt (${R.kampf_lp.map((x) => `${esc(x.name)} ${x.wert}`).join(' / ')} LP · ${R.kampf_noerten.map((x) => `${esc(x.name)} ${x.wert}`).join(' / ')} Nörten) und mit dem Faktor multipliziert.</p>
       </section>

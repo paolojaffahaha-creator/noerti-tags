@@ -31,6 +31,7 @@
   .photo .img.stdbg { background: radial-gradient(circle at 50% 62%, #FFFFFF 0 46%, #EEF0F2 47%); }
   .photo .cap { position: absolute; right: 18px; bottom: 16px; font: 700 11px var(--body); background: var(--white); border: 1.5px solid var(--ink); border-radius: 99px; padding: 1px 8px; }
   .photo { position: relative; }
+  .hint { margin: 0; line-height: 1.45; }
   .ro { font-size: 13px; text-align: center; background: var(--white); border: 2px dashed var(--muted); border-radius: 10px; padding: 6px 10px; color: var(--muted); }
 
   /* Freundebuch: liniertes Papier, Freunde als eingeklebte Karten */
@@ -64,7 +65,7 @@
 <div class="wrap">
   <header class="top">
     <a class="logo" href="../sammlung/">NÖRTI ARENA</a>
-    <a class="pill" href="../sammlung/">Meine Sammlung</a>
+    <nav class="navr"><a class="pill qpill" href="../anleitung/" aria-label="Spielanleitung: So geht's" title="So geht's">?</a><a class="pill" href="../sammlung/">Meine Sammlung</a></nav>
   </header>
   <main id="app" class="actions" style="gap:16px"><div class="spinner" aria-label="Lädt"></div></main>
 </div>
@@ -161,6 +162,7 @@
         ${offen.length ? `<button class="btn" id="reward">⭐ ${offen.length === 1 ? 'Belohnung' : offen.length + ' Belohnungen'} wählen (Level ${offen.join(', ')})</button>` : ''}
         ${readonly ? '' : '<button class="btn" id="arena">In die Arena</button>'}
       </div>
+      ${!readonly && !fig.is_mine ? `<p class="small muted hint">${fig.owner_name ? `<b>Übernehmen</b> heißt tauschen: Die Figur wechselt in deine Sammlung und behält Level und Freundebuch. Nur, wenn ${esc(fig.owner_name)} einverstanden ist.` : `<b>Einsammeln:</b> Die Figur gehört dann dir und levelt ab jetzt für dich. Ist es deine allererste, wird sie dein ⭐ Starter mit doppelten XP und Start-Geschenk.`} <b>Kämpfen</b> geht auch ohne Einsammeln. <a href="../anleitung/">So geht's →</a></p>` : ''}
       <section class="book" id="book" aria-label="Freundebuch"><h2>FREUNDEBUCH</h2><div class="spinner" style="margin:10px auto"></div></section>`;
     const ar = app.querySelector('#arena'); if (ar) ar.onclick = toArena;
     renderBook();

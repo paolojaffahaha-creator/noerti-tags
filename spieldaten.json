@@ -372,7 +372,8 @@
         }
       ],
       "lp_faktor": 0.95,
-      "noerten_faktor": 1.05
+      "noerten_faktor": 1.05,
+      "rolle": "Störer – schwächt den Gegner mit Gebrabbel und Gift, hält selbst wenig aus"
     },
     "002": {
       "name": "Wichtel",
@@ -737,7 +738,8 @@
         }
       ],
       "lp_faktor": 0.9,
-      "noerten_faktor": 1
+      "noerten_faktor": 1,
+      "rolle": "Flink – das höchste Tempo, weicht gern aus und packt Geschenke aus dem Glücksrad"
     },
     "003": {
       "name": "Doggylover",
@@ -1097,7 +1099,8 @@
         }
       ],
       "lp_faktor": 1.15,
-      "noerten_faktor": 1
+      "noerten_faktor": 1,
+      "rolle": "Zäh – viele Lebenspunkte, Mehrfach-Treffer und der Hund als Schild"
     },
     "004": {
       "name": "Original Nörti",
@@ -1498,7 +1501,8 @@
         }
       ],
       "lp_faktor": 1,
-      "noerten_faktor": 1
+      "noerten_faktor": 1,
+      "rolle": "Allrounder – verlässliche Treffer und viele Arten zu tanken"
     },
     "005": {
       "name": "Edles Nörti",
@@ -1860,7 +1864,8 @@
         }
       ],
       "lp_faktor": 1.1,
-      "noerten_faktor": 1
+      "noerten_faktor": 1,
+      "rolle": "Glücksritter – langsam, aber mit großen Treffern aus dem Glücksrad"
     },
     "006": {
       "name": "Dj Nörti",
@@ -2236,7 +2241,8 @@
         }
       ],
       "lp_faktor": 0.9,
-      "noerten_faktor": 1.05
+      "noerten_faktor": 1.05,
+      "rolle": "Rhythmus – Ketten-Beats, Tempo-Tricks und der große Drop"
     },
     "007": {
       "name": "Super Nörti",
@@ -2612,7 +2618,8 @@
         }
       ],
       "lp_faktor": 1,
-      "noerten_faktor": 0.95
+      "noerten_faktor": 0.95,
+      "rolle": "Held – harter Superschlag, schnell, schützt sich mit dem Cape"
     },
     "008": {
       "name": "Glücks Nörti",
@@ -3010,7 +3017,8 @@
         }
       ],
       "lp_faktor": 1,
-      "noerten_faktor": 1
+      "noerten_faktor": 1,
+      "rolle": "Glückspilz – Angriff, Abwehr und Tanken laufen über das Glücksrad"
     },
     "009": {
       "name": "Piratennörti",
@@ -3380,7 +3388,8 @@
         }
       ],
       "lp_faktor": 1.1,
-      "noerten_faktor": 1
+      "noerten_faktor": 1,
+      "rolle": "Plünderer – langsam auf dem Holzbein, Doppelhieb mit dem Säbel, klaut Nörten"
     }
   },
   "format": 2,

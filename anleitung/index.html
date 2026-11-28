@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>So geht's · Nörti Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Rubik:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../app/style.css">
+<style>
+  /* Spielanleitung: eine lange Seite mit Sprungmarken; alle Zahlen kommen aus den Spieldaten */
+  h1 { margin: 0; font-size: 40px; line-height: 1; }
+  .lead { margin: 6px 0 0; }
+  .toc { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc a { font-size: 13px; font-weight: 500; text-decoration: none; border: 2px solid var(--ink); border-radius: 99px; padding: 3px 10px; background: var(--white); }
+  .toc a:hover { background: var(--marker); }
+  #app > *, .sec > * { min-width: 0; max-width: 100%; }
+  .sec { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 12px; }
+  .t th:not(:first-child) { white-space: nowrap; }
+  .sec > h2 { margin: 8px 0 0; font: 400 26px/1.1 var(--disp); }
+  .sec p { margin: 0; }
+  .steps3 { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  .steps3 li { counter-increment: s; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: start; background: var(--white); border: 2px solid var(--ink); border-radius: 14px; padding: 10px 12px; }
+  .steps3 li::before { content: counter(s); font: 400 18px var(--disp); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--marker); border: 2px solid var(--ink); }
+  .steps3 b { display: block; }
+  .tip { background: var(--white); border: 2px dashed var(--ink); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .kats { display: grid; gap: 8px; }
+  .kat { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: start; background: var(--white); border: 2px solid var(--ink); border-left-width: 8px; border-radius: 12px; padding: 10px 12px; }
+  .kat .ic { font-size: 26px; line-height: 1; }
+  .kat b { font-family: var(--disp); font-weight: 400; font-size: 18px; }
+  .kat .vs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .kat .vs span { font-size: 12px; font-weight: 700; border-radius: 99px; padding: 1px 8px; border: 1.5px solid var(--ink); }
+  .kat .vs .s { background: #DDF3E5; } .kat .vs .w { background: #FBE1E1; } .kat .vs .r { background: #FFF1C9; }
+  .cycle { width: 100%; max-width: 320px; align-self: center; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; font-variant-numeric: tabular-nums; }
+  .t th, .t td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  .t th { font-size: 12px; color: var(--muted); }
+  .t tr:last-child td { border-bottom: 0; }
+  .t td.n { text-align: right; }
+  .scroll { overflow-x: auto; }
+  .w20 { display: grid; grid-template-columns: repeat(20, 1fr); gap: 2px; }
+  .w20 span { font-size: 10px; text-align: center; border: 1.5px solid var(--ink); border-radius: 4px; padding: 2px 0; background: var(--white); }
+  .w20 span.ok { background: #BFE8CC; }
+  .wheel { display: flex; height: 34px; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; }
+  .wheel i { display: grid; place-items: center; font: 700 12px var(--body); font-style: normal; border-right: 2px solid var(--ink); }
+  .wheel i:last-child { border-right: 0; }
+  .figs { display: flex; flex-direction: column; gap: 12px; }
+  .fig { background: var(--white); border: 2px solid var(--ink); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .fig .hd { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; }
+  .fig .pic { width: 64px; height: 64px; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; display: grid; place-items: center; font: 400 16px var(--disp); background: radial-gradient(circle at 50% 62%, #FFFFFF 0 46%, #EEF0F2 47%); }
+  .fig .pic img { width: 100%; height: 100%; object-fit: contain; }
+  .fig .nm { font: 400 20px/1.1 var(--disp); }
+  .fig .role { font-size: 13.5px; color: var(--muted); }
+  .fig .st { display: flex; flex-wrap: wrap; gap: 5px; }
+  .fig .st span { font-size: 12px; font-weight: 500; border: 1.5px solid var(--ink); border-radius: 6px; padding: 0 6px; background: var(--paper); }
+  .acts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; }
+  .acts li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; }
+  .acts .d { color: var(--muted); }
+  details.more summary { cursor: pointer; font-size: 13px; font-weight: 500; }
+  details.more .acts { margin-top: 6px; }
+  dl.gl { margin: 0; display: flex; flex-direction: column; gap: 0; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; }
+  dl.gl div { padding: 8px 12px; border-bottom: 1px solid var(--line); scroll-margin-top: 12px; }
+  dl.gl div:last-child { border-bottom: 0; }
+  dl.gl div:target { background: #FFF6D0; }
+  dt { font-weight: 700; }
+  dd { margin: 2px 0 0; font-size: 14.5px; }
+  .back { font-size: 13px; align-self: flex-end; }
+  .navr { display: flex; gap: 8px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="../arena/">NÖRTI ARENA</a>
+    <nav class="navr"><a class="pill" href="../arena/">Arena</a><a class="pill" href="../sammlung/">Sammlung</a></nav>
+  </header>
+  <main id="app" class="actions" style="gap:22px">
+    <section style="display:flex;flex-direction:column;gap:8px">
+      <span class="small muted" style="font-weight:700;letter-spacing:.08em">SPIELANLEITUNG</span>
+      <h1 class="disp">So geht's</h1>
+      <p class="lead">Nörti Arena ist ein Kampfspiel mit echten Figuren. Jede Figur hat im Sockel einen Chip. Hältst du sie ans Handy, öffnet sich ihre Seite: Dort sammelst du sie ein und schickst sie in die Arena. Gekämpft wird zu zweit an <b>einem</b> Handy.</p>
+      <nav class="toc" aria-label="Inhalt">
+        <a href="#schnellstart">Schnellstart</a><a href="#figur">Deine Figur</a><a href="#kampf">Ein Kampf</a><a href="#wer-schlaegt-wen">Wer schlägt wen</a>
+        <a href="#krug">Nörten</a><a href="#wuerfel">Würfel</a><a href="#extras">Konter &amp; Effekte</a><a href="#leveln">XP &amp; Level</a><a href="#figuren">Die Figuren</a><a href="#begriffe">Begriffe</a>
+      </nav>
+    </section>
+
+    <section class="sec" id="schnellstart">
+      <h2>In 3 Schritten zum ersten Kampf</h2>
+      <ol class="steps3">
+        <li><div><b>Figur ans Handy halten</b><span class="small">Die Unterseite des Sockels an die Rückseite des Handys, wo die NFC-Antenne sitzt (meist in der Mitte). Die Figurenseite öffnet sich. Klappt es nicht: NFC in den Einstellungen einschalten.</span></div></li>
+        <li><div><b>„Zu meiner Sammlung“ tippen</b><span class="small">Du wählst einen Spielernamen, fertig. Ein Passwort brauchst du nicht. Deine allererste Figur wird dein <a href="#starter">Starter-Nörti</a> und bekommt sofort ein Start-Geschenk.</span></div></li>
+        <li><div><b>„In die Arena“ tippen</b><span class="small">Dein Freund macht dasselbe mit seiner Figur, oder ihr holt sie aus seiner Sammlung. Dann „Kampf starten“, das Handy wandert hin und her.</span></div></li>
+      </ol>
+      <p class="tip">💡 Im Kampf zeigt das <b>?</b> oben rechts jederzeit die Kurzregeln. Diese Seite erreichst du über das <b>?</b> in jeder Kopfzeile.</p>
+    </section>
+
+    <section class="sec" id="figur">
+      <h2>Deine Figur</h2>
+      <p>Jede gedruckte Figur ist ein Einzelstück mit eigener Seriennummer im Chip. Nicht der Spieler levelt, sondern die <b>Figur selbst</b>: Sie sammelt Erfahrung, Siege und Freunde, und das bleibt ihr, auch wenn sie den Besitzer wechselt.</p>
+      <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li><b>Sammlung:</b> alle deine Figuren, sortiert nach Level, Klasse oder Datum. Noch nicht entdeckte Typen erscheinen als Silhouette.</li>
+        <li><b>Figurenseite:</b> Name und Text änderst du über „Bearbeiten“, dazu bis zu zwei eigene Fotos. Ohne Foto zeigt die Seite das Standardbild.</li>
+        <li><b>Freundebuch:</b> merkt sich jede Figur, die deine bei einem echten Treffen kennengelernt hat, mit Bilanz und erstem Treffen.</li>
+        <li><b>Tauschen:</b> Wer eine fremde Figur scannt, kann sie mit „Übernehmen“ in seine Sammlung holen. Level und Freundebuch bleiben.</li>
+        <li><b>Anmelden auf einem anderen Handy:</b> in der Sammlung E-Mail verknüpfen und eine PIN festlegen, dann mit Name + PIN anmelden.</li>
+      </ul>
+      <div class="sec" id="starter" style="gap:6px">
+        <h3 class="disp" style="margin:6px 0 0;font-size:19px;font-weight:400">⭐ Der Starter-Nörti</h3>
+        <p id="starterText">Deine erste Figur wird dein Starter: doppelte XP, ein Start-Geschenk und ein goldener Rahmen.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="kampf">
+      <h2>Ein Kampf, Schritt für Schritt</h2>
+      <ol class="steps3">
+        <li><div><b>Aufstellen</b><span class="small">Teamgröße 1–3 wählen und Figuren hinzufügen: <b>📡 live</b> durch Scannen oder <b>📋 aus der Sammlung</b> eines Spielers (gibt halbe XP). Unter „Ändern“ stellt ihr ein, wie lang der Kampf wird: <span id="lpWahl">Kurz, Normal oder Lang</span>.</span></div></li>
+        <li><div><b>Verdeckt wählen</b><span class="small">Wer dran ist, wählt eine <a href="#wer-schlaegt-wen">Kategorie</a> und darin eine Aktion, dann „Festlegen“ und Handy weitergeben. Der andere schaut so lange weg. Wer zuletzt gewählt hat, wählt nächste Runde zuerst, so wandert das Handy nur einmal pro Runde.</span></div></li>
+        <li><div><b>Aufdecken</b><span class="small">Beide Wahlen erscheinen gleichzeitig. Dann wird gewürfelt und Schritt für Schritt gezeigt, was passiert. Tippen geht schneller, „Tempo 2×“ noch schneller.</span></div></li>
+        <li><div><b>K.o. und Ersatz</b><span class="small">Bei 0 Lebenspunkten ist eine Figur k.o., im Team kommt kostenlos die nächste. Wechseln geht auch freiwillig, kostet aber die Runde.</span></div></li>
+        <li><div><b>Sieg</b><span class="small">Gewonnen hat, wer noch eine Figur stehen hat. Nach <span id="maxR">12</span> Runden pro Figur entscheidet, wer prozentual mehr Lebenspunkte übrig hat. Danach gibt es <a href="#leveln">XP</a>.</span></div></li>
+      </ol>
+    </section>
+
+    <section class="sec" id="wer-schlaegt-wen">
+      <h2>Wer schlägt wen?</h2>
+      <p>Jede Figur hat eigene Aktionen in vier Kategorien. <b>Wer im Vorteil ist, entscheidet die Kategorie</b>, wie stark die Wirkung ist, entscheidet die Aktion. Es ist wie Schere-Stein-Papier mit Würfeln:</p>
+      <svg class="cycle" viewBox="0 0 300 250" role="img" aria-label="Angriff schlägt Auftanken, Auftanken schlägt Verteidigen, Verteidigen schlägt Angriff">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#1F7A43"/></marker></defs>
+        <g stroke="#1F7A43" stroke-width="4" fill="none"><line x1="180" y1="66" x2="222" y2="136" marker-end="url(#ah)"/><line x1="200" y1="186" x2="104" y2="186" marker-end="url(#ah)"/><line x1="80" y1="136" x2="122" y2="66" marker-end="url(#ah)"/></g>
+        <g font-family="Rubik, sans-serif" font-size="11" font-weight="700" fill="#1F7A43" text-anchor="middle"><text x="222" y="92">schlägt</text><text x="152" y="178">schlägt</text><text x="78" y="92">schlägt</text></g>
+        <g font-family="Rubik, sans-serif" text-anchor="middle">
+          <circle cx="150" cy="42" r="34" fill="#fff" stroke="#18171C" stroke-width="3"/><text x="150" y="51" font-size="26">⚔️</text><text x="150" y="94" font-size="13" font-weight="700" fill="#18171C">ANGRIFF</text>
+          <circle cx="246" cy="168" r="34" fill="#fff" stroke="#18171C" stroke-width="3"/><text x="246" y="177" font-size="26">🍺</text><text x="246" y="220" font-size="13" font-weight="700" fill="#18171C">AUFTANKEN</text>
+          <circle cx="54" cy="168" r="34" fill="#fff" stroke="#18171C" stroke-width="3"/><text x="54" y="177" font-size="26">🛡️</text><text x="54" y="220" font-size="13" font-weight="700" fill="#18171C">VERTEIDIGEN</text>
+        </g>
+      </svg>
+      <div class="kats" id="kats"></div>
+      <p class="tip">💡 Die Kunst ist das Lesen: Wenn der Krug des Gegners fast leer ist, muss er bald tanken, dann lohnt sich ein Angriff. Wer selbst ständig verteidigt, wird mit vollem Krug des Gegners bestraft.</p>
+    </section>
+
+    <section class="sec" id="krug">
+      <h2>Nörten: der Krug</h2>
+      <p>Nörten sind die Ausdauer, dargestellt als Bierkrug. <b>Jede Figur hat ihren eigenen Krug</b> und startet voll (<span id="noStart">70</span> Nörten bei „Normal“, je nach Figur etwas mehr oder weniger). Fast jede Aktion kostet Nörten, die Kosten stehen mit 🍺 auf der Karte.</p>
+      <p>Von allein füllt sich der Krug nie wieder. Nachfüllen geht nur mit <b>Auftanken</b>, und das ist verwundbar: <span id="tankHit">Wer beim Tanken getroffen wird, verschüttet alles.</span> Reichen die Nörten nicht, ist eine Aktion ausgegraut. Tanken geht immer.</p>
+      <p>Auf der Bank behält eine Figur ihren Füllstand. Einwechseln bringt also einen vollen Krug ins Spiel.</p>
+    </section>
+
+    <section class="sec" id="wuerfel">
+      <h2>Würfel, Glücksrad, Ketten</h2>
+      <p>Gewürfelt wird mit einem <b>W20</b> (Würfel mit 20 Seiten). Jede Chance ist in 5-%-Schritten angegeben. 75 % heißt: Eine <b>6 oder höher</b> reicht. Grün sind die Zahlen, die treffen:</p>
+      <div class="w20" aria-label="W20-Leiste bei 75 %: 6 bis 20 treffen">${''}</div>
+      <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li><b>Mehrfach</b> (z. B. 3 × 6): Jeder Treffer wird einzeln gewürfelt. Selten richtig viel, selten gar nichts.</li>
+        <li><b>Kette</b>: Es wird gewürfelt, bis einer daneben geht. Jedes Glied macht etwas mehr Schaden als das vorige.</li>
+        <li><b>Zufällige Anzahl</b> (z. B. 2–4 ×): Erst wird ausgewürfelt, wie oft geworfen wird.</li>
+        <li><b>Glücksrad</b>: Bei manchen Aktionen dreht nach dem Treffer ein Rad. Wie breit ein Feld ist, so oft kommt es. Beispiel:</li>
+      </ul>
+      <div class="wheel" aria-label="Glücksrad-Beispiel"><i style="flex:30;background:#F4F5F7">4 · 30 %</i><i style="flex:45;background:#FFF1C9">14 · 45 %</i><i style="flex:20;background:#FFD9B8">28 · 20 %</i><i style="flex:5;background:#FFB0A8">50</i></div>
+    </section>
+
+    <section class="sec" id="extras">
+      <h2>Konter, Stolpern und Effekte</h2>
+      <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px" id="extrasList"></ul>
+    </section>
+
+    <section class="sec" id="leveln">
+      <h2>XP &amp; Level</h2>
+      <p>Nach jedem Kampf bekommt <b>jede</b> Figur XP, auch wenn sie k.o. ging. Mit genug XP steigt sie ein Level auf, höchstens bis Level 20.</p>
+      <div class="scroll"><table class="t" id="xpTable" aria-label="XP pro Kampf"></table></div>
+      <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px" id="xpRules"></ul>
+      <p><b>Was ein Level bringt:</b> Jeder Figurentyp hat einen eigenen Level-Pfad, zum Beispiel mehr Lebenspunkte, eine neue Aktion oder eine stärkere Aktion. Bei manchen Leveln darfst du zwischen zwei Belohnungen <b>wählen</b>. Die Wahl ist endgültig und gilt nur für diese eine Figur. Ab Level 15 und 20 gibt es Rahmen und Titel.</p>
+      <details class="more"><summary>Wie viele XP braucht welches Level?</summary><div class="scroll" style="margin-top:6px"><table class="t" id="kurve" aria-label="XP-Kurve"></table></div></details>
+    </section>
+
+    <section class="sec" id="figuren">
+      <h2>Die Figuren</h2>
+      <p class="small muted">Startwerte auf Level 1. LP und Nörten bei Kampflänge „Normal“. Tempo entscheidet, wer bei zwei Angriffen zuerst trifft, und hilft beim Ausweichen.</p>
+      <div class="figs" id="figs"><div class="spinner" aria-label="Lädt"></div></div>
+    </section>
+
+    <section class="sec" id="begriffe">
+      <h2>Begriffe A–Z</h2>
+      <dl class="gl" id="gl"></dl>
+      <a class="back" href="#schnellstart">↑ nach oben</a>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../app/common.js"></script>
+<script src="../app/kampf.js"></script>
+<script>
+(async () => {
+  const { gameData, types, stdImages, esc } = Noerti;
+  const K = window.NoertiKampf;
+  const $ = (s) => document.querySelector(s);
+  const komma = (x) => String(Math.round(x * 100) / 100).replace('.', ',');
+  // W20-Leiste ist unabhängig von den Spieldaten
+  $('.w20').innerHTML = Array.from({ length: 20 }, (_, i) => `<span class="${i + 1 >= 6 ? 'ok' : ''}">${i + 1}</span>`).join('');
+
+  let game = null, typen = [], std = {};
+  try { [game, typen, std] = await Promise.all([gameData(), types().catch(() => []), stdImages().catch(() => ({}))]); } catch {}
+  const R = (game && game.data && game.data.regeln) || {};
+  const val = (k, d) => (R[k] ?? d);
+  const stdWert = (k, d) => { const l = R[k]; return l && l[R.kampf_standard ?? 1] ? l[R.kampf_standard ?? 1].wert : d; };
+
+  // ---------- Texte mit Zahlen aus den Regeln ----------
+  if (R.kampf_lp) $('#lpWahl').textContent = R.kampf_lp.map((x, i) => `${x.name} (${x.wert} LP, ${R.kampf_noerten[i] ? R.kampf_noerten[i].wert : '?'} Nörten)`).join(', ');
+  $('#maxR').textContent = val('max_runden', 12);
+  $('#noStart').textContent = stdWert('kampf_noerten', 70);
+  const tg = val('auftanken_getroffen_faktor', 0);
+  $('#tankHit').textContent = tg > 0 ? `Wer beim Tanken getroffen wird, bekommt nur ×${komma(tg)} und nimmt ×${komma(val('getroffen_faktor', 1.5))} Schaden.` : `Wer beim Tanken getroffen wird, verschüttet alles und nimmt sogar ×${komma(val('getroffen_faktor', 1.5))} Schaden.`;
+  const gift = val('starter_geschenk', 90), sf = val('starter_faktor', 2);
+  const kurve = Array.isArray(R.xp_kurve) ? R.xp_kurve : null;
+  const lvFor = (xp) => (kurve ? 1 + kurve.filter((x) => xp >= x).length : null);
+  $('#starterText').innerHTML = `Die <b>allererste</b> Figur, die du einsammelst, wird dein Starter, einmal pro Spieler. Er bekommt <b>×${komma(sf)} XP</b> in jedem Kampf, ein <b>Start-Geschenk von ${gift} XP</b>${lvFor(gift) ? ` (damit startet er auf Level ${lvFor(gift)})` : ''} und einen goldenen Rahmen. Stärkere Werte bekommt er nicht. Wird er getauscht, bleibt er „Starter von dir“, verliert aber die doppelten XP. Wer schon Figuren hatte, bevor es Starter gab, sucht sich seinen in der Sammlung aus.`;
+
+  // ---------- Kategorien ----------
+  const f = komma(val('getroffen_faktor', 1.5));
+  const kats = [
+    ['⚔️', 'Angriff', '#E0533F', 'Schaden machen. Gegen Auftanken trifft er mit ×' + f + '. Gegen Verteidigung wird abgewehrt.', [['s', '✓ gegen 🍺 Auftanken'], ['w', '✗ gegen 🛡️ Verteidigung']]],
+    ['🛡️', 'Verteidigung', '#2F6FD8', `Es wird gewürfelt, ob die Abwehr greift. Greift sie, gibt es weniger Schaden (oder ein Schild schluckt Punkte) und einen <a href="#extras">Konter</a>. Kostet etwas, und tankt der Gegner, war sie umsonst: Er bekommt dann sogar ×${komma(val('auftanken_gegen_verteidigen_faktor', 1.4))}.`, [['s', '✓ gegen ⚔️ Angriff'], ['w', '✗ gegen 🍺 Auftanken']]],
+    ['🍺', 'Auftanken', '#D98A00', 'Füllt den Krug mit Nörten. Am besten, wenn der Gegner nur verteidigt. Wird man dabei getroffen, ist alles verschüttet.', [['s', '✓ gegen 🛡️ Verteidigung'], ['w', '✗ gegen ⚔️ Angriff']]],
+    ['💨', 'Ausweichen', '#1F9D55', `Das Würfelduell gegen einen Angriff: Klappt es, geht der ganze Angriff daneben, und bei vielen Figuren <b>stolpert</b> der Angreifer. Misslingt es, gibt es ×${f} Schaden. Höheres Tempo verbessert die Chance (±${val('ausweichen_pro_tempo', 5)} % pro Punkt, ${val('ausweichen_min', 25)}–${val('ausweichen_max', 75)} %), außer bei „feste Chance“.`, [['r', '🎲 riskant gegen ⚔️ Angriff']]]
+  ];
+  $('#kats').innerHTML = kats.map(([ic, n, c, t, vs]) => `<div class="kat" style="border-left-color:${c}"><span class="ic" aria-hidden="true">${ic}</span><div><b>${n}</b><p class="small" style="margin:2px 0 0">${t}</p><div class="vs">${vs.map(([k, x]) => `<span class="${k}">${x}</span>`).join('')}</div></div></div>`).join('')
+    + `<div class="kat" style="border-left-color:var(--ink)"><span class="ic" aria-hidden="true">🔄</span><div><b>Wechseln</b><p class="small" style="margin:2px 0 0">Nur im Team. Passiert vor allem anderen, kostet aber die Runde: Die neue Figur steckt den Angriff dieser Runde ein.</p></div></div>`;
+
+  // ---------- Konter & Effekte ----------
+  const pAb = val('pegel_ab_runde', 0), pPct = val('pegel_pct', 0);
+  $('#extrasList').innerHTML = [
+    `<b>Konter</b>: Greift eine Verteidigung gegen einen Angriff, verliert der Angreifer sofort ${val('konter_schaden', 0) > 0 ? `${val('konter_schaden')} LP und ` : ''}${val('konter_noerten', 10)} Nörten, und der Verteidiger trifft nächste Runde +${val('konter_treffer', 20)} %.`,
+    '<b>Stolpern</b>: Bei vielen Figuren verliert der Angreifer 10 Nörten, wenn man ihm ausweicht. Oft trifft man danach selbst besser. Was genau passiert, steht auf der Karte unter „Erfolg“.',
+    '<b>Effekte</b> wie „Trefferchance −20 %“, „Gift“ oder „Schutz“ wirken ab der <b>nächsten</b> Runde und stehen als kleine Plakette im Infokasten der Figur.',
+    '<b>Gift</b> (Nachschaden) zieht am Ende jeder Runde Lebenspunkte ab. <b>Heilung</b> und <b>Nörten pro Runde</b> wirken genauso, nur andersherum.',
+    '<b>Schild</b>: Statt Prozenten schluckt die Abwehr eine feste Zahl Schadenspunkte.',
+    '<b>Durchschlag</b>: Der Angriff geht zum Teil durch die Abwehr. <b>Unausweichlich</b>: Ausweichen ist nicht möglich. <b>Zuerst dran</b>: schlägt vor dem Gegner zu, egal wie schnell der ist.',
+    '<b>Lebensraub</b> heilt einen Teil des Schadens. <b>Rückstoß</b> kostet den Angreifer selbst ein paar LP. <b>Gegenschlag</b>: Gelingt das Ausweichen, verliert der Angreifer LP.',
+    '<b>Feste Chance</b>: Tempo spielt beim Ausweichen keine Rolle. <b>Halb</b>: Misslingt das Ausweichen, gibt es nur halben Schaden.',
+    pAb && pPct ? `<b>Pegel</b> 📈: Ab Runde ${pAb} macht jeder Treffer pro Runde +${pPct} % mehr Schaden (höchstens +${val('pegel_max', 100)} %). Ewiges Abwarten lohnt sich nicht.` : ''
+  ].filter(Boolean).map((x) => `<li>${x}</li>`).join('');
+
+  // ---------- XP ----------
+  const sam = val('sammlung_faktor', 0.5);
+  const xs = val('xp_sieg', 30), xn = val('xp_niederlage', 10), xu = val('xp_unentschieden', 20), xb = val('xp_begegnung', 20);
+  const r = (x) => Math.round(x);
+  $('#xpTable').innerHTML = `<thead><tr><th>Ergebnis</th><th class="n">📡 live</th><th class="n">📋 Sammlung</th><th class="n">⭐ Starter live</th></tr></thead><tbody>
+    ${[['Sieg', xs], ['Unentschieden', xu], ['Niederlage', xn]].map(([n, v]) => `<tr><td>${n}</td><td class="n">${v}</td><td class="n">${r(v * sam)}</td><td class="n">${r(v * sf)}</td></tr>`).join('')}
+    <tr><td>+ neuer Freund</td><td class="n">+${xb}</td><td class="n">–</td><td class="n">+${r(xb * sf)}</td></tr></tbody>`;
+  $('#xpRules').innerHTML = [
+    '<b>Live</b> heißt: Die Figur wurde für diesen Kampf gescannt. Das gilt 2 Stunden lang, auch für Revanchen.',
+    `<b>Aus der Sammlung</b> kämpfen geht auch ohne die echte Figur, gibt aber nur ×${komma(sam)} XP. Kein Freunde-Bonus, kein Freundebuch-Eintrag.`,
+    `<b>Neuer Freund</b> (+${xb}): wenn deine Figur live zum ersten Mal auf die Figur eines anderen Spielers trifft. Eigene Figuren gegeneinander zählen nicht.`,
+    'Gegen dieselbe Figur gibt es pro Tag höchstens 3-mal XP. Siege zählen trotzdem für die Bilanz.'
+  ].map((x) => `<li>${x}</li>`).join('');
+  if (kurve) $('#kurve').innerHTML = `<thead><tr><th>Level</th>${[2, 3, 4, 5, 6, 8, 10, 15, 20].map((l) => `<th class="n">${l}</th>`).join('')}</tr></thead>
+    <tbody><tr><td>XP</td>${[2, 3, 4, 5, 6, 8, 10, 15, 20].map((l) => `<td class="n">${kurve[l - 2].toLocaleString('de-DE')}</td>`).join('')}</tr></tbody>`;
+
+  // ---------- Figuren ----------
+  const KI = { angriff: ['⚔️', 'Angriff'], verteidigung: ['🛡️', 'Verteidigung'], ausweichen: ['💨', 'Ausweichen'], auftanken: ['🍺', 'Auftanken'] };
+  const tname = (id) => ((game && game.data.typen[id] && game.data.typen[id].name) || (typen.find((t) => t.id === id) || {}).name || 'Typ ' + id);
+  function beschreibe(a0) {
+    const a = K.aktionBauen(a0, []), w = a.wuerfe, o = a.ausgaenge, s = a.sonder || {}, p = [];
+    const werte = o.length > 1 ? 'Glücksrad ' + o.map((x) => x.wert).join(' / ') : String(o[0].wert);
+    const anz = w.art === 'mehrfach' ? `${w.n} × ` : w.art === 'zufall' ? `${w.n}–${w.bis} × ` : w.art === 'kette' ? `Kette bis ${w.n} × ` : '';
+    if (a.kat === 'angriff') { if (o.some((x) => x.wert > 0)) p.push(`${anz}${werte} Schaden${w.art === 'kette' && w.steigerung ? ` (+${w.steigerung} je Glied)` : ''}`); p.push(`${w.chance} %`); }
+    if (a.kat === 'verteidigung') { p.push(s.schild ? `Schild ${werte}` : o.length > 1 ? `${werte} % weniger` : `−${o[0].wert} %`); p.push(`greift zu ${w.chance} %`); }
+    if (a.kat === 'ausweichen') p.push(`${s.fest ? 'feste ' : ''}${w.chance} %`);
+    if (a.kat === 'auftanken') { p.push(`+${anz}${werte} Nörten`); if (w.chance < 100) p.push(`je ${w.chance} %`); }
+    if (a.kosten) p.push(`${a.kosten} 🍺`);
+    const x = [];
+    if (s.zuerst) x.push('zuerst dran'); if (s.unausweichlich) x.push('unausweichlich'); if (s.durchschlag) x.push(`Durchschlag ${s.durchschlag} %`);
+    if (s.lebensraub) x.push(`Lebensraub ${s.lebensraub} %`); if (s.rueckstoss) x.push(`Rückstoß ${s.rueckstoss}`); if (s.gegenschlag) x.push(`Gegenschlag ${s.gegenschlag}`);
+    if (s.halb) x.push('misslingt: halber Schaden'); if (s.lp) x.push(`+${s.lp} LP`);
+    for (const e of a.effekte || []) x.push(`${e.wann === 'erfolg' ? 'bei Erfolg: ' : e.wann === 'fehlschlag' ? 'daneben: ' : ''}${e.ziel === 'gegner' ? 'Gegner ' : ''}${K.fxText(e)}`);
+    return p.join(' · ') + (x.length ? ' · ' + x.join(' · ') : '');
+  }
+  const lernAb = (t, id) => { for (const [l, opts] of Object.entries(t.pfad || {})) if (opts.some((o) => o.art === 'lernt' && o.aktion === id)) return `Level ${l}${opts.length > 1 ? ', zur Wahl' : ''}`; return null; };
+  const ids = game ? Object.keys(game.data.typen).sort() : [];
+  $('#figs').innerHTML = ids.length ? ids.map((id) => {
+    const t = game.data.typen[id], fig = K.figur(game.data, { type_id: id, level: 1, name: tname(id) });
+    const s = std[id], img = s && s.url ? `<img src="${esc(s.url)}" alt="" loading="lazy">` : esc(id);
+    const start = t.aktionen.filter((a) => a.start).sort((a, b) => K.KAT.indexOf(a.kat) - K.KAT.indexOf(b.kat));
+    const later = t.aktionen.filter((a) => !a.start).map((a) => ({ a, ab: lernAb(t, a.id) })).filter((x) => x.ab);
+    const li = (a, extra) => `<li><span aria-label="${KI[a.kat][1]}">${KI[a.kat][0]}</span><span><b>${esc(a.name)}</b>${extra ? ` <span class="small muted">(${esc(extra)})</span>` : ''}<br><span class="d">${esc(beschreibe(a))}</span></span></li>`;
+    return `<article class="fig"><div class="hd"><span class="pic">${img}</span><div><div class="nm">${esc(tname(id))}</div><div class="role">${esc(t.rolle || '')}</div></div></div>
+      <div class="st"><span>${fig.lpMax} LP</span><span>${fig.noertenMax} Nörten</span><span>Tempo ${fig.tempo}</span></div>
+      <ul class="acts">${start.map((a) => li(a)).join('')}</ul>
+      ${later.length ? `<details class="more"><summary>Lernt später ${later.length} weitere Aktionen</summary><ul class="acts">${later.map((x) => li(x.a, x.ab)).join('')}</ul></details>` : ''}</article>`;
+  }).join('') : '<p class="card small">Die Figurenwerte konnten gerade nicht geladen werden. Ist das Internet an?</p>';
+
+  // ---------- Begriffe ----------
+  const G = [
+    ['aktion', 'Aktion', 'Ein konkreter Zug einer Figur, z. B. „Säbelhieb“. Jede gehört zu einer Kategorie. Pro Kategorie höchstens 3.'],
+    ['ausweichen', 'Ausweichen', 'Würfelduell gegen einen Angriff: ganz oder gar nicht. Siehe <a href="#wer-schlaegt-wen">Wer schlägt wen</a>.'],
+    ['belohnung', 'Belohnung', 'Was ein neues Level bringt. Bei Wahl-Leveln suchst du eine von zwei aus, endgültig.'],
+    ['freundebuch', 'Freundebuch', 'Liste aller Figuren, die deine bei einem Live-Kampf getroffen hat, als Gegner oder im Team.'],
+    ['gluecksrad', 'Glücksrad', 'Zufälliger Wert nach Anteilen. Breite Felder kommen öfter. Siehe <a href="#wuerfel">Würfel</a>.'],
+    ['kategorie', 'Kategorie', 'Angriff, Verteidigung, Ausweichen oder Auftanken. Sie entscheidet, wer im Vorteil ist.'],
+    ['konter', 'Konter', 'Belohnung für eine gelungene Abwehr gegen einen Angriff. Siehe <a href="#extras">Konter &amp; Effekte</a>.'],
+    ['live', 'Live', 'Die echte Figur wurde für den Kampf gescannt: volle XP und Freunde-Bonus. Gilt 2 Stunden.'],
+    ['lp', 'LP', 'Lebenspunkte. Bei 0 ist die Figur k.o. Wie viele es gibt, hängt von der Kampflänge und der Figur ab.'],
+    ['noerten', 'Nörten', 'Ausdauer im Krug. Aktionen kosten Nörten, nur Auftanken füllt nach. Siehe <a href="#krug">Nörten</a>.'],
+    ['pegel', 'Pegel', `Ab Runde ${pAb || 4} wird jeder Treffer stärker, damit Kämpfe nicht ewig dauern.`],
+    ['sammlung', 'Sammlung', 'Deine Figuren. Kämpfen „aus der Sammlung“ geht ohne die echte Figur, gibt aber nur halbe XP.'],
+    ['starter', 'Starter', 'Deine erste Figur: doppelte XP, Start-Geschenk, goldener Rahmen. Siehe <a href="#starter">Starter-Nörti</a>.'],
+    ['stolpern', 'Stolpern', 'Wer ins Leere angreift, verliert bei vielen Figuren 10 Nörten.'],
+    ['tempo', 'Tempo', 'Entscheidet, wer bei zwei Angriffen zuerst trifft, und verbessert das Ausweichen.'],
+    ['w20', 'W20', 'Würfel mit 20 Seiten. 75 % Chance = 6 oder höher.'],
+    ['xp', 'XP', 'Erfahrungspunkte für die Figur. Genug XP = neues Level. Siehe <a href="#leveln">XP &amp; Level</a>.']
+  ];
+  $('#gl').innerHTML = G.map(([id, n, t]) => `<div id="b-${id}"><dt>${n}</dt><dd>${t}</dd></div>`).join('');
+  if (location.hash) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
+})();
+</script>
+</body>
+</html>

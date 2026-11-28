@@ -18,6 +18,11 @@ body {
 .disp { font-family: var(--disp); font-weight: 400; letter-spacing: .01em; }
 .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .logo { font-family: var(--disp); font-size: 18px; color: var(--ink); text-decoration: none; }
+.navr { display: flex; align-items: center; gap: 8px; }
+.qpill { width: 34px; height: 34px; padding: 0; display: inline-grid; place-items: center; font-family: var(--disp); font-size: 17px; }
+.howto { display: flex; flex-direction: column; gap: 8px; }
+.howto ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 14.5px; }
+.howto .lk { font-weight: 500; }
 .pill { font-size: 14px; font-weight: 500; color: var(--ink); text-decoration: none; border: 2px solid var(--ink); border-radius: 99px; padding: 4px 12px; background: var(--white); }
 a { color: var(--ink); }
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--sound); outline-offset: 2px; }
